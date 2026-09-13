@@ -2,25 +2,31 @@ package com.axzydev.puertonuevoapp.core.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Paleta institucional Puerto Nuevo — misma familia "emerald" que ya usa
-// la web (text-emerald-700 / bg-emerald-600), llevada a un tema Material3
-// claro y minimalista.
+/**
+ * Capa de compatibilidad + semánticos.
+ *
+ * Los miembros *Emerald* son alias hacia la paleta del logo (Brand) para no
+ * tocar el resto de pantallas: el valor vive en UN punto (Brand) y cambia
+ * toda la app junto. Regla hacia adelante: las pantallas usan
+ * `MaterialTheme.colorScheme.*` y aquí solo estados/helpers de dominio.
+ */
 object AppColors {
-    // Uber-inspired foundation: black actions, white surfaces, green signal.
-    val EmeraldPrimary = Color(0xFF000000)
-    val EmeraldPrimaryDark = Color(0xFF171717)
-    val EmeraldContainer = Color(0xFFE8E8E8)
-    val EmeraldOnContainer = Color(0xFF000000)
+    // Compat → paleta del logo (Brand)
+    val EmeraldPrimary = Brand.Primary
+    val EmeraldPrimaryDark = Brand.PrimaryDark
+    val EmeraldContainer = Brand.PrimaryContainer
+    val EmeraldOnContainer = Brand.OnPrimaryContainer
 
-    val Background = Color(0xFFF6F6F6)
-    val Surface = Color(0xFFFFFFFF)
-    val SurfaceVariant = Color(0xFFEEEEEE)
-    val Outline = Color(0xFFE0E0E0)
+    val Background = Brand.Background
+    val Surface = Brand.Surface
+    val SurfaceVariant = Brand.SurfaceVariant
+    val Outline = Brand.Outline
 
-    val TextPrimary = Color(0xFF000000)
-    val TextMuted = Color(0xFF545454)
-    val TextFaint = Color(0xFF858585)
+    val TextPrimary = Brand.TextPrimary
+    val TextMuted = Brand.TextMuted
+    val TextFaint = Brand.TextFaint
 
+    // Semánticos — estado, no marca
     val Success = Color(0xFF06C167)
     val Warning = Color(0xFFF59E0B)
     val Danger = Color(0xFFEF4444)

@@ -20,17 +20,165 @@ NO se hereda de web: `axzy_ui_system` (CSS), Tailwind, `@react-pdf`, HashRouter,
 
 ## Estado actual
 
-**Listo:** login con servidor editable sin recompilar (`ApiConfig.DEFAULT_BASE_URL`), shell responsive (drawer ≥700dp / bottom bar móvil), tickets completo (lista/detalle/nuevo/editar/kanban/mis tareas/admin), dispositivos, usuarios, departamentos, device types, empleados, inventario+movimientos+ubicaciones, salidas, cartas, reportes, notificaciones, auditoría. Ktor + kotlinx.serialization.
+**RESET arquitectónico — esqueleto "desde 0":** solo **login + home**, ambos a
+MVVM (jetbrains lifecycle KMP) y con la identidad de marca del logo. Todo lo
+demás fue borrado y se re-agrega módulo a módulo con el patrón nuevo.
+
+**Vivo ahora (core):** `core/theme` (Brand + Color + Theme), `core/ui`
+(Brand: logo/insignia/backdrop océano · Components · AppSnackbar), `core/nav`
+(Navigator + Screen {Home} + PlatformBackHandler), `core/session`
+(AuthRepository/TokenStore/expect-actual), `core/network` (arquitectura
+limpia, ver abajo), `core/di` (AppContainer = composition root).
+
+**Vivo ahora (features):**
+- `feature/auth` — login MVVM + hero brand (logo real, gradiente océano, olas).
+- `feature/home` — home MVVM: top bar de marca (logo+logout) + saludo +
+  resumen de inventario (`/devices/summary`) con StatCards.
+
+Verificación: `./gradlew :shared:compileAndroidMain` +
+`:shared:compileKotlinIosSimulatorArm64` + `:androidApp:assembleDebug` ✓
+
+## Arquitectura limpia — core/network
+
+Capa de datos separada por responsabilidad: infra, dominio de datos (endpoints +
+DTOs) y repositorios. Dependencias SIEMPRE hacia adentro (dominio → infra,
+nunca al revés).
+
+```
+core/network/
+  http/                    ← infraestructura (independiente de cualquier módulo)
+    ApiClient.kt             HTTP generico (Ktor): body→DTO, errores tipados,
+                             401 → onUnauthorized. Sin dependencias: recibe
+                             proveedores getToken/getServerUrl (IoC, ver abajo).
+    ApiConfig.kt             URL default + ApiException + networkMessage()
+    ApiErrorBody.kt          shape del body de error del backend
+  auth/                    ← modulo de datos auth (1:1 con endpoints del API)
+    AuthApi.kt               AuthDtos.kt
+  devices/                 ← modulo de datos devices
+    DevicesApi.kt            DeviceDtos.kt
+```
+
+Reglas:
+- Un `*Api` (endpoints) vive con su `*Dtos` en el mismo subpaquete de dominio.
+- `ApiClient` NO conoce `TokenStore` ni dominio (inversión de dependencias):
+  `AppContainer` le inyecta `getToken`/`getServerUrl`. El único acoplamiento
+  permitido es 401 → `onUnauthorized` (logout global).
+- Los ViewModels usan repositorios (p. ej. `AuthRepository`), no `*Api`
+  directo — se agrega `DevicesRepository` cuando el home crezca.
+- `TableRequest/TableResponse` (tablas server-side) vuelven con TicketsList
+  dentro del subpaquete de su dominio.
+
+**Módulos a re-agregar (en orden), cada uno = MVVM + marca:**
+1. `TicketsList` (patrón con paginación server-side) → kickoff del siguiente.
+2. Devices + DeviceTypes (con DevicesApi.summary ya en uso en home).
+3. Departments / Employees / Users.
+4. Inventory + Locations + Movements.
+5. Salidas / Cartas / Reports / Notifications / Audit.
+6. Realtime (Ably) y push — como estaban planeados.
 
 **Faltante vs web (paridad "todo el sistema"):**
+- Todo lo que los módulos borrados cubrían (tickets, dispositivos, cartas, etc.).
 - Realtime tickets/notificaciones (Ably) — sin SDK KMP maduro; opciones: SDK KMP alpha de Ably o poll en `NotificationsApi`.
 - Push notifications (FCM Android / APNs iOS) — controlado por API.
-- Cámara/fotos para adjuntos de tickets/inventario: picker multiplataforma (FileKit o expect/actual) + multipart.
-- PDF de cartas: endpoint en API (`GET /cartas/:id/pdf`); la app solo abre la URL. Reusa lógica, evita motor PDF en cliente.
+- Cámara/fotos para adjuntos: picker multiplataforma (FileKit o expect/actual) + multipart.
+- PDF de cartas: endpoint en API (`GET /cartas/:id/pdf`); la app solo abre la URL.
 - Firma en cartas (canvas) si aplica.
-- Offline/cache: `multiplatform-settings` + SQLDelight para catálogos (device types, locations, users).
-- CI/CD y distribución: builds Android gradle + iOS Xcode, App Distribution/TestFlight.
-- Tests: solo placeholders; empezar por repos + parse de tablas server-side.
+- Offline/cache: `multiplatform-settings` + SQLDelight para catálogos.
+- CI/CD y distribución: builds Android gradle + iOS Xcode.
+- Tests: repos + parse de tablas server-side (ya no hay tabla propia: se re-agrega con TicketsList).
+
+## Fase Rebranding — "que se vea mamalona"
+
+Objetivo: aplicar la identidad real de Puerto Nuevo (logo + colores) y nivelar
+la UX de la app KMP con la web. Lo primero es la arquitectura de tema, NO
+retocar pantalla por pantalla.
+
+### Arquitectura del tema
+
+| Capa | Archivo | Responsabilidad |
+|---|---|---|
+| Tokens de marca | `core/theme/Brand.kt` (nuevo) | Paleta EXTRAÍDA del logo (`extract` del PNG): azul océano primario, hielo claro, brick acento, neutros azulados. Nombres de rol (Primary/Container/Accent…), sin valores sueltos. |
+| Tokens semánticos | `core/theme/Color.kt` | Estados (Success/Warning/Danger/Info/Purple) + helpers por dominio (ticket/device/inventory). Solo estado, no marca. |
+| Capa compat | `AppColors` alias → tokens de marca | El valor vive en UN punto; al cambiar ahí cambia toda la app. Los 38 archivos existentes siguen compilando igual. |
+| Tema M3 | `core/theme/Theme.kt` | `lightColorScheme(primary=Ocean, onPrimary=White, primaryContainer=Ice, onPrimaryContainer=MarineDark, secondary=Brick, background=TinteHielo…)`. Todo componente M3 y los tokens se propagan solos. |
+| Marca (composables) | `core/ui/Brand.kt` (nuevo) | `BrandLogo(modifier)` (painterResource del PNG), `BrandHeader()` (logo+wordmark), `BrandTopBar()` coloreado. Reutilizable en login, shell, home. |
+| Recurso | `composeResources/drawable/logo_puerto_nuevo.png` | PNG del logo (mismo de `web/public`), cargado con `Res.drawable`. |
+| Pantallas | `feature/*` | Regla dura: usar `MaterialTheme.colorScheme.{primary,primaryContainer,secondary,surface…}` y `AppColors.*` SOLO para semánticos. Cero `Color(0xFF…)` suelto en pantallas. |
+
+Diagrama de dependencias (mismo orden que hoy, no cambia):
+
+```
+core/theme/{Brand,Color,Theme}  ← nada por encima las importa directo salvo AppColors/theme
+core/ui/{Brand,Components}      ← usa tokens
+feature/*/Screen                ← usa MaterialTheme + AppColors(semánticos) + core/ui
+App.kt (PuertoNuevoTheme)       ← monta el tema en la raíz
+```
+
+### Paleta extraída del logo (255px PNG, buckets dominantes)
+
+| Rol | Hex | Muestra |
+|---|---|---|
+| Primary — Azul océano | `#03587D` | (3,88,125) |
+| PrimaryContainer — Hielo | `#D8EBF5` | (216,235,245) |
+| Ice medio | `#79A6B7` / `#B0CBD2` | degradados/trazos |
+| MarineDark (onContainer) | `#013449` | texto sobre hielo |
+| Accent — Brick | `#6B413F` | secundario/marcas |
+| Background — Tinte hielo | `#F4F9FB` | fondo |
+| Surface / SurfaceVariant | `#FFFFFF` / `#E8F0F4` | tarjetas |
+
+Los semánticos actuales (Success `#06C167`, Warning, Danger, Info, Purple) se
+conservan: la app los usa para estados reales de tickets/dispositivos.
+
+### Pasos (milestones independientes, cada uno verifica con build)
+
+1. **B1 tokens+theme** ✅: `core/theme/Brand.kt` (paleta del logo), `Theme.kt`
+   recableado a `Brand`, `AppColors` = capa compat (marca en un solo punto).
+   Toda la app repintó sin tocar las 38 pantallas.
+2. **B2 assets+marca** ✅: `logo_puerto_nuevo.png` en composeResources/drawable;
+   `core/ui/Brand.kt` con `BrandLogo`, `BrandLogoBadge`, `OceanBackdrop`.
+   `packageOfResClass` fijado en shared/build.gradle.kts.
+3. **B3 login** ✅: `feature/auth` a MVVM + hero brand (logo real, gradiente
+   océano, olas). Patrón de referencia para el resto de pantallas.
+4. **B4 shell** ✅: top bar de marca (logo + nombre + logout). El drawer/bottom
+   bar multipantalla volverá con cada módulo re-agregado.
+5. **B5 home** ✅: saludo + resumen de inventario en marca (StatCards).
+6. **B6 sweep 38 archivos**: con el reset, casi todas las pantallas se
+   re-escriben con `MaterialTheme.colorScheme.*`; la capa compat en `AppColors`
+   se retira cuando deje de haber referencias `Emerald*`.
+7. **B7 pulido**: espaciados, radios (shapes redondeados tipo logo), estados
+   hover/selected consistentes.
+
+Verificación continua: `./gradlew :shared:compileAndroidMain` (Android) y
+`:shared:compileKotlinIosSimulatorArm64` (iOS).
+
+## Fase MVVM — patrón de pantalla (app "fuerte")
+
+Migración progresiva feature por feature. NO FSD de web; se conserva
+`core/` + `feature/<dominio>`. Cada pantalla pasa a 3 archivos y la
+lógica se vuelve testeable en `commonTest` (repos + ViewModel, sin UI).
+
+Estructura por feature (referencia: `feature/auth` ya migrado):
+
+```
+feature/<dominio>/
+  <X>UiState.kt      data class inmutable (loading/error/data…) + defaults
+  <X>ViewModel.kt    ViewModel KMP (jetbrains androidx.lifecycle) + StateFlow
+  <X>Screen.kt       UI tonta: viewModel { … } + collectAsState + eventos
+```
+
+Reglas:
+- ViewModel multiplataforma REAL: `androidx.lifecycle.ViewModel` +
+  `viewModelScope` + `viewModel { VM(deps) }` (de `org.jetbrains.androidx.lifecycle`
+  2.11, ya en deps — funciona Android+iOS, sobrevive recomposition/config).
+- ViewModel recibe repos por constructor desde `AppContainer` (`viewModel {
+  LoginViewModel(AppContainer.authRepository) }`). Sin DI framework.
+- Estados con `MutableStateFlow` + `.update {}`; UI lee con `collectAsState()`.
+- En éxito de login el `AuthState` de la sesión cambia solo (App.kt decide la
+  pantalla): el VM NO navega.
+- Transiciones: `state.copy(...)` siempre; nunca mutar el state en UI.
+- UI usa `MaterialTheme.colorScheme.*`; `AppColors.*` solo semánticos/estado.
+
+Siguiente migración sugerida: `TicketsList` (patrón con paginación servidor).
 
 ## Fases
 

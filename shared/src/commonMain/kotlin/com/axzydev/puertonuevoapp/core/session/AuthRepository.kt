@@ -1,8 +1,8 @@
 package com.axzydev.puertonuevoapp.core.session
 
-import com.axzydev.puertonuevoapp.core.network.ApiClient
-import com.axzydev.puertonuevoapp.core.network.ApiConfig
-import com.axzydev.puertonuevoapp.core.network.AuthApi
+import com.axzydev.puertonuevoapp.core.network.auth.AuthApi
+import com.axzydev.puertonuevoapp.core.network.http.ApiClient
+import com.axzydev.puertonuevoapp.core.network.http.ApiConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

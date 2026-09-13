@@ -12,21 +12,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 private val LightColors = lightColorScheme(
-    primary = AppColors.EmeraldPrimary,
-    onPrimary = AppColors.Surface,
-    primaryContainer = AppColors.EmeraldContainer,
-    onPrimaryContainer = AppColors.EmeraldOnContainer,
-    secondary = AppColors.TextMuted,
-    onSecondary = AppColors.Surface,
-    background = AppColors.Background,
-    onBackground = AppColors.TextPrimary,
-    surface = AppColors.Surface,
-    onSurface = AppColors.TextPrimary,
-    surfaceVariant = AppColors.SurfaceVariant,
-    onSurfaceVariant = AppColors.TextMuted,
-    outline = AppColors.Outline,
+    primary = Brand.Primary,
+    onPrimary = Brand.OnPrimary,
+    primaryContainer = Brand.PrimaryContainer,
+    onPrimaryContainer = Brand.OnPrimaryContainer,
+    secondary = Brand.Accent,
+    onSecondary = Brand.OnAccent,
+    secondaryContainer = Brand.SecondaryContainer,
+    onSecondaryContainer = Brand.OnSecondaryContainer,
+    background = Brand.Background,
+    onBackground = Brand.TextPrimary,
+    surface = Brand.Surface,
+    onSurface = Brand.TextPrimary,
+    surfaceVariant = Brand.SurfaceVariant,
+    onSurfaceVariant = Brand.TextMuted,
+    outline = Brand.Outline,
     error = AppColors.Danger,
-    onError = AppColors.Surface,
+    onError = Brand.OnPrimary,
 )
 
 private val AppShapes = Shapes(

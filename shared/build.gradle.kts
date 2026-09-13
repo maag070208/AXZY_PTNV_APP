@@ -8,6 +8,10 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
+compose.resources {
+    packageOfResClass = "com.axzydev.puertonuevoapp.generated.resources"
+}
+
 kotlin {
     listOf(
         iosArm64(),
