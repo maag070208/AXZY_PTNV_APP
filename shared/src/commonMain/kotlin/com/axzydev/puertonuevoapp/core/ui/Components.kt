@@ -12,17 +12,28 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +42,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.unit.dp
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 
@@ -38,12 +52,12 @@ import com.axzydev.puertonuevoapp.core.theme.AppColors
 fun StatusChip(label: String, color: Color, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
-            .background(color, RoundedCornerShape(6.dp))
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .background(color.copy(alpha = 0.12f), RoundedCornerShape(20.dp))
+            .padding(horizontal = 10.dp, vertical = 5.dp),
     ) {
         Text(
             text = label,
-            color = Color.White,
+            color = color,
             style = MaterialTheme.typography.labelSmall,
         )
     }
@@ -126,6 +140,109 @@ fun EmptyRow(text: String) {
 }
 
 @Composable
+fun AppSurfaceCard(
+    modifier: Modifier = Modifier,
+    content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit,
+) {
+    Column(
+        modifier = modifier
+            .background(AppColors.Surface, MaterialTheme.shapes.large)
+            .border(1.dp, AppColors.Outline.copy(alpha = 0.65f), MaterialTheme.shapes.large)
+            .padding(16.dp),
+        content = content,
+    )
+}
+
+@Composable
+fun AppSearchField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        placeholder = { Text(placeholder) },
+        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+        singleLine = true,
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+            unfocusedContainerColor = AppColors.SurfaceVariant,
+            focusedContainerColor = AppColors.Surface,
+            unfocusedBorderColor = AppColors.Outline.copy(alpha = 0.45f),
+            focusedBorderColor = AppColors.EmeraldPrimary,
+        ),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+    )
+}
+
+enum class AppModalTone { Neutral, Danger, Success, Warning }
+
+@Composable
+fun AppModal(
+    title: String,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+    tone: AppModalTone = AppModalTone.Neutral,
+    confirmLabel: String? = null,
+    onConfirm: (() -> Unit)? = null,
+    confirmEnabled: Boolean = true,
+    saving: Boolean = false,
+    content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit,
+) {
+    val accent = when (tone) {
+        AppModalTone.Neutral -> AppColors.EmeraldPrimary
+        AppModalTone.Danger -> AppColors.Danger
+        AppModalTone.Success -> AppColors.Success
+        AppModalTone.Warning -> AppColors.Warning
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            modifier = modifier.fillMaxWidth().widthIn(max = 440.dp),
+            shape = MaterialTheme.shapes.extraLarge,
+            color = AppColors.Surface,
+            border = androidx.compose.foundation.BorderStroke(1.dp, AppColors.Outline),
+            tonalElevation = 0.dp,
+        ) {
+            Column(modifier = Modifier.padding(24.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    icon?.let {
+                        Box(
+                            Modifier.size(42.dp).background(accent.copy(alpha = 0.12f), RoundedCornerShape(13.dp)),
+                            contentAlignment = Alignment.Center,
+                        ) { Icon(it, contentDescription = null, tint = accent) }
+                        Spacer(Modifier.width(12.dp))
+                    }
+                    Text(title, style = MaterialTheme.typography.titleLarge, color = AppColors.TextPrimary)
+                }
+                Spacer(Modifier.size(18.dp))
+                content()
+                if (onConfirm != null && confirmLabel != null) {
+                    Spacer(Modifier.size(22.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        TextButton(onClick = onDismiss) { Text("Cancelar", color = AppColors.TextMuted) }
+                        Spacer(Modifier.width(8.dp))
+                        Button(
+                            onClick = onConfirm,
+                            enabled = confirmEnabled && !saving,
+                            colors = ButtonDefaults.buttonColors(containerColor = accent, contentColor = Color.White),
+                            shape = MaterialTheme.shapes.medium,
+                        ) {
+                            if (saving) CircularProgressIndicator(Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
+                            else Text(confirmLabel)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun StatCard(
     value: String,
     label: String,
@@ -135,7 +252,8 @@ fun StatCard(
     onClick: (() -> Unit)? = null,
 ) {
     var cardModifier = modifier
-        .background(AppColors.Surface, RoundedCornerShape(16.dp))
+        .background(AppColors.Surface, RoundedCornerShape(20.dp))
+        .border(1.dp, AppColors.Outline.copy(alpha = 0.55f), RoundedCornerShape(20.dp))
     if (onClick != null) {
         cardModifier = cardModifier.clickable(onClick = onClick)
     }
@@ -148,7 +266,7 @@ fun StatCard(
         Box(
             modifier = Modifier
                 .size(38.dp)
-                .background(color.copy(alpha = 0.12f), RoundedCornerShape(12.dp)),
+                .background(color.copy(alpha = 0.12f), RoundedCornerShape(14.dp)),
             contentAlignment = Alignment.Center,
         ) {
             icon()
@@ -172,12 +290,14 @@ fun SimpleDropdownField(
     var expanded by remember { mutableStateOf(false) }
     val displayLabel = options.firstOrNull { it.first == value }?.second ?: value
     Box(modifier = modifier) {
-        OutlinedButton(
+        androidx.compose.material3.Surface(
             onClick = { expanded = true },
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.medium,
+            color = AppColors.SurfaceVariant,
+            border = androidx.compose.foundation.BorderStroke(1.dp, AppColors.Outline.copy(alpha = 0.45f)),
         ) {
-            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
+            Column(modifier = Modifier.fillMaxWidth().clickable { expanded = true }.padding(horizontal = 16.dp, vertical = 12.dp), horizontalAlignment = Alignment.Start) {
                 Text(label, style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint)
                 Text(displayLabel, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
             }

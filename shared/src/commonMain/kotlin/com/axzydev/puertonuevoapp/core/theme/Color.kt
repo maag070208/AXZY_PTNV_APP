@@ -6,21 +6,22 @@ import androidx.compose.ui.graphics.Color
 // la web (text-emerald-700 / bg-emerald-600), llevada a un tema Material3
 // claro y minimalista.
 object AppColors {
-    val EmeraldPrimary = Color(0xFF059669)
-    val EmeraldPrimaryDark = Color(0xFF047857)
-    val EmeraldContainer = Color(0xFFD1FAE5)
-    val EmeraldOnContainer = Color(0xFF065F46)
+    // Uber-inspired foundation: black actions, white surfaces, green signal.
+    val EmeraldPrimary = Color(0xFF000000)
+    val EmeraldPrimaryDark = Color(0xFF171717)
+    val EmeraldContainer = Color(0xFFE8E8E8)
+    val EmeraldOnContainer = Color(0xFF000000)
 
-    val Background = Color(0xFFF8FAFC)
+    val Background = Color(0xFFF6F6F6)
     val Surface = Color(0xFFFFFFFF)
-    val SurfaceVariant = Color(0xFFF1F5F9)
-    val Outline = Color(0xFFE2E8F0)
+    val SurfaceVariant = Color(0xFFEEEEEE)
+    val Outline = Color(0xFFE0E0E0)
 
-    val TextPrimary = Color(0xFF1E293B)
-    val TextMuted = Color(0xFF64748B)
-    val TextFaint = Color(0xFF94A3B8)
+    val TextPrimary = Color(0xFF000000)
+    val TextMuted = Color(0xFF545454)
+    val TextFaint = Color(0xFF858585)
 
-    val Success = Color(0xFF10B981)
+    val Success = Color(0xFF06C167)
     val Warning = Color(0xFFF59E0B)
     val Danger = Color(0xFFEF4444)
     val Info = Color(0xFF3B82F6)
@@ -47,6 +48,24 @@ object AppColors {
         "DISPONIBLE" -> Success
         "ASIGNADO" -> Warning
         "BAJA" -> TextFaint
+        else -> TextFaint
+    }
+
+    fun movementTypeColor(tipo: String): Color = when (tipo) {
+        "ENTRADA" -> Success
+        "SALIDA" -> Warning
+        "TRASLADO" -> Info
+        "BAJA" -> Danger
+        "PRESTAMO" -> Purple
+        "DEVOLUCION" -> Info
+        else -> TextFaint
+    }
+
+    fun condicionColor(condicion: String): Color = when (condicion) {
+        "BUENO" -> Success
+        "ACEPTABLE" -> Warning
+        "MALO" -> Danger
+        "ROTO" -> Danger
         else -> TextFaint
     }
 }

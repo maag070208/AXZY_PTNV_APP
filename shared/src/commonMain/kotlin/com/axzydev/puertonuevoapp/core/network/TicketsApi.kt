@@ -20,4 +20,20 @@ class TicketsApi(private val client: ApiClient) {
 
     suspend fun addComment(id: String, texto: String): TicketCommentDto =
         client.post("/tickets/$id/comments", AddCommentDto(texto))
+
+    suspend fun update(id: String, input: TicketEditDto): TicketDto = client.put("/tickets/$id", input)
+
+    suspend fun kanban(ticketId: String? = null): KanbanResponseDto {
+        val qs = ticketId?.let { "?ticketId=$it" } ?: ""
+        return client.get("/tickets/kanban$qs")
+    }
+
+    suspend fun addAssignment(id: String, input: AssignmentCreateDto): TicketAssignmentDto =
+        client.post("/tickets/$id/assignments", input)
+
+    suspend fun updateAssignment(id: String, assignmentId: String, input: AssignmentUpdateDto): TicketAssignmentDto =
+        client.put("/tickets/$id/assignments/$assignmentId", input)
+
+    suspend fun removeAssignment(id: String, assignmentId: String): TicketAssignmentDto =
+        client.delete("/tickets/$id/assignments/$assignmentId")
 }

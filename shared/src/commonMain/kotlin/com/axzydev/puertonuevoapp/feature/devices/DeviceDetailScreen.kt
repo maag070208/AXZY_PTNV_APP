@@ -1,6 +1,7 @@
 package com.axzydev.puertonuevoapp.feature.devices
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,21 +10,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,7 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
+import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.DeviceDto
+import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
@@ -47,6 +45,10 @@ import kotlinx.coroutines.launch
 fun DeviceDetailScreen(deviceId: String) {
     val navigator = LocalNavigator.current
     val scope = rememberCoroutineScope()
+    val authState by AppContainer.authRepository.state.collectAsState()
+    val role = (authState as? AuthState.LoggedIn)?.user?.role
+    val isAdmin = role == "ADMIN"
+    val canRegisterMovement = role == "ADMIN" || role == "GERENTE" || role == "JEFE_DE_AREA"
 
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -66,25 +68,11 @@ fun DeviceDetailScreen(deviceId: String) {
 
     LaunchedEffect(deviceId) { load() }
 
-    Scaffold(
-        containerColor = AppColors.Background,
-        topBar = {
-            TopAppBar(
-                title = { Text("Dispositivo", style = MaterialTheme.typography.titleMedium) },
-                navigationIcon = {
-                    IconButton(onClick = { navigator.pop() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppColors.Surface),
-            )
-        },
-    ) { padding ->
-        when {
-            loading -> LoadingState(modifier = Modifier.fillMaxSize().padding(padding))
+    when {
+            loading -> LoadingState(modifier = Modifier.fillMaxSize())
             error != null || device == null -> ErrorState(
                 message = error ?: "Dispositivo no encontrado",
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.fillMaxSize(),
                 onRetry = { scope.launch { load() } },
             )
             else -> {
@@ -92,7 +80,6 @@ fun DeviceDetailScreen(deviceId: String) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding)
                         .verticalScroll(rememberScrollState())
                         .padding(16.dp),
                 ) {
@@ -105,6 +92,34 @@ fun DeviceDetailScreen(deviceId: String) {
                             Text(d.descripcion, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextMuted)
                         }
                         StatusChip(deviceEstadoLabel(d.estado), AppColors.deviceEstadoColor(d.estado))
+                    }
+
+                    if (isAdmin || canRegisterMovement) {
+                        Spacer(Modifier.height(10.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            if (isAdmin) {
+                                Text(
+                                    "Editar",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = AppColors.EmeraldPrimary,
+                                    modifier = Modifier
+                                        .background(AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                                        .clickable { navigator.push(Screen.DeviceForm(d.id)) }
+                                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                                )
+                            }
+                            if (canRegisterMovement) {
+                                Text(
+                                    "Movimiento",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = AppColors.EmeraldPrimary,
+                                    modifier = Modifier
+                                        .background(AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                                        .clickable { navigator.push(Screen.NewInventoryMovement(d.id)) }
+                                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                                )
+                            }
+                        }
                     }
 
                     Spacer(Modifier.height(16.dp))
@@ -155,7 +170,6 @@ fun DeviceDetailScreen(deviceId: String) {
                     Spacer(Modifier.height(24.dp))
                 }
             }
-        }
     }
 }
 

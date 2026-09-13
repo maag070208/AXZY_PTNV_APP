@@ -2,6 +2,7 @@ package com.axzydev.puertonuevoapp.feature.auth
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,10 +11,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Dns
@@ -73,12 +79,20 @@ fun LoginScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(AppColors.EmeraldPrimary)
             .padding(24.dp),
         contentAlignment = Alignment.Center,
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 460.dp)
+                .verticalScroll(rememberScrollState())
+                .imePadding()
+                .navigationBarsPadding()
+                .background(AppColors.Surface, MaterialTheme.shapes.extraLarge)
+                .border(1.dp, AppColors.Outline.copy(alpha = 0.6f), MaterialTheme.shapes.extraLarge)
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(

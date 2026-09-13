@@ -2,6 +2,7 @@ package com.axzydev.puertonuevoapp.feature.devices
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,17 +11,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,10 +34,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.collectAsState
 import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.DeviceDto
+import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
@@ -56,6 +59,8 @@ private val estadoFilters = listOf(
 fun DevicesListScreen() {
     val navigator = LocalNavigator.current
     val scope = rememberCoroutineScope()
+    val authState by AppContainer.authRepository.state.collectAsState()
+    val isAdmin = (authState as? AuthState.LoggedIn)?.user?.role == "ADMIN"
 
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -92,10 +97,9 @@ fun DevicesListScreen() {
         }
     }
 
-    Scaffold(containerColor = AppColors.Background) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+    Column(modifier = Modifier.fillMaxSize().imePadding()) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Dispositivos", style = MaterialTheme.typography.headlineSmall, color = AppColors.TextPrimary)
+                Text("Inventario y disponibilidad", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted, modifier = Modifier.padding(top = 3.dp))
                 Spacer(Modifier.height(10.dp))
                 OutlinedTextField(
                     value = query,
@@ -107,7 +111,7 @@ fun DevicesListScreen() {
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(Modifier.height(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     estadoFilters.forEach { (value, label) ->
                         val selected = estadoFilter == value
                         Text(
@@ -120,6 +124,17 @@ fun DevicesListScreen() {
                                     RoundedCornerShape(20.dp),
                                 )
                                 .clickable { estadoFilter = value }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        )
+                    }
+                    if (isAdmin) {
+                        Text(
+                            text = "Tipos de equipo",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = AppColors.EmeraldPrimary,
+                            modifier = Modifier
+                                .background(AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                                .clickable { navigator.push(Screen.DeviceTypesList) }
                                 .padding(horizontal = 12.dp, vertical = 6.dp),
                         )
                     }
@@ -144,7 +159,6 @@ fun DevicesListScreen() {
                     }
                 }
             }
-        }
     }
 }
 
@@ -153,7 +167,7 @@ private fun DeviceRow(device: DeviceDto, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(AppColors.Surface, RoundedCornerShape(16.dp))
+            .background(AppColors.Surface, RoundedCornerShape(20.dp))
             .clickable(onClick = onClick)
             .padding(14.dp),
     ) {

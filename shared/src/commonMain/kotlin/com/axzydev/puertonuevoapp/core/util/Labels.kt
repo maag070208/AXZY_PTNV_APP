@@ -37,3 +37,26 @@ fun deviceEstadoLabel(estado: String): String = when (estado) {
     "BAJA" -> "Baja"
     else -> estado
 }
+
+fun movementTypeLabel(tipo: String): String = when (tipo) {
+    "ENTRADA" -> "Entrada"
+    "SALIDA" -> "Salida"
+    "TRASLADO" -> "Traslado"
+    "BAJA" -> "Baja"
+    "PRESTAMO" -> "Asignado"
+    "DEVOLUCION" -> "Devolución"
+    else -> tipo
+}
+
+fun condicionLabel(condicion: String): String = when (condicion) {
+    "BUENO" -> "Bueno"
+    "ACEPTABLE" -> "Aceptable"
+    "MALO" -> "Malo"
+    "ROTO" -> "Roto"
+    else -> condicion
+}
+
+fun formatLocation(lugar: String?, subLugar: String?, numero: String?): String {
+    val parts = listOfNotNull(lugar, subLugar, numero).filter { it.isNotBlank() }
+    return if (parts.isNotEmpty()) parts.joinToString("-") else "Sin ubicación"
+}

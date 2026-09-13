@@ -2,6 +2,7 @@ package com.axzydev.puertonuevoapp.feature.tickets
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,18 +11,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,10 +35,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.collectAsState
 import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.TicketDto
+import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
@@ -47,7 +50,6 @@ import com.axzydev.puertonuevoapp.core.util.formatShortDate
 import com.axzydev.puertonuevoapp.core.util.ticketPriorityLabel
 import com.axzydev.puertonuevoapp.core.util.ticketStatusLabel
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.layout.weight
 
 private val statusFilters = listOf(
     null to "Todos",
@@ -60,6 +62,9 @@ private val statusFilters = listOf(
 fun TicketsListScreen() {
     val navigator = LocalNavigator.current
     val scope = rememberCoroutineScope()
+    val authState by AppContainer.authRepository.state.collectAsState()
+    val role = (authState as? AuthState.LoggedIn)?.user?.role
+    val canSeeAdminTasks = role == "ADMIN" || role == "GERENTE"
 
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -94,21 +99,9 @@ fun TicketsListScreen() {
         }
     }
 
-    Scaffold(
-        containerColor = AppColors.Background,
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navigator.push(Screen.NewTicket) },
-                containerColor = AppColors.EmeraldPrimary,
-                contentColor = AppColors.Surface,
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = "Nuevo ticket")
-            }
-        },
-    ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+    Column(modifier = Modifier.fillMaxSize().imePadding()) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Tickets", style = MaterialTheme.typography.headlineSmall, color = AppColors.TextPrimary)
+                Text("Seguimiento operativo", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted, modifier = Modifier.padding(top = 3.dp))
                 Spacer(Modifier.height(10.dp))
                 OutlinedTextField(
                     value = query,
@@ -120,7 +113,7 @@ fun TicketsListScreen() {
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(Modifier.height(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     statusFilters.forEach { (value, label) ->
                         val selected = statusFilter == value
                         Text(
@@ -133,6 +126,38 @@ fun TicketsListScreen() {
                                     RoundedCornerShape(20.dp),
                                 )
                                 .clickable { statusFilter = value }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        )
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "Tablero",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = AppColors.EmeraldPrimary,
+                        modifier = Modifier
+                            .background(AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                            .clickable { navigator.push(Screen.TicketsKanban()) }
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                    )
+                    Text(
+                        text = "Mis tareas",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = AppColors.EmeraldPrimary,
+                        modifier = Modifier
+                            .background(AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                            .clickable { navigator.push(Screen.MyTasks) }
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                    )
+                    if (canSeeAdminTasks) {
+                        Text(
+                            text = "Administración",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = AppColors.EmeraldPrimary,
+                            modifier = Modifier
+                                .background(AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                                .clickable { navigator.push(Screen.AdminTasks) }
                                 .padding(horizontal = 12.dp, vertical = 6.dp),
                         )
                     }
@@ -157,7 +182,6 @@ fun TicketsListScreen() {
                     }
                 }
             }
-        }
     }
 }
 
@@ -166,7 +190,7 @@ private fun TicketRow(ticket: TicketDto, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(AppColors.Surface, RoundedCornerShape(16.dp))
+            .background(AppColors.Surface, RoundedCornerShape(20.dp))
             .clickable(onClick = onClick)
             .padding(14.dp),
     ) {

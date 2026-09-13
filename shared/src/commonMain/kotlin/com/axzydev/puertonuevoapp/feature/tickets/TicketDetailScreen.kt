@@ -1,6 +1,7 @@
 package com.axzydev.puertonuevoapp.feature.tickets
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,23 +9,21 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,9 +34,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.collectAsState
 import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
+import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.TicketDto
+import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
@@ -47,9 +49,7 @@ import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.formatDateTime
 import com.axzydev.puertonuevoapp.core.util.ticketCategoryLabel
 import com.axzydev.puertonuevoapp.core.util.ticketPriorityLabel
-import com.axzydev.puertonuevoapp.core.util.ticketStatusLabel
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.layout.width
 
 private val statusOptions = listOf(
@@ -62,6 +62,10 @@ private val statusOptions = listOf(
 fun TicketDetailScreen(ticketId: String) {
     val navigator = LocalNavigator.current
     val scope = rememberCoroutineScope()
+    val authState by AppContainer.authRepository.state.collectAsState()
+    val role = (authState as? AuthState.LoggedIn)?.user?.role
+    val isAdmin = role == "ADMIN"
+    val canSeeAssignments = role != "EMPLEADO"
 
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -84,25 +88,11 @@ fun TicketDetailScreen(ticketId: String) {
 
     LaunchedEffect(ticketId) { load() }
 
-    Scaffold(
-        containerColor = AppColors.Background,
-        topBar = {
-            TopAppBar(
-                title = { Text("Ticket", style = MaterialTheme.typography.titleMedium) },
-                navigationIcon = {
-                    IconButton(onClick = { navigator.pop() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppColors.Surface),
-            )
-        },
-    ) { padding ->
-        when {
-            loading -> LoadingState(modifier = Modifier.fillMaxSize().padding(padding))
+    when {
+            loading -> LoadingState(modifier = Modifier.fillMaxSize())
             error != null || ticket == null -> ErrorState(
                 message = error ?: "Ticket no encontrado",
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.fillMaxSize(),
                 onRetry = { scope.launch { load() } },
             )
             else -> {
@@ -110,8 +100,9 @@ fun TicketDetailScreen(ticketId: String) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding)
                         .verticalScroll(rememberScrollState())
+                        .imePadding()
+                        .navigationBarsPadding()
                         .padding(16.dp),
                 ) {
                     Row(
@@ -134,6 +125,34 @@ fun TicketDetailScreen(ticketId: String) {
                         style = MaterialTheme.typography.bodySmall,
                         color = AppColors.TextFaint,
                     )
+
+                    if (isAdmin || canSeeAssignments) {
+                        Spacer(Modifier.height(10.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            if (isAdmin) {
+                                Text(
+                                    "Editar",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = AppColors.EmeraldPrimary,
+                                    modifier = Modifier
+                                        .background(AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                                        .clickable { navigator.push(Screen.EditTicket(t.id)) }
+                                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                                )
+                            }
+                            if (canSeeAssignments) {
+                                Text(
+                                    "Tareas del ticket",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = AppColors.EmeraldPrimary,
+                                    modifier = Modifier
+                                        .background(AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                                        .clickable { navigator.push(Screen.TicketsKanban(t.id)) }
+                                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                                )
+                            }
+                        }
+                    }
 
                     Spacer(Modifier.height(16.dp))
                     InfoCard {
@@ -246,7 +265,6 @@ fun TicketDetailScreen(ticketId: String) {
                     Spacer(Modifier.height(24.dp))
                 }
             }
-        }
     }
 }
 
