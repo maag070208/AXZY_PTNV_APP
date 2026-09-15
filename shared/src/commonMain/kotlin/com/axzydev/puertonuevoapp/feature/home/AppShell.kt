@@ -48,6 +48,12 @@ import com.axzydev.puertonuevoapp.feature.devices.DevicesListScreen
 import com.axzydev.puertonuevoapp.feature.devicetypes.DeviceTypeFormScreen
 import com.axzydev.puertonuevoapp.feature.devicetypes.DeviceTypesListScreen
 import com.axzydev.puertonuevoapp.feature.employees.EmployeesListScreen
+import com.axzydev.puertonuevoapp.feature.inventory.InventoryIndexScreen
+import com.axzydev.puertonuevoapp.feature.inventory.InventoryMovementsScreen
+import com.axzydev.puertonuevoapp.feature.inventory.LocationDetailScreen
+import com.axzydev.puertonuevoapp.feature.inventory.LocationFormScreen
+import com.axzydev.puertonuevoapp.feature.inventory.LocationsListScreen
+import com.axzydev.puertonuevoapp.feature.inventory.NewInventoryMovementScreen
 import com.axzydev.puertonuevoapp.feature.tickets.AdminTasksScreen
 import com.axzydev.puertonuevoapp.feature.tickets.EditTicketScreen
 import com.axzydev.puertonuevoapp.feature.tickets.MyTasksScreen
@@ -211,12 +217,12 @@ private fun AppNavHost(screen: Screen) {
         is Screen.DepartmentDetail -> DepartmentDetailScreen(screen.id)
 
         // Inventory — módulo 4
-        Screen.InventoryIndex -> PlaceholderScreen("Inventario")
-        Screen.LocationsList -> PlaceholderScreen("Ubicaciones")
-        is Screen.LocationDetail -> PlaceholderScreen("Ubicación")
-        is Screen.LocationForm -> PlaceholderScreen("Formulario de ubicación")
-        Screen.InventoryMovements -> PlaceholderScreen("Kardex")
-        is Screen.NewInventoryMovement -> PlaceholderScreen("Registrar movimiento")
+        Screen.InventoryIndex -> InventoryIndexScreen()
+        Screen.LocationsList -> LocationsListScreen()
+        is Screen.LocationDetail -> LocationDetailScreen(screen.id)
+        is Screen.LocationForm -> LocationFormScreen(screen.id)
+        Screen.InventoryMovements -> InventoryMovementsScreen()
+        is Screen.NewInventoryMovement -> NewInventoryMovementScreen(screen.deviceId)
 
         // Salidas / Cartas / Reports / Notifications / Audit — módulo 5
         Screen.SalidasList -> PlaceholderScreen("Salidas de material")
