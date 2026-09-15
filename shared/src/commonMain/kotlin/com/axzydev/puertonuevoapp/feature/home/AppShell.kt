@@ -40,6 +40,11 @@ import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.ui.AppSnackbarHost
 import com.axzydev.puertonuevoapp.core.ui.BrandLogoBadge
 import com.axzydev.puertonuevoapp.core.ui.PlaceholderScreen
+import com.axzydev.puertonuevoapp.feature.devices.DeviceDetailScreen
+import com.axzydev.puertonuevoapp.feature.devices.DeviceFormScreen
+import com.axzydev.puertonuevoapp.feature.devices.DevicesListScreen
+import com.axzydev.puertonuevoapp.feature.devicetypes.DeviceTypeFormScreen
+import com.axzydev.puertonuevoapp.feature.devicetypes.DeviceTypesListScreen
 import com.axzydev.puertonuevoapp.feature.tickets.AdminTasksScreen
 import com.axzydev.puertonuevoapp.feature.tickets.EditTicketScreen
 import com.axzydev.puertonuevoapp.feature.tickets.MyTasksScreen
@@ -183,11 +188,11 @@ private fun AppNavHost(screen: Screen) {
         Screen.AdminTasks -> AdminTasksScreen()
 
         // Devices — módulo 2
-        Screen.DevicesList -> PlaceholderScreen("Dispositivos")
-        is Screen.DeviceDetail -> PlaceholderScreen("Dispositivo")
-        is Screen.DeviceForm -> PlaceholderScreen("Formulario de dispositivo")
-        Screen.DeviceTypesList -> PlaceholderScreen("Tipos de dispositivo")
-        is Screen.DeviceTypeForm -> PlaceholderScreen("Formulario de tipo")
+        Screen.DevicesList -> DevicesListScreen()
+        is Screen.DeviceDetail -> DeviceDetailScreen(screen.id)
+        is Screen.DeviceForm -> DeviceFormScreen(screen.id)
+        Screen.DeviceTypesList -> DeviceTypesListScreen()
+        is Screen.DeviceTypeForm -> DeviceTypeFormScreen(screen.id)
 
         // Users / employees — módulo 3
         Screen.UsersList -> PlaceholderScreen("Usuarios")
