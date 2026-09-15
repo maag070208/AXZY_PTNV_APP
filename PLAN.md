@@ -20,20 +20,40 @@ NO se hereda de web: `axzy_ui_system` (CSS), Tailwind, `@react-pdf`, HashRouter,
 
 ## Estado actual
 
-**RESET arquitectónico — esqueleto "desde 0":** solo **login + home**, ambos a
-MVVM (jetbrains lifecycle KMP) y con la identidad de marca del logo. Todo lo
-demás fue borrado y se re-agrega módulo a módulo con el patrón nuevo.
+**Paridad completa de módulos alcanzada (post-reset).** Tras el reset
+arquitectónico (solo login+home), se re-agregaron **los 12 módulos** de la
+web al patrón MVVM nuevo, en el orden documentado más abajo. Los ~30
+destinos de `Screen.kt` tienen todos una pantalla real — cero
+"próximamente".
 
 **Vivo ahora (core):** `core/theme` (Brand + Color + Theme), `core/ui`
 (Brand: logo/insignia/backdrop océano · Components · AppSnackbar), `core/nav`
-(Navigator + Screen {Home} + PlatformBackHandler), `core/session`
-(AuthRepository/TokenStore/expect-actual), `core/network` (arquitectura
-limpia, ver abajo), `core/di` (AppContainer = composition root).
+(Navigator + `Screen` con ~30 destinos + `ScreenChrome` + `PlatformBackHandler`),
+`core/session` (AuthRepository/TokenStore/expect-actual + `SessionUser.can*`
+= matriz de autorización del API), `core/network` (arquitectura limpia, ver
+abajo, un subpaquete por dominio), `core/di` (AppContainer = composition
+root), `core/util` (DateFormat/Labels/CurrentTime expect-actual, sin
+dependencias externas).
 
-**Vivo ahora (features):**
-- `feature/auth` — login MVVM + hero brand (logo real, gradiente océano, olas).
-- `feature/home` — home MVVM: top bar de marca (logo+logout) + saludo +
-  resumen de inventario (`/devices/summary`) con StatCards.
+**Vivo ahora (features) — MVVM (UiState+ViewModel+Screen) en los 12 módulos:**
+- `feature/auth` — login + hero brand.
+- `feature/home` — saludo + resumen de inventario + grid de accesos rápidos
+  a todos los módulos (gateado por rol).
+- `feature/tickets` — lista/detalle/alta-edición, kanban de tareas,
+  mis tareas/tareas del equipo.
+- `feature/devices` + `feature/devicetypes` — CRUD completo, catálogo de
+  tipos con `fieldConfig` por campo.
+- `feature/departments`, `feature/users`, `feature/employees` — CRUD +
+  wizard de alta de usuario + historial de actividad.
+- `feature/inventory` — ubicaciones (+ sublugares), movimientos/kardex,
+  resumen, registrar movimiento (incluye flujo de "malas condiciones").
+- `feature/salidas` — bitácora F-SIS-0005.
+- `feature/cartas` — CRUD, generar por tipo, marcar/deshacer devolución.
+- `feature/reports`, `feature/notifications` (+ badge en AppShell),
+  `feature/audit` (ADMIN).
+
+Bottom-nav: 4 secciones (Home/Tickets/Devices/Users — Users solo si
+`canManageCatalogs`); el resto cuelga de accesos rápidos en Home.
 
 Verificación: `./gradlew :shared:compileAndroidMain` +
 `:shared:compileKotlinIosSimulatorArm64` + `:androidApp:assembleDebug` ✓
@@ -68,24 +88,26 @@ Reglas:
 - `TableRequest/TableResponse` (tablas server-side) vuelven con TicketsList
   dentro del subpaquete de su dominio.
 
-**Módulos a re-agregar (en orden), cada uno = MVVM + marca:**
-1. `TicketsList` (patrón con paginación server-side) → kickoff del siguiente.
-2. Devices + DeviceTypes (con DevicesApi.summary ya en uso en home).
-3. Departments / Employees / Users.
-4. Inventory + Locations + Movements.
-5. Salidas / Cartas / Reports / Notifications / Audit.
-6. Realtime (Ably) y push — como estaban planeados.
+**Módulos re-agregados (en orden), cada uno = MVVM + marca — TODOS ✅:**
+1. ✅ `TicketsList` (patrón con paginación server-side) — kickoff del resto.
+2. ✅ Devices + DeviceTypes (con DevicesApi.summary ya en uso en home).
+3. ✅ Departments / Employees / Users.
+4. ✅ Inventory + Locations + Movements.
+5. ✅ Salidas / Cartas (+ generar por tipo) / Reports / Notifications / Audit.
+6. ⬜ Realtime (Ably) y push — sigue pendiente, ver abajo.
 
-**Faltante vs web (paridad "todo el sistema"):**
-- Todo lo que los módulos borrados cubrían (tickets, dispositivos, cartas, etc.).
+**Faltante vs web (deliberadamente fuera de esta pasada — no es falta de
+paridad de módulos, sino de capacidades transversales):**
 - Realtime tickets/notificaciones (Ably) — sin SDK KMP maduro; opciones: SDK KMP alpha de Ably o poll en `NotificationsApi`.
 - Push notifications (FCM Android / APNs iOS) — controlado por API.
-- Cámara/fotos para adjuntos: picker multiplataforma (FileKit o expect/actual) + multipart.
-- PDF de cartas: endpoint en API (`GET /cartas/:id/pdf`); la app solo abre la URL.
-- Firma en cartas (canvas) si aplica.
+- Cámara/fotos para adjuntos (tickets, historial de dispositivo): picker multiplataforma (FileKit o expect/actual) + multipart.
+- Importación Excel (usuarios, dispositivos): mismo picker + multipart.
+- PDF de cartas: se genera 100% client-side en la web (`@react-pdf/renderer`), sin endpoint en el API — la app ofrece una vista en pantalla de solo lectura en su lugar (`CartaDetailScreen`).
+- Exportación CSV de reportes.
 - Offline/cache: `multiplatform-settings` + SQLDelight para catálogos.
 - CI/CD y distribución: builds Android gradle + iOS Xcode.
-- Tests: repos + parse de tablas server-side (ya no hay tabla propia: se re-agrega con TicketsList).
+- Tests: repos + parse de tablas server-side.
+- `DepartmentDetailScreen`/`LocationDetailScreen` muestran ubicaciones/tickets/cartas de solo lectura; agregar/quitar el vínculo departamento↔ubicación (`POST/DELETE /departments/:id/locations`) no tiene UI todavía.
 
 ## Fase Rebranding — "que se vea mamalona"
 
@@ -178,20 +200,18 @@ Reglas:
 - Transiciones: `state.copy(...)` siempre; nunca mutar el state en UI.
 - UI usa `MaterialTheme.colorScheme.*`; `AppColors.*` solo semánticos/estado.
 
-Siguiente migración sugerida: `TicketsList` (patrón con paginación servidor).
+Los 12 módulos ya migrados a este patrón (ver "Estado actual" arriba).
 
 ## Fases
 
 ### Fase 0 — Paridad core (base sólida primero) ✅
 - [x] Interceptor único de errores: `ApiException` tipado + 401 → logout automático (igual `web/src/shared/api/session.ts`).
-- [x] DTOs: barrido vs schemas del API (crash fixes: DELETE `/locations/:id` → `{success}`; kanban `department` sin `id`; paridad `cartaContador`, `estado/locationId` en devices, `category/departmentId` en tickets, `deviceId` en salidas, `email`/`empresa`).
-- [x] Helper `TableRequest`/`TableResponse` (espejo de `web/src/shared/api/table.ts`).
-- [x] Errores de red visibles por UI: `AppSnackbar` central montado en el shell + `networkMessage()` amigable.
-- Verificación: `:androidApp:assembleDebug` + `:shared:compileKotlinIosArm64` ✓
+- [x] DTOs: barrido vs schemas del API vigente (contrastado contra `web/src/entities/*/api/*.ts` módulo por módulo, no solo contra la referencia pre-reset, porque el backend siguió evolucionando — ver notas de drift en cada commit de módulo).
+- [x] Helper `TableRequest`/`TableResponse` (`core/network/http/Table.kt`, espejo de `web/src/shared/api/table.ts`), disponible en los 12 dominios.
+- [x] Errores de red visibles por UI: `networkMessage()` en cada ViewModel → `uiState.error`.
+- Verificación: `:androidApp:assembleDebug` + `:shared:compileKotlinIosSimulatorArm64` ✓
 
-**Siguiente:** adoptar `AppSnackbar` en pantallas (sustituir `catch (e: Exception)` por `networkMessage(e)` + `AppSnackbar.showError`) y reusar `TableRequest` en los listados que el API sirva con POST/query.
-
-**Verificación:** `./gradlew :androidApp:assembleDebug` y `./gradlew :shared:compileKotlinIosArm64`.
+**Siguiente candidato real:** adoptar `TableRequest`/`query()` (ya definido en cada `*Api`) en los listados que hoy usan `list()` + filtro client-side, para paginación server-side real cuando los catálogos crezcan; y considerar `AppSnackbar` para errores no bloqueantes (hoy cada pantalla ya muestra su propio `ErrorState`/mensaje inline, que cubre el caso pero no es una notificación transitoria).
 
 ### Fase 1 — Datos/resiliencia
 - `multiplatform-settings`: base URL + preferencias.
