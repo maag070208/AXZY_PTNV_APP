@@ -59,6 +59,7 @@ fun Screen.chrome(): ScreenChrome = when (this) {
     Screen.CartasList -> ScreenChrome("Cartas responsivas", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
     is Screen.CartaDetail -> ScreenChrome("Carta responsiva", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
     is Screen.CartaForm -> ScreenChrome(if (id == null) "Nueva carta" else "Editar carta", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
+    Screen.GenerateCarta -> ScreenChrome("Generar cartas", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
 
     Screen.Reports -> ScreenChrome("Reportes", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
     Screen.Notifications -> ScreenChrome("Notificaciones", showBack = true, showBottomNavigation = false, section = MainSection.HOME)

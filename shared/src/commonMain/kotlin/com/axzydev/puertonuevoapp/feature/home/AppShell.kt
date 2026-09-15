@@ -49,6 +49,7 @@ import com.axzydev.puertonuevoapp.feature.audit.AuditLogsScreen
 import com.axzydev.puertonuevoapp.feature.cartas.CartaDetailScreen
 import com.axzydev.puertonuevoapp.feature.cartas.CartaFormScreen
 import com.axzydev.puertonuevoapp.feature.cartas.CartasListScreen
+import com.axzydev.puertonuevoapp.feature.cartas.GenerateCartaScreen
 import com.axzydev.puertonuevoapp.feature.departments.DepartmentDetailScreen
 import com.axzydev.puertonuevoapp.feature.departments.DepartmentsListScreen
 import com.axzydev.puertonuevoapp.feature.devices.DeviceDetailScreen
@@ -250,6 +251,7 @@ private fun AppNavHost(screen: Screen) {
         Screen.CartasList -> CartasListScreen()
         is Screen.CartaDetail -> CartaDetailScreen(screen.id)
         is Screen.CartaForm -> CartaFormScreen(screen.id)
+        Screen.GenerateCarta -> GenerateCartaScreen()
         Screen.Reports -> ReportsScreen()
         Screen.Notifications -> NotificationsScreen()
         Screen.AuditLogs -> AuditLogsScreen()

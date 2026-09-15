@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.ErrorOutline
@@ -51,17 +52,26 @@ fun CartasListScreen(viewModel: CartasListViewModel = viewModel { CartasListView
     val state by viewModel.uiState.collectAsState()
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
-    val role = (authState as? AuthState.LoggedIn)?.user?.role
+    val user = (authState as? AuthState.LoggedIn)?.user
+    val role = user?.role
     val canCreate = role != "JEFE_DE_AREA"
     val canDelete = role != "EMPLEADO"
+    val canGenerate = user?.canGenerateCartas == true
 
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text("${state.filtered.size} carta(s)", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
-                if (canCreate) {
-                    IconButton(onClick = { navigator.push(Screen.CartaForm()) }) {
-                        Icon(Icons.Filled.Add, contentDescription = "Nueva carta", tint = AppColors.EmeraldPrimary)
+                Row {
+                    if (canGenerate) {
+                        IconButton(onClick = { navigator.push(Screen.GenerateCarta) }) {
+                            Icon(Icons.Filled.Bolt, contentDescription = "Generar carta por tipo", tint = AppColors.EmeraldPrimary)
+                        }
+                    }
+                    if (canCreate) {
+                        IconButton(onClick = { navigator.push(Screen.CartaForm()) }) {
+                            Icon(Icons.Filled.Add, contentDescription = "Nueva carta", tint = AppColors.EmeraldPrimary)
+                        }
                     }
                 }
             }
