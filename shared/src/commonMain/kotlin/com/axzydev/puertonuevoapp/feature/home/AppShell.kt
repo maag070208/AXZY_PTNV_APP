@@ -15,6 +15,8 @@ import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -25,8 +27,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -39,7 +45,10 @@ import com.axzydev.puertonuevoapp.core.nav.chrome
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.ui.AppSnackbarHost
 import com.axzydev.puertonuevoapp.core.ui.BrandLogoBadge
-import com.axzydev.puertonuevoapp.core.ui.PlaceholderScreen
+import com.axzydev.puertonuevoapp.feature.audit.AuditLogsScreen
+import com.axzydev.puertonuevoapp.feature.cartas.CartaDetailScreen
+import com.axzydev.puertonuevoapp.feature.cartas.CartaFormScreen
+import com.axzydev.puertonuevoapp.feature.cartas.CartasListScreen
 import com.axzydev.puertonuevoapp.feature.departments.DepartmentDetailScreen
 import com.axzydev.puertonuevoapp.feature.departments.DepartmentsListScreen
 import com.axzydev.puertonuevoapp.feature.devices.DeviceDetailScreen
@@ -54,6 +63,10 @@ import com.axzydev.puertonuevoapp.feature.inventory.LocationDetailScreen
 import com.axzydev.puertonuevoapp.feature.inventory.LocationFormScreen
 import com.axzydev.puertonuevoapp.feature.inventory.LocationsListScreen
 import com.axzydev.puertonuevoapp.feature.inventory.NewInventoryMovementScreen
+import com.axzydev.puertonuevoapp.feature.notifications.NotificationsScreen
+import com.axzydev.puertonuevoapp.feature.reports.ReportsScreen
+import com.axzydev.puertonuevoapp.feature.salidas.SalidaFormScreen
+import com.axzydev.puertonuevoapp.feature.salidas.SalidasListScreen
 import com.axzydev.puertonuevoapp.feature.tickets.AdminTasksScreen
 import com.axzydev.puertonuevoapp.feature.tickets.EditTicketScreen
 import com.axzydev.puertonuevoapp.feature.tickets.MyTasksScreen
@@ -80,6 +93,11 @@ fun AppShell() {
 
     val current = navigator.current
     val chrome = current.chrome()
+
+    var unreadCount by remember { mutableStateOf(0) }
+    LaunchedEffect(current) {
+        runCatching { AppContainer.notificationsApi.unreadCount() }.onSuccess { unreadCount = it }
+    }
 
     PlatformBackHandler(enabled = navigator.backStack.size > 1) {
         navigator.pop()
@@ -121,11 +139,13 @@ fun AppShell() {
                 },
                 actions = {
                     IconButton(onClick = { navigator.push(Screen.Notifications) }) {
-                        Icon(
-                            Icons.Filled.Notifications,
-                            contentDescription = "Notificaciones",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                        BadgedBox(badge = { if (unreadCount > 0) Badge { Text(unreadCount.toString()) } }) {
+                            Icon(
+                                Icons.Filled.Notifications,
+                                contentDescription = "Notificaciones",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
                     IconButton(onClick = { authRepository.logout() }) {
                         Icon(
@@ -225,13 +245,13 @@ private fun AppNavHost(screen: Screen) {
         is Screen.NewInventoryMovement -> NewInventoryMovementScreen(screen.deviceId)
 
         // Salidas / Cartas / Reports / Notifications / Audit — módulo 5
-        Screen.SalidasList -> PlaceholderScreen("Salidas de material")
-        is Screen.SalidaForm -> PlaceholderScreen("Formulario de salida")
-        Screen.CartasList -> PlaceholderScreen("Cartas responsivas")
-        is Screen.CartaDetail -> PlaceholderScreen("Carta responsiva")
-        is Screen.CartaForm -> PlaceholderScreen("Formulario de carta")
-        Screen.Reports -> PlaceholderScreen("Reportes")
-        Screen.Notifications -> PlaceholderScreen("Notificaciones")
-        Screen.AuditLogs -> PlaceholderScreen("Auditoría")
+        Screen.SalidasList -> SalidasListScreen()
+        is Screen.SalidaForm -> SalidaFormScreen(screen.id)
+        Screen.CartasList -> CartasListScreen()
+        is Screen.CartaDetail -> CartaDetailScreen(screen.id)
+        is Screen.CartaForm -> CartaFormScreen(screen.id)
+        Screen.Reports -> ReportsScreen()
+        Screen.Notifications -> NotificationsScreen()
+        Screen.AuditLogs -> AuditLogsScreen()
     }
 }

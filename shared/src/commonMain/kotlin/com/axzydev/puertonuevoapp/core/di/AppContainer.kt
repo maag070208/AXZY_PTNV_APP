@@ -2,10 +2,15 @@ package com.axzydev.puertonuevoapp.core.di
 
 import com.axzydev.puertonuevoapp.core.network.devices.DevicesApi
 import com.axzydev.puertonuevoapp.core.network.departments.DepartmentsApi
+import com.axzydev.puertonuevoapp.core.network.audit.AuditApi
+import com.axzydev.puertonuevoapp.core.network.cartas.CartasApi
 import com.axzydev.puertonuevoapp.core.network.devicetypes.DeviceTypesApi
 import com.axzydev.puertonuevoapp.core.network.http.ApiClient
 import com.axzydev.puertonuevoapp.core.network.inventory.InventoryApi
 import com.axzydev.puertonuevoapp.core.network.locations.LocationsApi
+import com.axzydev.puertonuevoapp.core.network.notifications.NotificationsApi
+import com.axzydev.puertonuevoapp.core.network.reports.ReportsApi
+import com.axzydev.puertonuevoapp.core.network.salidas.SalidasApi
 import com.axzydev.puertonuevoapp.core.network.tickets.TicketsApi
 import com.axzydev.puertonuevoapp.core.network.users.UsersApi
 import com.axzydev.puertonuevoapp.core.session.AuthRepository
@@ -40,4 +45,9 @@ object AppContainer {
     val departmentsApi: DepartmentsApi by lazy { DepartmentsApi(apiClient) }
     val locationsApi: LocationsApi by lazy { LocationsApi(apiClient) }
     val inventoryApi: InventoryApi by lazy { InventoryApi(apiClient) }
+    val salidasApi: SalidasApi by lazy { SalidasApi(apiClient) }
+    val cartasApi: CartasApi by lazy { CartasApi(apiClient) }
+    val reportsApi: ReportsApi by lazy { ReportsApi(apiClient) }
+    val notificationsApi: NotificationsApi by lazy { NotificationsApi(apiClient) }
+    val auditApi: AuditApi by lazy { AuditApi(apiClient) }
 }
