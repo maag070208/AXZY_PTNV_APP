@@ -61,7 +61,7 @@ data class UserPasswordInput(val password: String)
 @Serializable
 data class UserHistoryEntryDto(
     val id: String,
-    val type: String,
-    val detail: String? = null,
-    val createdAt: String,
+    val title: String,
+    val detail: String = "",
+    val timestamp: String,
 )

@@ -40,11 +40,14 @@ import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.ui.AppSnackbarHost
 import com.axzydev.puertonuevoapp.core.ui.BrandLogoBadge
 import com.axzydev.puertonuevoapp.core.ui.PlaceholderScreen
+import com.axzydev.puertonuevoapp.feature.departments.DepartmentDetailScreen
+import com.axzydev.puertonuevoapp.feature.departments.DepartmentsListScreen
 import com.axzydev.puertonuevoapp.feature.devices.DeviceDetailScreen
 import com.axzydev.puertonuevoapp.feature.devices.DeviceFormScreen
 import com.axzydev.puertonuevoapp.feature.devices.DevicesListScreen
 import com.axzydev.puertonuevoapp.feature.devicetypes.DeviceTypeFormScreen
 import com.axzydev.puertonuevoapp.feature.devicetypes.DeviceTypesListScreen
+import com.axzydev.puertonuevoapp.feature.employees.EmployeesListScreen
 import com.axzydev.puertonuevoapp.feature.tickets.AdminTasksScreen
 import com.axzydev.puertonuevoapp.feature.tickets.EditTicketScreen
 import com.axzydev.puertonuevoapp.feature.tickets.MyTasksScreen
@@ -52,6 +55,9 @@ import com.axzydev.puertonuevoapp.feature.tickets.NewTicketScreen
 import com.axzydev.puertonuevoapp.feature.tickets.TicketDetailScreen
 import com.axzydev.puertonuevoapp.feature.tickets.TicketsKanbanScreen
 import com.axzydev.puertonuevoapp.feature.tickets.TicketsListScreen
+import com.axzydev.puertonuevoapp.feature.users.UserFormScreen
+import com.axzydev.puertonuevoapp.feature.users.UserHistoryScreen
+import com.axzydev.puertonuevoapp.feature.users.UsersListScreen
 
 /**
  * Shell de la app: top bar de marca (o back+título en pantallas hijas),
@@ -195,14 +201,14 @@ private fun AppNavHost(screen: Screen) {
         is Screen.DeviceTypeForm -> DeviceTypeFormScreen(screen.id)
 
         // Users / employees — módulo 3
-        Screen.UsersList -> PlaceholderScreen("Usuarios")
-        is Screen.UserForm -> PlaceholderScreen("Formulario de usuario")
-        is Screen.UserHistory -> PlaceholderScreen("Historial de usuario")
-        Screen.EmployeesList -> PlaceholderScreen("Empleados")
+        Screen.UsersList -> UsersListScreen()
+        is Screen.UserForm -> UserFormScreen(screen.id)
+        is Screen.UserHistory -> UserHistoryScreen(screen.id)
+        Screen.EmployeesList -> EmployeesListScreen()
 
         // Departments — módulo 3
-        Screen.DepartmentsList -> PlaceholderScreen("Departamentos")
-        is Screen.DepartmentDetail -> PlaceholderScreen("Departamento")
+        Screen.DepartmentsList -> DepartmentsListScreen()
+        is Screen.DepartmentDetail -> DepartmentDetailScreen(screen.id)
 
         // Inventory — módulo 4
         Screen.InventoryIndex -> PlaceholderScreen("Inventario")

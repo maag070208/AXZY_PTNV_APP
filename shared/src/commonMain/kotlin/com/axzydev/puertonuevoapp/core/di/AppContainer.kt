@@ -1,6 +1,7 @@
 package com.axzydev.puertonuevoapp.core.di
 
 import com.axzydev.puertonuevoapp.core.network.devices.DevicesApi
+import com.axzydev.puertonuevoapp.core.network.departments.DepartmentsApi
 import com.axzydev.puertonuevoapp.core.network.devicetypes.DeviceTypesApi
 import com.axzydev.puertonuevoapp.core.network.http.ApiClient
 import com.axzydev.puertonuevoapp.core.network.tickets.TicketsApi
@@ -34,4 +35,5 @@ object AppContainer {
     val deviceTypesApi: DeviceTypesApi by lazy { DeviceTypesApi(apiClient) }
     val ticketsApi: TicketsApi by lazy { TicketsApi(apiClient) }
     val usersApi: UsersApi by lazy { UsersApi(apiClient) }
+    val departmentsApi: DepartmentsApi by lazy { DepartmentsApi(apiClient) }
 }
