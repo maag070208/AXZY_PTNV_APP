@@ -2,6 +2,8 @@ package com.axzydev.puertonuevoapp.core.di
 
 import com.axzydev.puertonuevoapp.core.network.devices.DevicesApi
 import com.axzydev.puertonuevoapp.core.network.http.ApiClient
+import com.axzydev.puertonuevoapp.core.network.tickets.TicketsApi
+import com.axzydev.puertonuevoapp.core.network.users.UsersApi
 import com.axzydev.puertonuevoapp.core.session.AuthRepository
 import com.axzydev.puertonuevoapp.core.session.TokenStore
 
@@ -28,4 +30,6 @@ object AppContainer {
         }
     }
     val devicesApi: DevicesApi by lazy { DevicesApi(apiClient) }
+    val ticketsApi: TicketsApi by lazy { TicketsApi(apiClient) }
+    val usersApi: UsersApi by lazy { UsersApi(apiClient) }
 }

@@ -106,6 +106,20 @@ class ApiClient(
         return decode(response)
     }
 
+    // Para POSTs con cuerpo cuyo body de respuesta no interesa (ej. comentarios/
+    // asignaciones de tickets, donde la UI refresca releyendo el recurso padre):
+    // mismo motivo que putNoContent, decode<Unit> fallaría si el body no es "".
+    suspend inline fun <reified B> postNoContent(path: String, body: B) {
+        val response = httpClient.post(buildUrl(path)) {
+            authHeader()
+            contentType(ContentType.Application.Json)
+            setBody(json.encodeToString(body))
+        }
+        if (!response.status.isSuccess()) {
+            decode<ApiErrorBody>(response)
+        }
+    }
+
     suspend inline fun <reified T> postNoBody(path: String): T {
         val response = httpClient.post(buildUrl(path)) {
             authHeader()
