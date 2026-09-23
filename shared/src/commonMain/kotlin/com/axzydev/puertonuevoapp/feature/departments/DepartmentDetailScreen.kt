@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -36,6 +37,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
@@ -124,7 +126,7 @@ fun DepartmentDetailScreen(departmentId: String) {
                                             Icons.Filled.Close,
                                             contentDescription = "Eliminar subárea",
                                             tint = AppColors.TextFaint,
-                                            modifier = Modifier.size(14.dp).clickable { viewModel.requestDeleteSubarea(s) },
+                                            modifier = Modifier.size(14.dp).clip(CircleShape).clickable { viewModel.requestDeleteSubarea(s) },
                                         )
                                     }
                                 }
