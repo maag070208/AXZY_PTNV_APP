@@ -5,10 +5,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -40,18 +43,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.unit.dp
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.AppShape
 
 @Composable
 fun StatusChip(label: String, color: Color, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
-            .background(color.copy(alpha = 0.12f), RoundedCornerShape(20.dp))
+            .background(color.copy(alpha = 0.12f), AppShape.pill)
             .padding(horizontal = 10.dp, vertical = 5.dp),
     ) {
         Text(
@@ -138,18 +144,72 @@ fun EmptyRow(text: String) {
     }
 }
 
+/**
+ * Tarjeta estándar de la app. Usa [AppShape.card] y recorta fondo, borde y
+ * efecto de pulsado (ripple/hover) a la misma forma redondeada, de modo que
+ * al presionar no se ve un rectángulo. Pasa [onClick] para hacerla pulsable.
+ */
 @Composable
-fun AppSurfaceCard(
+fun AppCard(
     modifier: Modifier = Modifier,
-    content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit,
+    onClick: (() -> Unit)? = null,
+    shape: Shape = AppShape.card,
+    containerColor: Color = AppColors.Surface,
+    borderColor: Color? = AppColors.Outline.copy(alpha = 0.6f),
+    contentPadding: PaddingValues = PaddingValues(16.dp),
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
         modifier = modifier
-            .background(AppColors.Surface, MaterialTheme.shapes.large)
-            .border(1.dp, AppColors.Outline.copy(alpha = 0.65f), MaterialTheme.shapes.large)
-            .padding(16.dp),
+            .clip(shape)
+            .background(containerColor, shape)
+            .then(if (borderColor != null) Modifier.border(1.dp, borderColor, shape) else Modifier)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(contentPadding),
         content = content,
     )
+}
+
+@Composable
+fun AppSurfaceCard(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    AppCard(
+        modifier = modifier,
+        borderColor = AppColors.Outline.copy(alpha = 0.65f),
+        content = content,
+    )
+}
+
+/**
+ * Tile de acceso rápido: ícono en contenedor de acento + etiqueta. Es la
+ * tarjeta pulsable canónica para grids de acciones.
+ */
+@Composable
+fun AppActionCard(
+    label: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    accent: Color = AppColors.EmeraldPrimary,
+) {
+    AppCard(
+        modifier = modifier,
+        onClick = onClick,
+        contentPadding = PaddingValues(14.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .background(accent.copy(alpha = 0.12f), AppShape.icon),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(icon, contentDescription = null, tint = accent, modifier = Modifier.size(18.dp))
+        }
+        Spacer(Modifier.height(10.dp))
+        Text(label, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
+    }
 }
 
 @Composable
@@ -243,30 +303,26 @@ fun StatCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
 ) {
-    var cardModifier = modifier
-        .background(AppColors.Surface, RoundedCornerShape(20.dp))
-        .border(1.dp, AppColors.Outline.copy(alpha = 0.55f), RoundedCornerShape(20.dp))
-    if (onClick != null) {
-        cardModifier = cardModifier.clickable(onClick = onClick)
-    }
-    cardModifier = cardModifier.padding(14.dp)
-
-    Row(
-        modifier = cardModifier,
-        verticalAlignment = Alignment.CenterVertically,
+    AppCard(
+        modifier = modifier,
+        onClick = onClick,
+        borderColor = AppColors.Outline.copy(alpha = 0.55f),
+        contentPadding = PaddingValues(14.dp),
     ) {
-        Box(
-            modifier = Modifier
-                .size(38.dp)
-                .background(color.copy(alpha = 0.12f), RoundedCornerShape(14.dp)),
-            contentAlignment = Alignment.Center,
-        ) {
-            icon()
-        }
-        Spacer(Modifier.width(10.dp))
-        Column {
-            Text(value, style = MaterialTheme.typography.titleLarge, color = AppColors.TextPrimary)
-            Text(label, style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .background(color.copy(alpha = 0.12f), AppShape.icon),
+                contentAlignment = Alignment.Center,
+            ) {
+                icon()
+            }
+            Spacer(Modifier.width(10.dp))
+            Column {
+                Text(value, style = MaterialTheme.typography.titleLarge, color = AppColors.TextPrimary)
+                Text(label, style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
+            }
         }
     }
 }

@@ -37,6 +37,7 @@ import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.devicetypes.DeviceTypeDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
@@ -84,51 +85,51 @@ fun DeviceTypesListScreen(viewModel: DeviceTypesListViewModel = viewModel { Devi
 @Composable
 private fun DeviceTypeCard(type: DeviceTypeDto, clickable: Boolean, onClick: () -> Unit) {
     val nextFolio = "${type.prefix}-${(type.contador + 1).toString().padStart(4, '0')}"
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(AppColors.Surface, RoundedCornerShape(20.dp))
-            .let { if (clickable) it.clickable(onClick = onClick) else it }
-            .padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = if (clickable) onClick else null,
+        borderColor = null,
+        contentPadding = PaddingValues(14.dp),
     ) {
-        Box(
-            modifier = Modifier.size(46.dp).background(
-                if (type.active) AppColors.EmeraldPrimary else AppColors.TextFaint,
-                RoundedCornerShape(14.dp),
-            ),
-            contentAlignment = Alignment.Center,
-        ) { Text(type.prefix, style = MaterialTheme.typography.labelSmall, color = AppColors.Surface) }
-        Spacer(Modifier.size(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(type.name, style = MaterialTheme.typography.titleMedium, color = AppColors.TextPrimary)
-                if (!type.active) {
-                    Spacer(Modifier.size(6.dp))
-                    Text(
-                        "INACTIVO",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = AppColors.Danger,
-                        modifier = Modifier
-                            .background(AppColors.Danger.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
-                            .padding(horizontal = 6.dp, vertical = 2.dp),
-                    )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier.size(46.dp).background(
+                    if (type.active) AppColors.EmeraldPrimary else AppColors.TextFaint,
+                    RoundedCornerShape(14.dp),
+                ),
+                contentAlignment = Alignment.Center,
+            ) { Text(type.prefix, style = MaterialTheme.typography.labelSmall, color = AppColors.Surface) }
+            Spacer(Modifier.size(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(type.name, style = MaterialTheme.typography.titleMedium, color = AppColors.TextPrimary)
+                    if (!type.active) {
+                        Spacer(Modifier.size(6.dp))
+                        Text(
+                            "INACTIVO",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = AppColors.Danger,
+                            modifier = Modifier
+                                .background(AppColors.Danger.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                        )
+                    }
+                }
+                Text("Código ${type.code}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
+                Spacer(Modifier.size(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.Sell, contentDescription = null, tint = AppColors.TextMuted, modifier = Modifier.size(13.dp))
+                    Spacer(Modifier.size(4.dp))
+                    Text("Siguiente: $nextFolio", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
+                    Spacer(Modifier.size(10.dp))
+                    Icon(Icons.Filled.Memory, contentDescription = null, tint = AppColors.TextMuted, modifier = Modifier.size(13.dp))
+                    Spacer(Modifier.size(4.dp))
+                    Text("${type.count?.devices ?: 0}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
                 }
             }
-            Text("Código ${type.code}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
-            Spacer(Modifier.size(4.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.Sell, contentDescription = null, tint = AppColors.TextMuted, modifier = Modifier.size(13.dp))
-                Spacer(Modifier.size(4.dp))
-                Text("Siguiente: $nextFolio", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
-                Spacer(Modifier.size(10.dp))
-                Icon(Icons.Filled.Memory, contentDescription = null, tint = AppColors.TextMuted, modifier = Modifier.size(13.dp))
-                Spacer(Modifier.size(4.dp))
-                Text("${type.count?.devices ?: 0}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
+            if (clickable) {
+                Icon(Icons.Filled.ChevronRight, contentDescription = "Editar tipo", tint = AppColors.TextFaint, modifier = Modifier.size(22.dp))
             }
-        }
-        if (clickable) {
-            Icon(Icons.Filled.ChevronRight, contentDescription = "Editar tipo", tint = AppColors.TextFaint, modifier = Modifier.size(22.dp))
         }
     }
 }

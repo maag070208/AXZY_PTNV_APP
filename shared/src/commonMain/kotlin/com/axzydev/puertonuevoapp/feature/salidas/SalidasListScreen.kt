@@ -37,6 +37,7 @@ import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.salidas.SalidaDto
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.AppModal
 import com.axzydev.puertonuevoapp.core.ui.AppModalTone
 import com.axzydev.puertonuevoapp.core.ui.AppSearchField
@@ -114,15 +115,13 @@ fun SalidasListScreen(viewModel: SalidasListViewModel = viewModel { SalidasListV
 
 @Composable
 private fun SalidaCard(salida: SalidaDto, onClick: () -> Unit, onDelete: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(AppColors.Surface, RoundedCornerShape(8.dp))
-            .border(1.dp, AppColors.Outline, RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        borderColor = AppColors.Outline,
+        contentPadding = PaddingValues(16.dp),
     ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(salida.descripcion, style = MaterialTheme.typography.titleMedium, color = AppColors.TextPrimary, maxLines = 1)
@@ -143,5 +142,6 @@ private fun SalidaCard(salida: SalidaDto, onClick: () -> Unit, onDelete: () -> U
         }
         IconButton(onClick = onDelete) { Icon(Icons.Filled.DeleteOutline, contentDescription = "Eliminar", tint = AppColors.Danger, modifier = Modifier.size(18.dp)) }
         Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = AppColors.TextFaint, modifier = Modifier.size(20.dp))
+        }
     }
 }

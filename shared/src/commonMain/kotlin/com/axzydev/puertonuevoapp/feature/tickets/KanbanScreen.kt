@@ -32,11 +32,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.ui.AppModal
 import com.axzydev.puertonuevoapp.core.ui.EmptyRow
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
@@ -92,7 +94,8 @@ fun TicketsKanbanScreen(ticketId: String? = null) {
                             style = MaterialTheme.typography.bodySmall,
                             color = if (isSelected) AppColors.Surface else AppColors.TextMuted,
                             modifier = Modifier
-                                .background(if (isSelected) AppColors.EmeraldPrimary else AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                                .clip(AppShape.pill)
+                                .background(if (isSelected) AppColors.EmeraldPrimary else AppColors.SurfaceVariant, AppShape.pill)
                                 .clickable { viewModel.onDepartmentFilterChange(value) }
                                 .padding(horizontal = 12.dp, vertical = 6.dp),
                         )

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +30,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
@@ -36,6 +38,8 @@ import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.AppShape
+import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
@@ -105,7 +109,8 @@ fun TicketDetailScreen(ticketId: String) {
                                 style = MaterialTheme.typography.bodySmall,
                                 color = AppColors.EmeraldPrimary,
                                 modifier = Modifier
-                                    .background(AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                                    .clip(AppShape.pill)
+                                    .background(AppColors.SurfaceVariant, AppShape.pill)
                                     .clickable { navigator.push(Screen.EditTicket(t.id)) }
                                     .padding(horizontal = 12.dp, vertical = 6.dp),
                             )
@@ -116,7 +121,8 @@ fun TicketDetailScreen(ticketId: String) {
                                 style = MaterialTheme.typography.bodySmall,
                                 color = AppColors.EmeraldPrimary,
                                 modifier = Modifier
-                                    .background(AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                                    .clip(AppShape.pill)
+                                    .background(AppColors.SurfaceVariant, AppShape.pill)
                                     .clickable { navigator.push(Screen.TicketsKanban(t.id)) }
                                     .padding(horizontal = 12.dp, vertical = 6.dp),
                             )
@@ -212,11 +218,10 @@ fun TicketDetailScreen(ticketId: String) {
 
 @Composable
 private fun InfoCard(content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(AppColors.Surface, RoundedCornerShape(16.dp))
-            .padding(14.dp),
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        borderColor = null,
+        contentPadding = PaddingValues(14.dp),
         content = content,
     )
 }

@@ -30,6 +30,7 @@ import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.network.audit.AuditLogDto
 import com.axzydev.puertonuevoapp.core.network.audit.auditActionOptions
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
@@ -128,8 +129,10 @@ fun AuditLogsScreen(viewModel: AuditLogsViewModel = viewModel { AuditLogsViewMod
 
 @Composable
 private fun AuditLogCard(log: AuditLogDto) {
-    Column(
-        modifier = Modifier.fillMaxWidth().background(AppColors.Surface, RoundedCornerShape(12.dp)).padding(14.dp),
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        borderColor = null,
+        contentPadding = PaddingValues(14.dp),
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Row(verticalAlignment = Alignment.CenterVertically) {

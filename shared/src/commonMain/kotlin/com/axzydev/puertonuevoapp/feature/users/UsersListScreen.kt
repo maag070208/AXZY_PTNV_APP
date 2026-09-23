@@ -32,6 +32,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -41,6 +42,8 @@ import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.users.UserDto
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.AppShape
+import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.AppModal
 import com.axzydev.puertonuevoapp.core.ui.AppModalTone
 import com.axzydev.puertonuevoapp.core.ui.AppSearchField
@@ -68,7 +71,8 @@ fun UsersListScreen(viewModel: UsersListViewModel = viewModel { UsersListViewMod
                         style = MaterialTheme.typography.bodySmall,
                         color = if (state.roleFilter == role) AppColors.Surface else AppColors.TextMuted,
                         modifier = Modifier
-                            .background(if (state.roleFilter == role) AppColors.EmeraldPrimary else AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                            .clip(AppShape.pill)
+                            .background(if (state.roleFilter == role) AppColors.EmeraldPrimary else AppColors.SurfaceVariant, AppShape.pill)
                             .clickable { viewModel.onRoleFilterChange(role) }
                             .padding(horizontal = 10.dp, vertical = 6.dp),
                     )
@@ -146,13 +150,11 @@ fun UsersListScreen(viewModel: UsersListViewModel = viewModel { UsersListViewMod
 
 @Composable
 private fun UserCard(user: UserDto, onClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(AppColors.Surface, RoundedCornerShape(8.dp))
-            .border(1.dp, AppColors.Outline, RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
-            .padding(16.dp),
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        borderColor = AppColors.Outline,
+        contentPadding = PaddingValues(16.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(

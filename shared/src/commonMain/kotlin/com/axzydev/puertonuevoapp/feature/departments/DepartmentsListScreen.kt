@@ -40,6 +40,7 @@ import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.departments.DepartmentDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.AppModal
 import com.axzydev.puertonuevoapp.core.ui.AppModalTone
 import com.axzydev.puertonuevoapp.core.ui.AppSearchField
@@ -169,13 +170,11 @@ private fun DepartmentCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(AppColors.Surface, RoundedCornerShape(8.dp))
-            .border(1.dp, AppColors.Outline, RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
-            .padding(16.dp),
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        borderColor = AppColors.Outline,
+        contentPadding = PaddingValues(16.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(

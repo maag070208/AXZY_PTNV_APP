@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.axzydev.puertonuevoapp.core.network.tickets.KanbanAssignmentDto
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.assignmentStatusLabel
 import com.axzydev.puertonuevoapp.core.util.formatShortDate
@@ -40,12 +42,11 @@ fun KanbanAssignmentDto.overdue(): Boolean = isOverdue(dueDate, status == "COMPL
 
 @Composable
 fun AssignmentRow(assignment: KanbanAssignmentDto, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(AppColors.Surface, RoundedCornerShape(18.dp))
-            .clickable(onClick = onClick)
-            .padding(14.dp),
+    AppCard(
+        modifier = modifier.fillMaxWidth(),
+        onClick = onClick,
+        borderColor = null,
+        contentPadding = PaddingValues(14.dp),
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
             Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {

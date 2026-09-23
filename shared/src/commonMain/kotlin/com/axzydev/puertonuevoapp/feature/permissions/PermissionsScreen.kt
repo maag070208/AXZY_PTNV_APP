@@ -24,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +56,15 @@ fun PermissionsScreen(onContinue: () -> Unit) {
     val camera = rememberPermissionController(AppPermission.CAMERA)
     val location = rememberPermissionController(AppPermission.LOCATION)
     val notifications = rememberPermissionController(AppPermission.NOTIFICATIONS)
+
+    // Si todos los permisos ya están concedidos (o la plataforma no los
+    // requiere), no mostramos la pantalla: se continúa de inmediato.
+    val allGranted = listOf(camera, location, notifications).all { it.granted || !it.isSupported }
+    if (allGranted) {
+        LaunchedEffect(Unit) { onContinue() }
+        return
+    }
+
     var showSkipConfirm by remember { mutableStateOf(false) }
 
     // Cámara y ubicación son las necesarias para el flujo operativo; las

@@ -33,6 +33,7 @@ import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.network.reports.AsignadoRowDto
 import com.axzydev.puertonuevoapp.core.network.reports.DeviceReportRowDto
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.EmptyRow
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
@@ -83,7 +84,11 @@ private fun AsignadosTab(state: ReportsUiState, onRetry: () -> Unit) {
 
 @Composable
 private fun AsignadoCard(r: AsignadoRowDto) {
-    Column(modifier = Modifier.fillMaxWidth().background(AppColors.Surface, RoundedCornerShape(12.dp)).padding(14.dp)) {
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        borderColor = null,
+        contentPadding = PaddingValues(14.dp),
+    ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(r.controlActivos, style = MaterialTheme.typography.titleMedium, color = AppColors.TextPrimary)
             Text(formatShortDate(r.fecha), style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
@@ -146,7 +151,11 @@ private fun DeviceReportCard(r: DeviceReportRowDto) {
         "ASIGNADO" -> AppColors.Warning
         else -> AppColors.TextFaint
     }
-    Column(modifier = Modifier.fillMaxWidth().background(AppColors.Surface, RoundedCornerShape(12.dp)).padding(14.dp)) {
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        borderColor = null,
+        contentPadding = PaddingValues(14.dp),
+    ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Column {
                 Text(r.controlActivos, style = MaterialTheme.typography.titleMedium, color = AppColors.TextPrimary)

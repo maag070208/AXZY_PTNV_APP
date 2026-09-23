@@ -29,6 +29,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
@@ -37,6 +38,8 @@ import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.inventory.InventoryMovementDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.AppShape
+import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
@@ -97,7 +100,8 @@ fun InventoryMovementsScreen(
                 style = MaterialTheme.typography.labelSmall,
                 color = AppColors.EmeraldPrimary,
                 modifier = Modifier
-                    .background(AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                    .clip(AppShape.pill)
+                    .background(AppColors.SurfaceVariant, AppShape.pill)
                     .clickable { viewModel.load() }
                     .padding(horizontal = 12.dp, vertical = 6.dp),
             )
@@ -120,42 +124,46 @@ fun InventoryMovementsScreen(
 
 @Composable
 private fun MovementCard(movement: InventoryMovementDto) {
-    Row(
-        modifier = Modifier.fillMaxWidth().background(AppColors.Surface, RoundedCornerShape(16.dp)).padding(14.dp),
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        borderColor = null,
+        contentPadding = PaddingValues(14.dp),
     ) {
-        Box(
-            modifier = Modifier.size(34.dp).background(AppColors.movementTypeColor(movement.tipo), CircleShape),
-            contentAlignment = Alignment.Center,
-        ) { Icon(Icons.Filled.SwapHoriz, contentDescription = null, tint = AppColors.Surface, modifier = Modifier.size(16.dp)) }
-        Spacer(Modifier.size(10.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Row {
-                    StatusChip(movementTypeLabel(movement.tipo), AppColors.movementTypeColor(movement.tipo))
-                    movement.condicion?.let {
-                        Spacer(Modifier.size(6.dp))
-                        StatusChip(condicionLabel(it), AppColors.condicionColor(it))
+        Row {
+            Box(
+                modifier = Modifier.size(34.dp).background(AppColors.movementTypeColor(movement.tipo), CircleShape),
+                contentAlignment = Alignment.Center,
+            ) { Icon(Icons.Filled.SwapHoriz, contentDescription = null, tint = AppColors.Surface, modifier = Modifier.size(16.dp)) }
+            Spacer(Modifier.size(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Row {
+                        StatusChip(movementTypeLabel(movement.tipo), AppColors.movementTypeColor(movement.tipo))
+                        movement.condicion?.let {
+                            Spacer(Modifier.size(6.dp))
+                            StatusChip(condicionLabel(it), AppColors.condicionColor(it))
+                        }
                     }
+                    Text(formatShortDate(movement.createdAt), style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
                 }
-                Text(formatShortDate(movement.createdAt), style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
-            }
-            Spacer(Modifier.height(6.dp))
-            Text(
-                "${movement.device?.controlActivos ?: "—"} · ${movement.device?.descripcion ?: ""}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = AppColors.TextPrimary,
-                maxLines = 1,
-            )
-            movement.motivoBaja?.let {
-                Text(it, style = MaterialTheme.typography.bodySmall, color = AppColors.Danger, maxLines = 1)
-            }
-            Spacer(Modifier.height(4.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(movement.location?.lugar ?: "—", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
-                Text("Por: ${movement.user?.name ?: "—"}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
-            }
-            movement.notas?.takeIf { it.isNotBlank() }?.let {
-                Text("\"$it\"", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint, modifier = Modifier.padding(top = 4.dp))
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "${movement.device?.controlActivos ?: "—"} · ${movement.device?.descripcion ?: ""}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = AppColors.TextPrimary,
+                    maxLines = 1,
+                )
+                movement.motivoBaja?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall, color = AppColors.Danger, maxLines = 1)
+                }
+                Spacer(Modifier.height(4.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(movement.location?.lugar ?: "—", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
+                    Text("Por: ${movement.user?.name ?: "—"}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
+                }
+                movement.notas?.takeIf { it.isNotBlank() }?.let {
+                    Text("\"$it\"", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint, modifier = Modifier.padding(top = 4.dp))
+                }
             }
         }
     }

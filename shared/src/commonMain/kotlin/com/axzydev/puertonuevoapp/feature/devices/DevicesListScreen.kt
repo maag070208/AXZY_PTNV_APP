@@ -24,6 +24,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
@@ -32,6 +33,8 @@ import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.devices.DeviceDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.AppShape
+import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.AppSearchField
 import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
@@ -69,7 +72,8 @@ fun DevicesListScreen(viewModel: DevicesListViewModel = viewModel { DevicesListV
                         style = MaterialTheme.typography.bodySmall,
                         color = if (selected) AppColors.Surface else AppColors.TextMuted,
                         modifier = Modifier
-                            .background(if (selected) AppColors.EmeraldPrimary else AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                            .clip(AppShape.pill)
+                            .background(if (selected) AppColors.EmeraldPrimary else AppColors.SurfaceVariant, AppShape.pill)
                             .clickable { viewModel.onEstadoFilterChange(value) }
                             .padding(horizontal = 12.dp, vertical = 6.dp),
                     )
@@ -80,7 +84,8 @@ fun DevicesListScreen(viewModel: DevicesListViewModel = viewModel { DevicesListV
                         style = MaterialTheme.typography.bodySmall,
                         color = AppColors.EmeraldPrimary,
                         modifier = Modifier
-                            .background(AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                            .clip(AppShape.pill)
+                            .background(AppColors.SurfaceVariant, AppShape.pill)
                             .clickable { navigator.push(Screen.DeviceTypesList) }
                             .padding(horizontal = 12.dp, vertical = 6.dp),
                     )
@@ -107,12 +112,11 @@ fun DevicesListScreen(viewModel: DevicesListViewModel = viewModel { DevicesListV
 
 @Composable
 private fun DeviceRow(device: DeviceDto, onClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(AppColors.Surface, RoundedCornerShape(20.dp))
-            .clickable(onClick = onClick)
-            .padding(14.dp),
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        borderColor = null,
+        contentPadding = PaddingValues(14.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

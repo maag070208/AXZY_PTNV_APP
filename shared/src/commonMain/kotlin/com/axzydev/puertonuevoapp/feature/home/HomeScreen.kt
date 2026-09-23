@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
@@ -58,6 +57,7 @@ import com.axzydev.puertonuevoapp.core.network.dashboard.DashboardSummaryDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.session.SessionUser
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.ui.AppActionCard
 import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
@@ -111,7 +111,7 @@ private fun HomeContent(
                 modifier = Modifier.fillMaxWidth().height(200.dp),
                 onRetry = onRetry,
             )
-            state.dashboard != null -> DashboardSection(state.dashboard, onNavigate)
+            state.dashboard != null -> DashboardSection(state.dashboard, onNavigate, canSeeAudit = user?.canSeeAudit == true)
             state.summary != null -> DeviceSummarySection(state.summary, onNavigate)
         }
 
@@ -148,7 +148,14 @@ private fun HomeContent(
 
         actions.chunked(2).forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                row.forEach { action -> QuickAction(action, modifier = Modifier.weight(1f)) }
+                row.forEach { action ->
+                    AppActionCard(
+                        label = action.label,
+                        icon = action.icon,
+                        onClick = action.onClick,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
                 if (row.size == 1) Spacer(Modifier.weight(1f))
             }
             Spacer(Modifier.height(12.dp))
@@ -157,7 +164,7 @@ private fun HomeContent(
 }
 
 @Composable
-private fun DashboardSection(summary: DashboardSummaryDto, onNavigate: (Screen) -> Unit) {
+private fun DashboardSection(summary: DashboardSummaryDto, onNavigate: (Screen) -> Unit, canSeeAudit: Boolean) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         Text(
             "PANEL EN TIEMPO REAL",
@@ -240,7 +247,7 @@ private fun DashboardSection(summary: DashboardSummaryDto, onNavigate: (Screen) 
         if (summary.ticketsUrgentes.isEmpty()) {
             Text("Sin tickets antiguos. ¡Todo al día!", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
         } else {
-            summary.ticketsUrgentes.forEach { t ->
+            summary.ticketsUrgentes.take(10).forEach { t ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -264,6 +271,9 @@ private fun DashboardSection(summary: DashboardSummaryDto, onNavigate: (Screen) 
                     )
                 }
             }
+            if (summary.ticketsUrgentes.size > 10) {
+                SeeMoreButton("Ver más tickets") { onNavigate(Screen.TicketsList) }
+            }
         }
     }
 
@@ -273,8 +283,18 @@ private fun DashboardSection(summary: DashboardSummaryDto, onNavigate: (Screen) 
         if (summary.recentActivity.isEmpty()) {
             Text("Aún no hay actividad registrada.", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
         } else {
-            summary.recentActivity.forEach { a -> ActivityRow(a, onNavigate) }
+            summary.recentActivity.take(10).forEach { a -> ActivityRow(a, onNavigate) }
+            if (summary.recentActivity.size > 10 && canSeeAudit) {
+                SeeMoreButton("Ver más actividad") { onNavigate(Screen.AuditLogs) }
+            }
         }
+    }
+}
+
+@Composable
+private fun SeeMoreButton(label: String, onClick: () -> Unit) {
+    androidx.compose.material3.TextButton(onClick = onClick) {
+        Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
     }
 }
 
@@ -359,25 +379,3 @@ private data class QuickActionSpec(
     val icon: ImageVector,
     val onClick: () -> Unit,
 )
-
-@Composable
-private fun QuickAction(spec: QuickActionSpec, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .background(AppColors.Surface, RoundedCornerShape(16.dp))
-            .clickable(onClick = spec.onClick)
-            .padding(14.dp),
-        horizontalAlignment = Alignment.Start,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .background(AppColors.EmeraldPrimary.copy(alpha = 0.12f), RoundedCornerShape(12.dp)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(spec.icon, contentDescription = null, tint = AppColors.EmeraldPrimary, modifier = Modifier.size(18.dp))
-        }
-        Spacer(Modifier.height(10.dp))
-        Text(spec.label, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
-    }
-}

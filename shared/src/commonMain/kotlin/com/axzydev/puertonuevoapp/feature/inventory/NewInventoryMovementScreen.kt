@@ -26,11 +26,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
@@ -140,7 +142,8 @@ fun NewInventoryMovementScreen(deviceId: String? = null) {
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (selected) AppColors.Surface else AppColors.TextMuted,
                                 modifier = Modifier
-                                    .background(if (selected) AppColors.condicionColor(c) else AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                                    .clip(AppShape.pill)
+                                    .background(if (selected) AppColors.condicionColor(c) else AppColors.SurfaceVariant, AppShape.pill)
                                     .clickable { viewModel.onCondicionChange(c) }
                                     .padding(horizontal = 12.dp, vertical = 6.dp),
                             )

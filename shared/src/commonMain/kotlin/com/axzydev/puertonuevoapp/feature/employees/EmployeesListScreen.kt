@@ -28,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
@@ -36,6 +37,8 @@ import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.users.UserDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.AppShape
+import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.AppSearchField
 import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
@@ -69,7 +72,8 @@ fun EmployeesListScreen(viewModel: EmployeesListViewModel = viewModel { Employee
                             style = MaterialTheme.typography.bodySmall,
                             color = if (selected) AppColors.Surface else AppColors.TextMuted,
                             modifier = Modifier
-                                .background(if (selected) AppColors.EmeraldPrimary else AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                                .clip(AppShape.pill)
+                                .background(if (selected) AppColors.EmeraldPrimary else AppColors.SurfaceVariant, AppShape.pill)
                                 .clickable { viewModel.onDepartmentFilterChange(value) }
                                 .padding(horizontal = 12.dp, vertical = 6.dp),
                         )
@@ -101,30 +105,29 @@ fun EmployeesListScreen(viewModel: EmployeesListViewModel = viewModel { Employee
 
 @Composable
 private fun EmployeeCard(employee: UserDto, editable: Boolean, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(AppColors.Surface, RoundedCornerShape(8.dp))
-            .border(1.dp, AppColors.Outline, RoundedCornerShape(8.dp))
-            .let { if (editable) it.clickable(onClick = onClick) else it }
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = if (editable) onClick else null,
+        borderColor = AppColors.Outline,
+        contentPadding = PaddingValues(16.dp),
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(employee.name, style = MaterialTheme.typography.titleMedium, color = AppColors.TextPrimary)
-            Text(
-                listOfNotNull(employee.puesto, employee.numeroEmpleado?.let { "No. $it" }).joinToString(" · ").ifBlank { "Sin puesto registrado" },
-                style = MaterialTheme.typography.bodySmall,
-                color = AppColors.TextMuted,
-                maxLines = 1,
-            )
-            val deptLine = listOfNotNull(employee.department?.name, employee.subarea?.name).joinToString(" · ")
-            if (deptLine.isNotBlank()) {
-                Text(deptLine, style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint, maxLines = 1, modifier = Modifier.padding(top = 2.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(employee.name, style = MaterialTheme.typography.titleMedium, color = AppColors.TextPrimary)
+                Text(
+                    listOfNotNull(employee.puesto, employee.numeroEmpleado?.let { "No. $it" }).joinToString(" · ").ifBlank { "Sin puesto registrado" },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AppColors.TextMuted,
+                    maxLines = 1,
+                )
+                val deptLine = listOfNotNull(employee.department?.name, employee.subarea?.name).joinToString(" · ")
+                if (deptLine.isNotBlank()) {
+                    Text(deptLine, style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint, maxLines = 1, modifier = Modifier.padding(top = 2.dp))
+                }
             }
-        }
-        if (editable) {
-            Icon(Icons.Filled.ChevronRight, contentDescription = "Editar empleado", tint = AppColors.TextFaint, modifier = Modifier.size(22.dp))
+            if (editable) {
+                Icon(Icons.Filled.ChevronRight, contentDescription = "Editar empleado", tint = AppColors.TextFaint, modifier = Modifier.size(22.dp))
+            }
         }
     }
 }

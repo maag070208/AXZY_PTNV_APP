@@ -36,6 +36,7 @@ import com.axzydev.puertonuevoapp.core.network.access.AccessEventDto
 import com.axzydev.puertonuevoapp.core.network.access.AccessEventType
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
@@ -94,14 +95,13 @@ private fun AccessEventCard(event: AccessEventDto) {
     val isEntry = event.type == AccessEventType.ENTRY
     val accent = if (isEntry) AppColors.Success else AppColors.Warning
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(AppColors.Surface, RoundedCornerShape(8.dp))
-            .border(1.dp, AppColors.Outline, RoundedCornerShape(8.dp))
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = null,
+        borderColor = AppColors.Outline,
+        contentPadding = PaddingValues(16.dp),
     ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier.size(38.dp).background(accent.copy(alpha = 0.12f), CircleShape),
             contentAlignment = Alignment.Center,
@@ -137,6 +137,7 @@ private fun AccessEventCard(event: AccessEventDto) {
         }
         if (event.voidedAt != null) {
             StatusChip("Anulado", AppColors.Danger)
+        }
         }
     }
 }

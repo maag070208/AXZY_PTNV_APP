@@ -29,6 +29,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
@@ -37,6 +38,8 @@ import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.tickets.TicketDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.AppShape
+import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.AppSearchField
 import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
@@ -85,7 +88,8 @@ fun TicketsListScreen(viewModel: TicketsListViewModel = viewModel { TicketsListV
                             style = MaterialTheme.typography.bodySmall,
                             color = if (selected) AppColors.Surface else AppColors.TextMuted,
                             modifier = Modifier
-                                .background(if (selected) AppColors.EmeraldPrimary else AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
+                                .clip(AppShape.pill)
+                                .background(if (selected) AppColors.EmeraldPrimary else AppColors.SurfaceVariant, AppShape.pill)
                                 .clickable { viewModel.onStatusFilterChange(value) }
                                 .padding(horizontal = 12.dp, vertical = 6.dp),
                         )
@@ -113,12 +117,11 @@ fun TicketsListScreen(viewModel: TicketsListViewModel = viewModel { TicketsListV
 
 @Composable
 private fun TicketRow(ticket: TicketDto, onClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(AppColors.Surface, RoundedCornerShape(18.dp))
-            .clickable(onClick = onClick)
-            .padding(14.dp),
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        borderColor = null,
+        contentPadding = PaddingValues(14.dp),
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
             Text(

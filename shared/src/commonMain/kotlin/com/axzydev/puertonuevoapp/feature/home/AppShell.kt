@@ -6,10 +6,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -18,7 +21,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ConfirmationNumber
-import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Groups
@@ -36,14 +38,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -58,6 +58,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -69,6 +70,7 @@ import com.axzydev.puertonuevoapp.core.nav.chrome
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.session.SessionUser
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.ui.AppSnackbarHost
 import com.axzydev.puertonuevoapp.core.ui.BrandLogoBadge
 import com.axzydev.puertonuevoapp.feature.access.AccessLogScreen
@@ -109,9 +111,9 @@ import com.axzydev.puertonuevoapp.feature.users.UsersListScreen
 import kotlinx.coroutines.launch
 
 /**
- * Shell de la app: drawer lateral (sidebar con subitems, como la web), top bar
- * de marca (hamburguesa para abrir el drawer; el logout vive en el drawer) y
- * bottom nav de 2 secciones: Inicio y Portería.
+ * Shell de la app: drawer lateral estilo iOS (filas compactas, logout al
+ * fondo), top bar de marca (hamburguesa para abrir el drawer) y bottom nav
+ * compacto de 2 secciones: Inicio y Portería.
  */
 @Composable
 fun AppShell() {
@@ -167,6 +169,7 @@ fun AppShell() {
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
                 TopAppBar(
+                    modifier = Modifier.padding(top = 20.dp),
                     navigationIcon = {
                         if (chrome.showBack) {
                             IconButton(onClick = { navigator.pop() }) {
@@ -195,7 +198,7 @@ fun AppShell() {
                             )
                         } else {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                BrandLogoBadge(size = 34.dp, cornerRadius = 10.dp, innerPadding = 4.dp)
+                                BrandLogoBadge(size = 32.dp, cornerRadius = 10.dp, innerPadding = 4.dp)
                                 Spacer(Modifier.width(10.dp))
                                 Text(
                                     chrome.title,
@@ -223,20 +226,22 @@ fun AppShell() {
             },
             bottomBar = {
                 if (chrome.showBottomNavigation) {
-                    NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+                    NavigationBar(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                    ) {
                         NavigationBarItem(
                             selected = current is Screen.Home,
                             onClick = { navigator.switchTab(Screen.Home) },
-                            icon = { Icon(Icons.Filled.Home, contentDescription = null) },
-                            label = { Text("Inicio") },
+                            icon = { Icon(Icons.Filled.Home, contentDescription = null, modifier = Modifier.size(20.dp)) },
+                            label = { Text("Inicio", style = MaterialTheme.typography.labelSmall) },
                             colors = navItemColors,
                         )
                         if (user?.canScanCredential == true) {
                             NavigationBarItem(
                                 selected = current is Screen.AccessScan || current is Screen.AccessLog,
                                 onClick = { navigator.switchTab(Screen.AccessScan) },
-                                icon = { Icon(Icons.Filled.QrCodeScanner, contentDescription = null) },
-                                label = { Text("Portería") },
+                                icon = { Icon(Icons.Filled.QrCodeScanner, contentDescription = null, modifier = Modifier.size(20.dp)) },
+                                label = { Text("Portería", style = MaterialTheme.typography.labelSmall) },
                                 colors = navItemColors,
                             )
                         }
@@ -347,25 +352,28 @@ private fun AppDrawer(
 ) {
     val nodes = drawerNodes(user)
     var expanded by remember { mutableStateOf<Set<String>>(emptySet()) }
+    val divider = AppColors.Outline.copy(alpha = 0.4f)
 
-    ModalDrawerSheet(
-        drawerContainerColor = MaterialTheme.colorScheme.surface,
+    Surface(
+        modifier = Modifier
+            .fillMaxHeight()
+            .width(300.dp),
+        color = MaterialTheme.colorScheme.surface,
     ) {
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding(),
+        ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(20.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 20.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                BrandLogoBadge(size = 44.dp, cornerRadius = 12.dp, innerPadding = 5.dp)
+                BrandLogoBadge(size = 40.dp, cornerRadius = 12.dp, innerPadding = 5.dp)
                 Spacer(Modifier.width(12.dp))
                 Column {
-                    Text("Puerto Nuevo", style = MaterialTheme.typography.titleMedium, color = AppColors.TextPrimary)
-                    Text(
-                        user?.name ?: "",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = AppColors.TextMuted,
-                        maxLines = 1,
-                    )
+                    Text(user?.name ?: "Puerto Nuevo", style = MaterialTheme.typography.titleSmall, color = AppColors.TextPrimary, maxLines = 1)
                     Text(
                         user?.role ?: "",
                         style = MaterialTheme.typography.labelSmall,
@@ -373,78 +381,118 @@ private fun AppDrawer(
                     )
                 }
             }
-            HorizontalDivider(color = AppColors.Outline.copy(alpha = 0.5f))
+            HorizontalDivider(color = divider)
 
-            nodes.forEach { node ->
-                val hasChildren = node.children.isNotEmpty()
-                val isOpen = node.label in expanded
-                val selected = node.screen?.let { isRoute(current, it) } == true ||
-                    node.children.any { isRoute(current, it.screen) }
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                nodes.forEach { node ->
+                    val hasChildren = node.children.isNotEmpty()
+                    val isOpen = node.label in expanded
+                    val selected = node.screen?.let { isRoute(current, it) } == true ||
+                        node.children.any { isRoute(current, it.screen) }
 
-                NavigationDrawerItem(
-                    label = { Text(node.label) },
-                    icon = { Icon(node.icon, contentDescription = null) },
-                    selected = selected && !hasChildren,
-                    colors = NavigationDrawerItemDefaults.colors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        unselectedTextColor = AppColors.TextPrimary,
-                        unselectedIconColor = AppColors.TextMuted,
-                    ),
-                    onClick = {
-                        when {
-                            hasChildren -> expanded = if (isOpen) expanded - node.label else expanded + node.label
-                            node.screen != null -> onNavigate(node.screen)
-                        }
-                    },
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
-                )
+                    DrawerRow(
+                        label = node.label,
+                        icon = node.icon,
+                        selected = selected && !hasChildren,
+                        badge = if (node.screen == Screen.Notifications) unreadCount else 0,
+                        trailing = if (hasChildren) {
+                            { Icon(if (isOpen) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore, null, tint = AppColors.TextFaint, modifier = Modifier.size(18.dp)) }
+                        } else {
+                            null
+                        },
+                        onClick = {
+                            when {
+                                hasChildren -> expanded = if (isOpen) expanded - node.label else expanded + node.label
+                                node.screen != null -> onNavigate(node.screen)
+                            }
+                        },
+                    )
 
-                if (hasChildren && isOpen) {
-                    node.children.forEach { child ->
-                        val childSelected = isRoute(current, child.screen)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 44.dp, end = 12.dp)
-                                .background(
-                                    if (childSelected) MaterialTheme.colorScheme.primaryContainer else androidx.compose.ui.graphics.Color.Transparent,
-                                    MaterialTheme.shapes.medium,
-                                )
-                                .clickable { onNavigate(child.screen) }
-                                .padding(vertical = 10.dp, horizontal = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                child.label,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = if (childSelected) MaterialTheme.colorScheme.primary else AppColors.TextMuted,
-                                modifier = Modifier.weight(1f),
-                            )
-                            Icon(
-                                Icons.Filled.ChevronRight,
-                                contentDescription = null,
-                                tint = AppColors.TextFaint,
+                    if (hasChildren && isOpen) {
+                        node.children.forEach { child ->
+                            DrawerSubRow(
+                                label = child.label,
+                                selected = isRoute(current, child.screen),
+                                onClick = { onNavigate(child.screen) },
                             )
                         }
                     }
                 }
             }
 
-            Spacer(Modifier.height(12.dp))
-            HorizontalDivider(color = AppColors.Outline.copy(alpha = 0.5f))
-            NavigationDrawerItem(
-                label = { Text("Cerrar sesión") },
-                icon = { Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null) },
+            HorizontalDivider(color = divider)
+            DrawerRow(
+                label = "Cerrar sesión",
+                icon = Icons.AutoMirrored.Filled.Logout,
                 selected = false,
-                colors = NavigationDrawerItemDefaults.colors(
-                    unselectedTextColor = AppColors.Danger,
-                    unselectedIconColor = AppColors.Danger,
-                ),
+                tint = AppColors.Danger,
                 onClick = onLogout,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
             )
+        }
+    }
+}
+
+@Composable
+private fun DrawerRow(
+    label: String,
+    icon: ImageVector,
+    selected: Boolean,
+    badge: Int = 0,
+    trailing: (@Composable () -> Unit)? = null,
+    tint: androidx.compose.ui.graphics.Color? = null,
+    onClick: () -> Unit,
+) {
+    val contentColor = tint ?: if (selected) MaterialTheme.colorScheme.primary else AppColors.TextPrimary
+    val iconColor = tint ?: if (selected) MaterialTheme.colorScheme.primary else AppColors.TextMuted
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 2.dp)
+            .clip(AppShape.row)
+            .background(
+                if (selected) MaterialTheme.colorScheme.primaryContainer else androidx.compose.ui.graphics.Color.Transparent,
+                AppShape.row,
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.width(12.dp))
+        Text(label, style = MaterialTheme.typography.bodyMedium, color = contentColor, modifier = Modifier.weight(1f))
+        if (badge > 0) {
+            Text(badge.toString(), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.width(6.dp))
+        }
+        trailing?.invoke()
+    }
+}
+
+@Composable
+private fun DrawerSubRow(label: String, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 44.dp, end = 8.dp, top = 1.dp, bottom = 1.dp)
+            .clip(AppShape.row)
+            .background(androidx.compose.ui.graphics.Color.Transparent, AppShape.row)
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            label,
+            style = MaterialTheme.typography.bodySmall,
+            color = if (selected) MaterialTheme.colorScheme.primary else AppColors.TextMuted,
+            modifier = Modifier.weight(1f),
+        )
+        if (selected) {
+            Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
         }
     }
 }
