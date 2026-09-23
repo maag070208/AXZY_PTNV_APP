@@ -125,7 +125,7 @@ private fun LocationCard(
 ) {
     AppCard(
         modifier = Modifier.fillMaxWidth(),
-        onClick = null,
+        onClick = onClick,
         borderColor = AppColors.Outline,
         contentPadding = PaddingValues(16.dp),
     ) {
@@ -135,7 +135,7 @@ private fun LocationCard(
             contentAlignment = Alignment.Center,
         ) { Icon(Icons.Filled.LocationOn, contentDescription = null, tint = AppColors.Info, modifier = Modifier.size(18.dp)) }
         Spacer(Modifier.size(12.dp))
-        Column(modifier = Modifier.weight(1f).clickable(onClick = onClick)) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(location.lugar, style = MaterialTheme.typography.titleMedium, color = AppColors.TextPrimary)
             Text(
                 location.descripcion?.ifBlank { null } ?: "${location.count?.devices ?: 0} dispositivo(s)",

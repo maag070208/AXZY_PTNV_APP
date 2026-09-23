@@ -31,6 +31,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
@@ -38,6 +39,7 @@ import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
@@ -96,7 +98,7 @@ fun InventoryIndexScreen(viewModel: InventoryIndexViewModel = viewModel { Invent
                 AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         SectionLabel("Ubicaciones (${s.locations.size})")
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { navigator.push(Screen.LocationsList) }) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clip(AppShape.row).clickable { navigator.push(Screen.LocationsList) }.padding(horizontal = 8.dp, vertical = 4.dp)) {
                             Text("Ver todas", style = MaterialTheme.typography.labelSmall, color = AppColors.EmeraldPrimary)
                             Icon(Icons.Filled.ArrowForward, contentDescription = null, tint = AppColors.EmeraldPrimary, modifier = Modifier.size(14.dp))
                         }
@@ -134,7 +136,7 @@ fun InventoryIndexScreen(viewModel: InventoryIndexViewModel = viewModel { Invent
                             Spacer(Modifier.size(8.dp))
                             SectionLabel("Movimientos")
                         }
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { navigator.push(Screen.InventoryMovements) }) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clip(AppShape.row).clickable { navigator.push(Screen.InventoryMovements) }.padding(horizontal = 8.dp, vertical = 4.dp)) {
                             Text("Ver kardex", style = MaterialTheme.typography.labelSmall, color = AppColors.EmeraldPrimary)
                             Icon(Icons.Filled.ArrowForward, contentDescription = null, tint = AppColors.EmeraldPrimary, modifier = Modifier.size(14.dp))
                         }

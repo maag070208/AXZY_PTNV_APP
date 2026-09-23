@@ -99,7 +99,7 @@ fun LocationDetailScreen(locationId: String) {
                                             Icons.Filled.Close,
                                             contentDescription = "Eliminar sublugar",
                                             tint = AppColors.TextFaint,
-                                            modifier = Modifier.size(14.dp).clickable { viewModel.requestDeleteSublugar(s) },
+                                            modifier = Modifier.size(14.dp).clip(CircleShape).clickable { viewModel.requestDeleteSublugar(s) },
                                         )
                                     }
                                 }

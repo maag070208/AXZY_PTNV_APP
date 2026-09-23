@@ -44,6 +44,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -57,6 +58,7 @@ import com.axzydev.puertonuevoapp.core.network.dashboard.DashboardSummaryDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.session.SessionUser
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.ui.AppActionCard
 import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
@@ -251,8 +253,10 @@ private fun DashboardSection(summary: DashboardSummaryDto, onNavigate: (Screen) 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clip(AppShape.row)
+                        .background(Color.Transparent, AppShape.row)
                         .clickable { onNavigate(Screen.TicketDetail(t.id)) }
-                        .padding(vertical = 8.dp),
+                        .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
@@ -311,8 +315,10 @@ private fun ActivityRow(a: DashboardActivityDto, onNavigate: (Screen) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(AppShape.row)
+            .background(Color.Transparent, AppShape.row)
             .then(if (screen != null) Modifier.clickable { onNavigate(screen) } else Modifier)
-            .padding(vertical = 6.dp),
+            .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.size(24.dp).background(color.copy(alpha = 0.15f), CircleShape), contentAlignment = Alignment.Center) {

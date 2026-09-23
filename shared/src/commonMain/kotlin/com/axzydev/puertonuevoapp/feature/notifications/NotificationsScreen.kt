@@ -40,6 +40,7 @@ import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.notifications.NotificationDto
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
@@ -103,14 +104,14 @@ fun NotificationsScreen(viewModel: NotificationsViewModel = viewModel { Notifica
 
 @Composable
 private fun NotificationCard(n: NotificationDto, onClick: () -> Unit, onDelete: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(if (n.read) AppColors.Surface else AppColors.EmeraldContainer.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick)
-            .padding(12.dp),
-        verticalAlignment = Alignment.Top,
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        containerColor = if (n.read) AppColors.Surface else AppColors.EmeraldContainer.copy(alpha = 0.35f),
+        borderColor = null,
+        contentPadding = PaddingValues(12.dp),
     ) {
+        Row(verticalAlignment = Alignment.Top) {
         Box(
             modifier = Modifier.size(34.dp).background(typeColor(n.type), CircleShape),
             contentAlignment = Alignment.Center,
@@ -132,6 +133,7 @@ private fun NotificationCard(n: NotificationDto, onClick: () -> Unit, onDelete: 
         }
         IconButton(onClick = onDelete) {
             Icon(Icons.Filled.DeleteOutline, contentDescription = "Eliminar", tint = AppColors.TextFaint, modifier = Modifier.size(16.dp))
+        }
         }
     }
 }
