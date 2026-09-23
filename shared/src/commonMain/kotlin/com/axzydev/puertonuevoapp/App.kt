@@ -7,7 +7,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.axzydev.puertonuevoapp.core.di.AppContainer
@@ -20,6 +22,7 @@ import com.axzydev.puertonuevoapp.core.theme.PuertoNuevoTheme
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.feature.auth.LoginScreen
 import com.axzydev.puertonuevoapp.feature.home.AppShell
+import com.axzydev.puertonuevoapp.feature.permissions.PermissionsScreen
 
 @Composable
 @Preview
@@ -37,11 +40,17 @@ fun App() {
                 AuthState.Loading -> LoadingState(modifier = Modifier.fillMaxSize())
                 AuthState.LoggedOut -> LoginScreen()
                 is AuthState.LoggedIn -> {
-                    // El guardia aterriza directo en la pantalla de escaneo.
-                    val start = if (state.user.role == "GUARD") Screen.AccessScan else Screen.Home
-                    val navigator = remember(state.user.id) { Navigator(start) }
-                    CompositionLocalProvider(LocalNavigator provides navigator) {
-                        AppShell()
+                    // Tras iniciar sesión se muestran los permisos una vez por sesión.
+                    var permissionsAcknowledged by remember(state.user.id) { mutableStateOf(false) }
+                    if (!permissionsAcknowledged) {
+                        PermissionsScreen(onContinue = { permissionsAcknowledged = true })
+                    } else {
+                        // El guardia aterriza directo en la pantalla de escaneo.
+                        val start = if (state.user.role == "GUARD") Screen.AccessScan else Screen.Home
+                        val navigator = remember(state.user.id) { Navigator(start) }
+                        CompositionLocalProvider(LocalNavigator provides navigator) {
+                            AppShell()
+                        }
                     }
                 }
             }

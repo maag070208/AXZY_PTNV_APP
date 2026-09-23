@@ -19,6 +19,12 @@ data class SessionUser(
     val canSeeAdminTasks: Boolean get() = role == "ADMIN" || role == "GERENTE"
     val canSeeAudit: Boolean get() = role == "ADMIN"
 
+    /** Panel administrativo en el home (paridad con la web). */
+    val canSeeDashboard: Boolean get() = role == "ADMIN" || role == "GERENTE"
+
+    /** Expediente completo de personal (médico/oficial/documentos). */
+    val canManageHR: Boolean get() = role == "ADMIN" || role == "RECURSOS_HUMANOS"
+
     /** Control de acceso — escanear credenciales y registrar entradas/salidas. */
     val canScanCredential: Boolean get() = role in setOf("GUARD", "ADMIN")
 

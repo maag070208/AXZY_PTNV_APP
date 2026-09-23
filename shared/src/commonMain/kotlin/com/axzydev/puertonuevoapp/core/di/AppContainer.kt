@@ -6,6 +6,7 @@ import com.axzydev.puertonuevoapp.core.network.devices.DevicesApi
 import com.axzydev.puertonuevoapp.core.network.departments.DepartmentsApi
 import com.axzydev.puertonuevoapp.core.network.audit.AuditApi
 import com.axzydev.puertonuevoapp.core.network.cartas.CartasApi
+import com.axzydev.puertonuevoapp.core.network.dashboard.DashboardApi
 import com.axzydev.puertonuevoapp.core.network.devicetypes.DeviceTypesApi
 import com.axzydev.puertonuevoapp.core.network.http.ApiClient
 import com.axzydev.puertonuevoapp.core.network.inventory.InventoryApi
@@ -43,6 +44,7 @@ object AppContainer {
         }
     }
     val devicesApi: DevicesApi by lazy { DevicesApi(apiClient) }
+    val dashboardApi: DashboardApi by lazy { DashboardApi(apiClient) }
     val deviceTypesApi: DeviceTypesApi by lazy { DeviceTypesApi(apiClient) }
     val ticketsApi: TicketsApi by lazy { TicketsApi(apiClient) }
     val usersApi: UsersApi by lazy { UsersApi(apiClient) }

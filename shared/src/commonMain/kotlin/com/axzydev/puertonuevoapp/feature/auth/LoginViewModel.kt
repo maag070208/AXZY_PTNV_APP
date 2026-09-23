@@ -49,6 +49,10 @@ class LoginViewModel(
                         errorMessage = result.exceptionOrNull()?.message ?: "No se pudo iniciar sesión",
                     )
                 }
+            } else {
+                // El VM sobrevive al logout (scoped al Activity): hay que limpiar
+                // el estado para que al volver al login no quede el spinner.
+                _uiState.update { it.copy(loading = false, password = "") }
             }
             // En éxito el AuthState de la sesión pasa a LoggedIn y App.kt
             // cambia solo al shell: aquí no hay nada que navegar.

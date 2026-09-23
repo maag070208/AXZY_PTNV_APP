@@ -18,7 +18,7 @@ object InputTokens {
     val MinHeight = 44.dp
 
     /** Altura exacta de los campos de una sola línea. */
-    val Height = 48.dp
+    val Height = 44.dp
 
     /** Padding horizontal interno del contenido. */
     val ContentPaddingHorizontal = 14.dp

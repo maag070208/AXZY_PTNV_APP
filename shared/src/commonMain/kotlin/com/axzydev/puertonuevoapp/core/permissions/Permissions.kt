@@ -2,8 +2,15 @@ package com.axzydev.puertonuevoapp.core.permissions
 
 import androidx.compose.runtime.Composable
 
-/** Permisos de runtime que la app necesita para el escaneo de credenciales. */
-enum class AppPermission { CAMERA, LOCATION }
+/**
+ * Permisos de runtime que la app necesita.
+ *
+ * - [CAMERA]: escaneo del QR de credenciales (portería).
+ * - [LOCATION]: constancia del sitio al registrar entradas/salidas.
+ * - [NOTIFICATIONS]: avisos del sistema. Solo se pide en Android 13+ (API 33);
+ *   en versiones anteriores el permiso se concede en instalación.
+ */
+enum class AppPermission { CAMERA, LOCATION, NOTIFICATIONS }
 
 /**
  * Estado de un permiso de runtime + acciones para solicitarlo o abrir los
