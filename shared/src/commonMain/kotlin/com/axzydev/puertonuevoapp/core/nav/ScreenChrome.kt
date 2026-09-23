@@ -35,10 +35,9 @@ fun Screen.chrome(): ScreenChrome = when (this) {
     is Screen.DeviceTypeForm -> ScreenChrome(if (id == null) "Nuevo tipo de dispositivo" else "Editar tipo de dispositivo", showBack = true, showBottomNavigation = false, section = MainSection.DEVICES)
 
     // Users / employees
-    Screen.UsersList -> ScreenChrome("Usuarios", section = MainSection.USERS)
-    is Screen.UserForm -> ScreenChrome(if (id == null) "Nuevo usuario" else "Editar usuario", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
-    is Screen.UserHistory -> ScreenChrome("Historial del usuario", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
-    Screen.EmployeesList -> ScreenChrome("Empleados", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
+    is Screen.UserForm -> ScreenChrome(if (id == null) "Nuevo personal" else "Editar personal", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    Screen.PersonalList -> ScreenChrome("Personal", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
+    is Screen.PersonalProfile -> ScreenChrome("Perfil", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
 
     // Departments
     Screen.DepartmentsList -> ScreenChrome("Departamentos", showBack = true, showBottomNavigation = false, section = MainSection.HOME)

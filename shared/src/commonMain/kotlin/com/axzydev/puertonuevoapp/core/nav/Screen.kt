@@ -20,10 +20,9 @@ sealed interface Screen {
     data class DeviceTypeForm(val id: String? = null) : Screen
 
     // Users / employees
-    data object UsersList : Screen
     data class UserForm(val id: String? = null) : Screen
-    data class UserHistory(val id: String) : Screen
-    data object EmployeesList : Screen
+    data object PersonalList : Screen
+    data class PersonalProfile(val id: String) : Screen
 
     // Departments
     data object DepartmentsList : Screen

@@ -1,25 +1,20 @@
-package com.axzydev.puertonuevoapp.feature.employees
+package com.axzydev.puertonuevoapp.feature.personal
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,105 +24,211 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.nav.Screen
+import com.axzydev.puertonuevoapp.core.network.departments.DepartmentDto
 import com.axzydev.puertonuevoapp.core.network.users.UserDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.ui.AppCard
-import com.axzydev.puertonuevoapp.core.ui.AppSearchField
-import com.axzydev.puertonuevoapp.core.ui.EmptyState
-import com.axzydev.puertonuevoapp.core.ui.ErrorState
-import com.axzydev.puertonuevoapp.core.ui.LoadingState
+import com.axzydev.puertonuevoapp.core.ui.StatusChip
+import com.axzydev.puertonuevoapp.core.ui.table.AppTableScreen
+import com.axzydev.puertonuevoapp.core.ui.table.FilterControl
+import com.axzydev.puertonuevoapp.core.ui.table.FilterOption
+import com.axzydev.puertonuevoapp.core.ui.table.TableFilterSpec
+import com.axzydev.puertonuevoapp.core.util.initials
 
 /**
- * Directorio de empleados, respaldado por el mismo endpoint /users/empleados
- * que usa el picker de asignaciones de tickets. Editar sigue siendo
- * exclusivo de ADMIN y reutiliza la misma pantalla de edición de Usuarios.
+ * Directorio de personal sobre el componente genérico de tabla
+ * (`AppTableScreen` + [PersonalListViewModel]): 10 por página, búsqueda por
+ * nombre y filtros por nombre/departamento/estatus/rol. Cada persona es una
+ * card elevada con acciones: "Perfil" (expediente de Personal) y "Editar"
+ * (exclusivo de ADMIN, reutiliza el formulario de personal).
  */
 @Composable
-fun EmployeesListScreen(viewModel: EmployeesListViewModel = viewModel { EmployeesListViewModel(AppContainer.usersApi) }) {
+fun PersonalListScreen(
+    viewModel: PersonalListViewModel = viewModel {
+        PersonalListViewModel(AppContainer.personalApi, AppContainer.departmentsApi)
+    },
+) {
     val state by viewModel.uiState.collectAsState()
+    val departments by viewModel.departments.collectAsState()
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
     val isAdmin = (authState as? AuthState.LoggedIn)?.user?.canManageCatalogs == true
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("Directorio de empleados · ${state.filtered.size} resultados", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
-            Spacer(Modifier.height(10.dp))
-            AppSearchField(state.query, viewModel::onQueryChange, "Buscar por nombre, puesto o número")
-            if (state.departmentOptions.isNotEmpty()) {
-                Spacer(Modifier.height(10.dp))
-                Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val chips = listOf("" to "Todos") + state.departmentOptions.map { it to it }
-                    chips.forEach { (value, label) ->
-                        val selected = state.departmentFilter == value
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (selected) AppColors.Surface else AppColors.TextMuted,
-                            modifier = Modifier
-                                .clip(AppShape.pill)
-                                .background(if (selected) AppColors.EmeraldPrimary else AppColors.SurfaceVariant, AppShape.pill)
-                                .clickable { viewModel.onDepartmentFilterChange(value) }
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
-                        )
-                    }
-                }
+    AppTableScreen(
+        state = state,
+        heading = "Directorio de personal",
+        filterSpecs = personalFilterSpecs(departments),
+        onSearchChange = viewModel::onSearchChange,
+        onFiltersChange = viewModel::onFiltersChange,
+        onRefresh = viewModel::refresh,
+        onLoadMore = viewModel::loadMore,
+        onRetry = viewModel::retry,
+        searchPlaceholder = "Buscar por nombre",
+        emptyMessage = "No hay personal con estos filtros",
+        searchKey = "name",
+        itemKey = { it.id },
+    ) { person ->
+        PersonalCard(
+            person = person,
+            isAdmin = isAdmin,
+            onOpenProfile = { navigator.push(Screen.PersonalProfile(person.id)) },
+            onEdit = { navigator.push(Screen.UserForm(person.id)) },
+        )
+    }
+}
+
+private fun personalFilterSpecs(departments: List<DepartmentDto>): List<TableFilterSpec> = listOf(
+    TableFilterSpec("name", "Nombre", FilterControl.Text),
+    TableFilterSpec(
+        "departmentId",
+        "Departamento",
+        FilterControl.Select(departments.map { FilterOption(it.id, it.name) }),
+    ),
+    TableFilterSpec(
+        "active",
+        "Estatus",
+        FilterControl.Select(
+            listOf(
+                FilterOption("true", "Activos"),
+                FilterOption("false", "Inactivos"),
+            ),
+        ),
+    ),
+    TableFilterSpec(
+        "role",
+        "Rol",
+        FilterControl.Select(
+            listOf(
+                FilterOption("GERENTE", "Gerente"),
+                FilterOption("JEFE_DE_AREA", "Jefe de área"),
+                FilterOption("EMPLEADO", "Empleado"),
+            ),
+        ),
+    ),
+)
+
+/** Card elevada de personal: avatar con gradiente por rol, chips y acciones pill (Perfil / Editar). */
+@Composable
+private fun PersonalCard(
+    person: UserDto,
+    isAdmin: Boolean,
+    onOpenProfile: () -> Unit,
+    onEdit: () -> Unit,
+) {
+    val accent = AppColors.roleAccent(person.role)
+    val gradient = Brush.verticalGradient(listOf(accent, lerp(accent, Color.Black, 0.30f)))
+
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onOpenProfile,
+        shape = AppShape.card,
+        elevation = 2.dp,
+        borderColor = AppColors.Outline.copy(alpha = 0.5f),
+        contentPadding = PaddingValues(14.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(gradient, AppShape.pill),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    initials(person.name),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Color.White,
+                )
             }
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    person.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AppColors.TextPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    "@${person.username}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = AppColors.TextFaint,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    listOfNotNull(
+                        person.puesto?.takeIf { it.isNotBlank() },
+                        person.department?.name,
+                    ).joinToString(" · ").ifBlank { "Sin puesto registrado" },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AppColors.TextMuted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Spacer(Modifier.width(8.dp))
+            StatusChip(
+                label = if (person.active) "Activo" else "Inactivo",
+                color = if (person.active) AppColors.Success else AppColors.Danger,
+            )
         }
 
-        when {
-            state.loading -> LoadingState(modifier = Modifier.weight(1f))
-            state.error != null -> ErrorState(state.error ?: "Error", Modifier.weight(1f), onRetry = viewModel::load)
-            state.filtered.isEmpty() -> EmptyState("No hay empleados con estos filtros", Modifier.weight(1f))
-            else -> LazyColumn(
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-                contentPadding = PaddingValues(start = 16.dp, top = 6.dp, end = 16.dp, bottom = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                items(state.filtered, key = { it.id }) { e ->
-                    EmployeeCard(
-                        employee = e,
-                        editable = isAdmin,
-                        onClick = { if (isAdmin) navigator.push(Screen.UserForm(e.id)) },
-                    )
-                }
+        Spacer(Modifier.size(12.dp))
+        HorizontalDivider(color = AppColors.Outline.copy(alpha = 0.35f))
+        Spacer(Modifier.size(10.dp))
+
+        Row {
+            CardActionPill(
+                label = "Perfil",
+                icon = Icons.Filled.Person,
+                color = AppColors.Info,
+                onClick = onOpenProfile,
+            )
+            if (isAdmin) {
+                Spacer(Modifier.width(8.dp))
+                CardActionPill(
+                    label = "Editar",
+                    icon = Icons.Filled.Edit,
+                    color = AppColors.EmeraldPrimary,
+                    onClick = onEdit,
+                )
             }
         }
     }
 }
 
+/** Botón pill pequeño de acciones dentro de una card. Recorta ripple al pill con [AppShape.pill]. */
 @Composable
-private fun EmployeeCard(employee: UserDto, editable: Boolean, onClick: () -> Unit) {
-    AppCard(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = if (editable) onClick else null,
-        borderColor = AppColors.Outline,
-        contentPadding = PaddingValues(16.dp),
+private fun CardActionPill(
+    label: String,
+    icon: ImageVector,
+    color: Color,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .clip(AppShape.pill)
+            .background(color.copy(alpha = 0.12f), AppShape.pill)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 7.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(employee.name, style = MaterialTheme.typography.titleMedium, color = AppColors.TextPrimary)
-                Text(
-                    listOfNotNull(employee.puesto, employee.numeroEmpleado?.let { "No. $it" }).joinToString(" · ").ifBlank { "Sin puesto registrado" },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = AppColors.TextMuted,
-                    maxLines = 1,
-                )
-                val deptLine = listOfNotNull(employee.department?.name, employee.subarea?.name).joinToString(" · ")
-                if (deptLine.isNotBlank()) {
-                    Text(deptLine, style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint, maxLines = 1, modifier = Modifier.padding(top = 2.dp))
-                }
-            }
-            if (editable) {
-                Icon(Icons.Filled.ChevronRight, contentDescription = "Editar empleado", tint = AppColors.TextFaint, modifier = Modifier.size(22.dp))
-            }
-        }
+        Icon(icon, contentDescription = label, tint = color, modifier = Modifier.size(14.dp))
+        Spacer(Modifier.width(5.dp))
+        Text(label, style = MaterialTheme.typography.labelMedium, color = color)
     }
 }

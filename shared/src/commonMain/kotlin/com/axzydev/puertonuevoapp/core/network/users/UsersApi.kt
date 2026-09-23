@@ -21,8 +21,6 @@ class UsersApi(private val client: ApiClient) {
 
     suspend fun delete(id: String): DeleteSuccessResponse = client.delete("/users/$id")
 
-    suspend fun history(id: String): List<UserHistoryEntryDto> = client.get("/users/$id/history")
-
     suspend fun changePassword(id: String, password: String) =
         client.putNoContent("/users/$id/password", UserPasswordInput(password))
 }

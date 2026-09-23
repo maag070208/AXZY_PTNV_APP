@@ -5,9 +5,34 @@ fun roleLabel(role: String?): String = when (role) {
     "GERENTE" -> "Gerente"
     "JEFE_DE_AREA" -> "Jefe de área"
     "EMPLEADO" -> "Empleado"
+    "RECURSOS_HUMANOS" -> "Recursos Humanos"
     "GUARD" -> "Guardia"
     else -> role ?: "—"
 }
+
+/** Iniciales (2) del nombre para avatares. */
+fun initials(name: String): String =
+    name.trim().split(" ").take(2).mapNotNull { it.firstOrNull() }.joinToString("").uppercase()
+
+/** Etiqueta legible del tipo de descuento de un empleado. */
+fun discountTypeLabel(tipo: String): String = when (tipo) {
+    "INFONAVIT" -> "Infonavit"
+    "IMSS" -> "IMSS"
+    "DEUDOR_ALIMENTICIO" -> "Deudor alimenticio"
+    else -> tipo
+}
+
+/** Tamaño de archivo en KB/MB (el backend manda bytes). */
+fun formatFileSize(bytes: Long): String {
+    if (bytes <= 0) return "0 KB"
+    val kb = bytes / 1024.0
+    if (kb < 1024) return "${kb.roundToMaxOne().format()} KB"
+    val mb = kb / 1024.0
+    return "${mb.roundToMaxOne().format()} MB"
+}
+
+private fun Double.roundToMaxOne(): Double = (this * 10).toInt() / 10.0
+private fun Double.format(): String = if (this % 1.0 == 0.0) this.toInt().toString() else this.toString()
 
 /** Tipo de evento de control de acceso (ENTRY/EXIT). */
 fun accessEventTypeLabel(type: String?): String = when (type) {

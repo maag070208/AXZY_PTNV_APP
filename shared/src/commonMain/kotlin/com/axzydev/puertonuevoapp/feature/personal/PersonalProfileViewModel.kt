@@ -1,9 +1,9 @@
-package com.axzydev.puertonuevoapp.feature.users
+package com.axzydev.puertonuevoapp.feature.personal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.axzydev.puertonuevoapp.core.network.http.networkMessage
-import com.axzydev.puertonuevoapp.core.network.users.UsersApi
+import com.axzydev.puertonuevoapp.core.network.personal.PersonalApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,13 +12,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class UserHistoryViewModel(
-    private val userId: String,
-    private val usersApi: UsersApi,
+class PersonalProfileViewModel(
+    private val personId: String,
+    private val personalApi: PersonalApi,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(UserHistoryUiState())
-    val uiState: StateFlow<UserHistoryUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(PersonalProfileUiState())
+    val uiState: StateFlow<PersonalProfileUiState> = _uiState.asStateFlow()
 
     init {
         load()
@@ -29,17 +29,19 @@ class UserHistoryViewModel(
         viewModelScope.launch {
             val result = runCatching {
                 coroutineScope {
-                    val userCall = async { usersApi.get(userId) }
-                    val historyCall = async { usersApi.history(userId) }
-                    userCall.await() to historyCall.await()
+                    val profile = async { personalApi.get(personId) }
+                    val documents = async { personalApi.documents(personId) }
+                    val documentTypes = async { personalApi.documentTypes() }
+                    Triple(profile.await(), documents.await(), documentTypes.await())
                 }
             }
             _uiState.update {
                 it.copy(
                     loading = false,
                     error = result.exceptionOrNull()?.let(::networkMessage),
-                    user = result.getOrNull()?.first,
-                    history = result.getOrNull()?.second ?: it.history,
+                    profile = result.getOrNull()?.first,
+                    documents = result.getOrNull()?.second ?: it.documents,
+                    documentTypes = result.getOrNull()?.third ?: it.documentTypes,
                 )
             }
         }

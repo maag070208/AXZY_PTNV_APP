@@ -31,8 +31,6 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.QueryStats
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -49,6 +47,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -73,6 +72,8 @@ import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.ui.AppSnackbarHost
 import com.axzydev.puertonuevoapp.core.ui.BrandLogoBadge
+import com.axzydev.puertonuevoapp.core.ui.LocalTopBarActions
+import com.axzydev.puertonuevoapp.core.ui.TopBarActionsState
 import com.axzydev.puertonuevoapp.feature.access.AccessLogScreen
 import com.axzydev.puertonuevoapp.feature.access.AccessScanScreen
 import com.axzydev.puertonuevoapp.feature.audit.AuditLogsScreen
@@ -87,7 +88,8 @@ import com.axzydev.puertonuevoapp.feature.devices.DeviceFormScreen
 import com.axzydev.puertonuevoapp.feature.devices.DevicesListScreen
 import com.axzydev.puertonuevoapp.feature.devicetypes.DeviceTypeFormScreen
 import com.axzydev.puertonuevoapp.feature.devicetypes.DeviceTypesListScreen
-import com.axzydev.puertonuevoapp.feature.employees.EmployeesListScreen
+import com.axzydev.puertonuevoapp.feature.personal.PersonalListScreen
+import com.axzydev.puertonuevoapp.feature.personal.PersonalProfileScreen
 import com.axzydev.puertonuevoapp.feature.inventory.InventoryIndexScreen
 import com.axzydev.puertonuevoapp.feature.inventory.InventoryMovementsScreen
 import com.axzydev.puertonuevoapp.feature.inventory.LocationDetailScreen
@@ -106,8 +108,6 @@ import com.axzydev.puertonuevoapp.feature.tickets.TicketDetailScreen
 import com.axzydev.puertonuevoapp.feature.tickets.TicketsKanbanScreen
 import com.axzydev.puertonuevoapp.feature.tickets.TicketsListScreen
 import com.axzydev.puertonuevoapp.feature.users.UserFormScreen
-import com.axzydev.puertonuevoapp.feature.users.UserHistoryScreen
-import com.axzydev.puertonuevoapp.feature.users.UsersListScreen
 import kotlinx.coroutines.launch
 
 /**
@@ -127,6 +127,7 @@ fun AppShell() {
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val topBarActions = remember { TopBarActionsState() }
 
     var unreadCount by remember { mutableStateOf(0) }
     LaunchedEffect(current) {
@@ -165,98 +166,100 @@ fun AppShell() {
             )
         },
     ) {
-        Scaffold(
-            containerColor = MaterialTheme.colorScheme.background,
-            topBar = {
-                TopAppBar(
-                    modifier = Modifier.padding(top = 20.dp),
-                    navigationIcon = {
-                        if (chrome.showBack) {
-                            IconButton(onClick = { navigator.pop() }) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Atrás",
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                )
+        CompositionLocalProvider(LocalTopBarActions provides topBarActions) {
+            Scaffold(
+                containerColor = MaterialTheme.colorScheme.background,
+                topBar = {
+                    TopAppBar(
+                        modifier = Modifier.padding(top = 20.dp),
+                        navigationIcon = {
+                            if (chrome.showBack) {
+                                IconButton(onClick = { navigator.pop() }) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Atrás",
+                                        tint = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                }
+                            } else {
+                                IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                    Icon(
+                                        Icons.Filled.Menu,
+                                        contentDescription = "Menú",
+                                        tint = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                }
                             }
-                        } else {
-                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                Icon(
-                                    Icons.Filled.Menu,
-                                    contentDescription = "Menú",
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                )
-                            }
-                        }
-                    },
-                    title = {
-                        if (chrome.showBack) {
-                            Text(
-                                chrome.title,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                        } else {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                BrandLogoBadge(size = 32.dp, cornerRadius = 10.dp, innerPadding = 4.dp)
-                                Spacer(Modifier.width(10.dp))
+                        },
+                        title = {
+                            if (chrome.showBack) {
                                 Text(
                                     chrome.title,
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurface,
                                 )
+                            } else {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    BrandLogoBadge(size = 32.dp, cornerRadius = 10.dp, innerPadding = 4.dp)
+                                    Spacer(Modifier.width(10.dp))
+                                    Text(
+                                        chrome.title,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                }
                             }
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = { navigator.push(Screen.Notifications) }) {
-                            BadgedBox(badge = { if (unreadCount > 0) Badge { Text(unreadCount.toString()) } }) {
-                                Icon(
-                                    Icons.Filled.Notifications,
-                                    contentDescription = "Notificaciones",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        },
+                        actions = {
+                            topBarActions.action?.let { action ->
+                                IconButton(onClick = action.onClick) {
+                                    Icon(
+                                        action.icon,
+                                        contentDescription = action.contentDescription,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                        ),
+                    )
+                },
+                bottomBar = {
+                    if (chrome.showBottomNavigation) {
+                        NavigationBar(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                        ) {
+                            NavigationBarItem(
+                                selected = current is Screen.Home,
+                                onClick = { navigator.switchTab(Screen.Home) },
+                                icon = { Icon(Icons.Filled.Home, contentDescription = null, modifier = Modifier.size(20.dp)) },
+                                label = { Text("Inicio", style = MaterialTheme.typography.labelSmall) },
+                                colors = navItemColors,
+                            )
+                            if (user?.canScanCredential == true) {
+                                NavigationBarItem(
+                                    selected = current is Screen.AccessScan || current is Screen.AccessLog,
+                                    onClick = { navigator.switchTab(Screen.AccessScan) },
+                                    icon = { Icon(Icons.Filled.QrCodeScanner, contentDescription = null, modifier = Modifier.size(20.dp)) },
+                                    label = { Text("Portería", style = MaterialTheme.typography.labelSmall) },
+                                    colors = navItemColors,
                                 )
                             }
                         }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                    ),
-                )
-            },
-            bottomBar = {
-                if (chrome.showBottomNavigation) {
-                    NavigationBar(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                    ) {
-                        NavigationBarItem(
-                            selected = current is Screen.Home,
-                            onClick = { navigator.switchTab(Screen.Home) },
-                            icon = { Icon(Icons.Filled.Home, contentDescription = null, modifier = Modifier.size(20.dp)) },
-                            label = { Text("Inicio", style = MaterialTheme.typography.labelSmall) },
-                            colors = navItemColors,
-                        )
-                        if (user?.canScanCredential == true) {
-                            NavigationBarItem(
-                                selected = current is Screen.AccessScan || current is Screen.AccessLog,
-                                onClick = { navigator.switchTab(Screen.AccessScan) },
-                                icon = { Icon(Icons.Filled.QrCodeScanner, contentDescription = null, modifier = Modifier.size(20.dp)) },
-                                label = { Text("Portería", style = MaterialTheme.typography.labelSmall) },
-                                colors = navItemColors,
-                            )
-                        }
                     }
+                },
+                snackbarHost = { AppSnackbarHost() },
+            ) { padding ->
+                Box(
+                    modifier = Modifier
+                        .padding(padding)
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background),
+                ) {
+                    AppNavHost(current)
                 }
-            },
-            snackbarHost = { AppSnackbarHost() },
-        ) { padding ->
-            Box(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
-            ) {
-                AppNavHost(current)
             }
         }
     }
@@ -317,7 +320,7 @@ private fun drawerNodes(user: SessionUser?): List<DrawerNode> = buildList {
             DrawerNode(
                 "Recursos Humanos", Icons.Filled.Groups,
                 children = listOf(
-                    DrawerChild("Personal", Screen.EmployeesList),
+                    DrawerChild("Personal", Screen.PersonalList),
                     DrawerChild("Departamentos", Screen.DepartmentsList),
                 ),
             )
@@ -330,7 +333,6 @@ private fun drawerNodes(user: SessionUser?): List<DrawerNode> = buildList {
                 "Configuración", Icons.Filled.Settings,
                 children = listOf(
                     DrawerChild("Tipos de dispositivo", Screen.DeviceTypesList),
-                    DrawerChild("Usuarios", Screen.UsersList),
                     DrawerChild("Auditoría", Screen.AuditLogs),
                 ),
             )
@@ -519,10 +521,9 @@ private fun AppNavHost(screen: Screen) {
         is Screen.DeviceTypeForm -> DeviceTypeFormScreen(screen.id)
 
         // Users / employees — módulo 3
-        Screen.UsersList -> UsersListScreen()
         is Screen.UserForm -> UserFormScreen(screen.id)
-        is Screen.UserHistory -> UserHistoryScreen(screen.id)
-        Screen.EmployeesList -> EmployeesListScreen()
+        Screen.PersonalList -> PersonalListScreen()
+        is Screen.PersonalProfile -> PersonalProfileScreen(screen.id)
 
         // Departments — módulo 3
         Screen.DepartmentsList -> DepartmentsListScreen()

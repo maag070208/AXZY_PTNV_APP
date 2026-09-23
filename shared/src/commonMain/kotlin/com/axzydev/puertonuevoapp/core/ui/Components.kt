@@ -44,10 +44,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.unit.dp
 import com.axzydev.puertonuevoapp.core.theme.AppColors
@@ -147,7 +149,8 @@ fun EmptyRow(text: String) {
 /**
  * Tarjeta estándar de la app. Usa [AppShape.card] y recorta fondo, borde y
  * efecto de pulsado (ripple/hover) a la misma forma redondeada, de modo que
- * al presionar no se ve un rectángulo. Pasa [onClick] para hacerla pulsable.
+ * al presionar no se ve un rectángulo. Pasa [onClick] para hacerla pulsable y
+ * [elevation] para levantar la tarjeta con una sombra suave (cards modernas).
  */
 @Composable
 fun AppCard(
@@ -156,11 +159,13 @@ fun AppCard(
     shape: Shape = AppShape.card,
     containerColor: Color = AppColors.Surface,
     borderColor: Color? = AppColors.Outline.copy(alpha = 0.6f),
+    elevation: Dp = 0.dp,
     contentPadding: PaddingValues = PaddingValues(16.dp),
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
         modifier = modifier
+            .shadow(elevation = elevation, shape = shape, clip = false)
             .clip(shape)
             .background(containerColor, shape)
             .then(if (borderColor != null) Modifier.border(1.dp, borderColor, shape) else Modifier)

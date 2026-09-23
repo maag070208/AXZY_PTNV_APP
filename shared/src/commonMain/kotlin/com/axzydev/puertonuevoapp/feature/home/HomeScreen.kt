@@ -134,7 +134,7 @@ private fun HomeContent(
                 add(QuickActionSpec("Registros de acceso", Icons.Filled.History) { onNavigate(Screen.AccessLog) })
             }
             add(QuickActionSpec("Departamentos", Icons.Filled.Business) { onNavigate(Screen.DepartmentsList) })
-            add(QuickActionSpec("Empleados", Icons.Filled.Groups) { onNavigate(Screen.EmployeesList) })
+            add(QuickActionSpec("Personal", Icons.Filled.Groups) { onNavigate(Screen.PersonalList) })
             add(QuickActionSpec("Inventario", Icons.Filled.Inventory) { onNavigate(Screen.InventoryIndex) })
             add(QuickActionSpec("Salidas de material", Icons.Filled.ListAlt) { onNavigate(Screen.SalidasList) })
             add(QuickActionSpec("Cartas responsivas", Icons.Filled.Description) { onNavigate(Screen.CartasList) })

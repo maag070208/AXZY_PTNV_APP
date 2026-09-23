@@ -32,6 +32,7 @@ object AppColors {
     val Danger = Color(0xFFEF4444)
     val Info = Color(0xFF3B82F6)
     val Purple = Color(0xFF8B5CF6)
+    val Slate = Color(0xFF64748B)
 
     // Estados de ticket
     fun ticketStatusColor(status: String): Color = when (status) {
@@ -73,5 +74,13 @@ object AppColors {
         "MALO" -> Danger
         "ROTO" -> Danger
         else -> TextFaint
+    }
+
+    /** Acento por rol para avatares/badges de personal (tonos mudos, sin marca). */
+    fun roleAccent(role: String): Color = when (role) {
+        "GERENTE", "ADMIN" -> EmeraldPrimary
+        "JEFE_DE_AREA" -> Info
+        "RECURSOS_HUMANOS" -> Purple
+        else -> Slate
     }
 }

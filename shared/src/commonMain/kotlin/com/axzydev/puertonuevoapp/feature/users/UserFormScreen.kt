@@ -59,8 +59,8 @@ fun UserFormScreen(userId: String?) {
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).imePadding().navigationBarsPadding().padding(16.dp),
     ) {
-        Text(if (isEdit) "Editar usuario" else "Nuevo usuario", style = MaterialTheme.typography.headlineSmall, color = AppColors.TextPrimary)
-        Text("Completa la información del usuario paso a paso", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted, modifier = Modifier.padding(top = 4.dp))
+        Text(if (isEdit) "Editar personal" else "Nuevo personal", style = MaterialTheme.typography.headlineSmall, color = AppColors.TextPrimary)
+        Text("Completa la información del personal paso a paso", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted, modifier = Modifier.padding(top = 4.dp))
         Spacer(Modifier.height(22.dp))
         WizardProgress(state.step)
         Spacer(Modifier.height(22.dp))
@@ -119,7 +119,7 @@ fun UserFormScreen(userId: String?) {
                 shape = MaterialTheme.shapes.medium,
             ) {
                 if (state.saving) CircularProgressIndicator(Modifier.size(20.dp), color = AppColors.Surface, strokeWidth = 2.dp)
-                else Text(if (state.step == 2) "Guardar usuario" else "Continuar")
+                else Text(if (state.step == 2) "Guardar personal" else "Continuar")
             }
         }
     }

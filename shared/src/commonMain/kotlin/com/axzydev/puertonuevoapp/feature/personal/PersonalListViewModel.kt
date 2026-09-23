@@ -1,40 +1,41 @@
-package com.axzydev.puertonuevoapp.feature.employees
+package com.axzydev.puertonuevoapp.feature.personal
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.axzydev.puertonuevoapp.core.network.http.networkMessage
-import com.axzydev.puertonuevoapp.core.network.users.UsersApi
+import com.axzydev.puertonuevoapp.core.network.departments.DepartmentsApi
+import com.axzydev.puertonuevoapp.core.network.departments.DepartmentDto
+import com.axzydev.puertonuevoapp.core.network.http.TableRequest
+import com.axzydev.puertonuevoapp.core.network.http.TableResponse
+import com.axzydev.puertonuevoapp.core.network.personal.PersonalApi
+import com.axzydev.puertonuevoapp.core.network.users.UserDto
+import com.axzydev.puertonuevoapp.core.ui.table.PaginatedTableViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class EmployeesListViewModel(
-    private val usersApi: UsersApi,
-) : ViewModel() {
+/**
+ * Tabla de personal (RH), server-side vía `POST /personal/query`
+ * (filtros `name`, `departmentId`, `active`, `role`), 10 por página.
+ * El catálogo de departamentos alimenta el filtro del modal.
+ */
+class PersonalListViewModel(
+    private val personalApi: PersonalApi,
+    private val departmentsApi: DepartmentsApi,
+) : PaginatedTableViewModel<UserDto>() {
 
-    private val _uiState = MutableStateFlow(EmployeesListUiState())
-    val uiState: StateFlow<EmployeesListUiState> = _uiState.asStateFlow()
+    override val pageSize: Int = 10
+    override val searchKey: String? = "name"
+
+    private val _departments = MutableStateFlow<List<DepartmentDto>>(emptyList())
+    val departments: StateFlow<List<DepartmentDto>> = _departments.asStateFlow()
 
     init {
-        load()
-    }
-
-    fun load() {
-        _uiState.update { it.copy(loading = true, error = null) }
         viewModelScope.launch {
-            val result = runCatching { usersApi.empleados().sortedBy { it.name } }
-            _uiState.update {
-                it.copy(
-                    loading = false,
-                    error = result.exceptionOrNull()?.let(::networkMessage),
-                    employees = result.getOrDefault(it.employees),
-                )
-            }
+            runCatching { departmentsApi.list() }
+                .onSuccess { list -> _departments.value = list.filter { it.active }.sortedBy { it.name } }
         }
     }
 
-    fun onQueryChange(value: String) = _uiState.update { it.copy(query = value) }
-    fun onDepartmentFilterChange(value: String) = _uiState.update { it.copy(departmentFilter = value) }
+    override suspend fun fetch(page: Int, limit: Int, filters: Map<String, String>): TableResponse<UserDto> =
+        personalApi.query(TableRequest(page = page, limit = limit, filters = filters))
 }
