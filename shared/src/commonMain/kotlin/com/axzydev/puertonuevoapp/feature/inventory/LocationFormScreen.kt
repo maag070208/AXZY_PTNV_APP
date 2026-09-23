@@ -15,7 +15,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,6 +27,7 @@ import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
 fun LocationFormScreen(locationId: String? = null) {
@@ -47,21 +47,19 @@ fun LocationFormScreen(locationId: String? = null) {
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).imePadding().navigationBarsPadding().padding(16.dp),
     ) {
-        OutlinedTextField(
+        AppTextField(
             value = state.lugar,
             onValueChange = viewModel::onLugarChange,
             label = { Text("Lugar") },
             placeholder = { Text("Ej. OFICINA, BODEGA") },
             singleLine = true,
-            shape = MaterialTheme.shapes.medium,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
+        AppTextField(
             value = state.descripcion,
             onValueChange = viewModel::onDescripcionChange,
             label = { Text("Descripción") },
-            shape = MaterialTheme.shapes.medium,
             modifier = Modifier.fillMaxWidth(),
         )
 

@@ -17,7 +17,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +34,7 @@ import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
 import com.axzydev.puertonuevoapp.core.util.roleLabel
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
 fun CartaFormScreen(cartaId: String? = null) {
@@ -113,40 +113,36 @@ fun CartaFormScreen(cartaId: String? = null) {
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            AppTextField(
                 value = state.numeroEmpleado,
                 onValueChange = viewModel::onNumeroEmpleadoChange,
                 label = { Text("No. de empleado") },
                 singleLine = true,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
+                AppTextField(
                     value = state.empresa,
                     onValueChange = viewModel::onEmpresaChange,
                     label = { Text("Empresa") },
                     singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.weight(1f),
                 )
-                OutlinedTextField(
+                AppTextField(
                     value = state.departamento,
                     onValueChange = viewModel::onDepartamentoChange,
                     label = { Text("Departamento") },
                     singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.weight(1f),
                 )
             }
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            AppTextField(
                 value = state.area,
                 onValueChange = viewModel::onAreaChange,
                 label = { Text("Área (del recurso)") },
                 singleLine = true,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -164,12 +160,11 @@ fun CartaFormScreen(cartaId: String? = null) {
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            AppTextField(
                 value = state.deliveryBy,
                 onValueChange = viewModel::onDeliveryByChange,
                 label = { Text("Entrega (quien entrega)") },
                 singleLine = true,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
         }

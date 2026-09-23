@@ -12,6 +12,7 @@ import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.readRawBytes
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
@@ -91,6 +92,24 @@ class ApiClient(
         }
 
         return decode(response)
+    }
+
+    /**
+     * Descarga bytes crudos (imágenes/archivos). El endpoint de foto del
+     * empleado (`/personal/:id/foto/raw`) vive bajo la misma base que el
+     * resto del API; se resuelve con [buildUrl].
+     */
+    suspend fun getBytes(path: String): ByteArray {
+        val response = httpClient.get(buildUrl(path)) {
+            authHeader()
+        }
+        if (!response.status.isSuccess()) {
+            if (response.status.value == 401) {
+                onUnauthorized()
+            }
+            decode<ApiErrorBody>(response)
+        }
+        return response.readRawBytes()
     }
 
     suspend inline fun <reified B, reified T> post(

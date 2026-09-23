@@ -29,7 +29,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,6 +51,7 @@ import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.formatShortDate
 import com.axzydev.puertonuevoapp.core.util.ticketStatusLabel
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
 fun DepartmentDetailScreen(departmentId: String) {
@@ -134,12 +134,11 @@ fun DepartmentDetailScreen(departmentId: String) {
                     if (isAdmin) {
                         Spacer(Modifier.height(12.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            OutlinedTextField(
+                            AppTextField(
                                 value = state.newSubarea,
                                 onValueChange = viewModel::onNewSubareaChange,
                                 placeholder = { Text("Nueva subárea…") },
                                 singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
                                 modifier = Modifier.weight(1f),
                             )
                             Spacer(Modifier.size(8.dp))

@@ -23,7 +23,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -45,6 +44,7 @@ import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.formatDateTime
 import com.axzydev.puertonuevoapp.core.util.ticketCategoryLabel
 import com.axzydev.puertonuevoapp.core.util.ticketPriorityLabel
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
 fun TicketDetailScreen(ticketId: String) {
@@ -171,12 +171,11 @@ fun TicketDetailScreen(ticketId: String) {
                     }
                     Spacer(Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        OutlinedTextField(
+                        AppTextField(
                             value = state.newComment,
                             onValueChange = viewModel::onCommentChange,
                             placeholder = { Text("Escribe un comentario…") },
                             modifier = Modifier.weight(1f),
-                            shape = MaterialTheme.shapes.medium,
                         )
                         Spacer(Modifier.width(8.dp))
                         IconButton(

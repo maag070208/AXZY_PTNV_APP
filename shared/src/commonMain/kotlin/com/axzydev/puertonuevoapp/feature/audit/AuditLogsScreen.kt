@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -40,6 +39,7 @@ import com.axzydev.puertonuevoapp.core.util.formatDateTime
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 private fun actionLabel(action: String): String = auditActionOptions.firstOrNull { it.first == action }?.second ?: action
 
@@ -76,14 +76,14 @@ fun AuditLogsScreen(viewModel: AuditLogsViewModel = viewModel { AuditLogsViewMod
             )
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
+                AppTextField(
                     value = state.filterStart,
                     onValueChange = viewModel::onFilterStartChange,
                     label = { Text("Desde (AAAA-MM-DD)") },
                     singleLine = true,
                     modifier = Modifier.weight(1f),
                 )
-                OutlinedTextField(
+                AppTextField(
                     value = state.filterEnd,
                     onValueChange = viewModel::onFilterEndChange,
                     label = { Text("Hasta (AAAA-MM-DD)") },

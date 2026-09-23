@@ -29,7 +29,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -160,20 +159,13 @@ fun AppSearchField(
     placeholder: String,
     modifier: Modifier = Modifier,
 ) {
-    OutlinedTextField(
+    AppTextField(
         value = value,
         onValueChange = onValueChange,
         placeholder = { Text(placeholder) },
         leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
         singleLine = true,
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
-        colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
-            unfocusedContainerColor = AppColors.SurfaceVariant,
-            focusedContainerColor = AppColors.Surface,
-            unfocusedBorderColor = AppColors.Outline.copy(alpha = 0.45f),
-            focusedBorderColor = AppColors.EmeraldPrimary,
-        ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
     )
 }

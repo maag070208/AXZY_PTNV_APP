@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.QueryStats
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -153,6 +154,12 @@ private fun HomeContent(
             add(QuickActionSpec("Mis tareas", Icons.Filled.Assignment) { onNavigate(Screen.MyTasks) })
             if (user?.canSeeAdminTasks == true) {
                 add(QuickActionSpec("Tareas del equipo", Icons.Filled.AssignmentInd) { onNavigate(Screen.AdminTasks) })
+            }
+            if (user?.canScanCredential == true) {
+                add(QuickActionSpec("Escanear credencial", Icons.Filled.QrCodeScanner) { onNavigate(Screen.AccessScan) })
+            }
+            if (user?.canViewAccessLog == true) {
+                add(QuickActionSpec("Registros de acceso", Icons.Filled.History) { onNavigate(Screen.AccessLog) })
             }
             add(QuickActionSpec("Departamentos", Icons.Filled.Business) { onNavigate(Screen.DepartmentsList) })
             add(QuickActionSpec("Empleados", Icons.Filled.Groups) { onNavigate(Screen.EmployeesList) })

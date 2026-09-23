@@ -18,14 +18,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -36,12 +36,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.ui.BrandLogoBadge
 import com.axzydev.puertonuevoapp.core.ui.OceanBackdrop
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
 fun LoginScreen(viewModel: LoginViewModel = viewModel { LoginViewModel(AppContainer.authRepository) }) {
@@ -50,6 +52,7 @@ fun LoginScreen(viewModel: LoginViewModel = viewModel { LoginViewModel(AppContai
         state = state,
         onUsernameChange = viewModel::onUsernameChange,
         onPasswordChange = viewModel::onPasswordChange,
+        onTogglePasswordVisibility = viewModel::togglePasswordVisibility,
         onServerUrlChange = viewModel::onServerUrlChange,
         onToggleServer = viewModel::toggleServerField,
         onLogin = viewModel::login,
@@ -61,6 +64,7 @@ private fun LoginContent(
     state: LoginUiState,
     onUsernameChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
+    onTogglePasswordVisibility: () -> Unit,
     onServerUrlChange: (String) -> Unit,
     onToggleServer: () -> Unit,
     onLogin: () -> Unit,
@@ -109,34 +113,33 @@ private fun LoginContent(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                OutlinedTextField(
+                AppTextField(
                     value = state.username,
                     onValueChange = onUsernameChange,
                     label = { Text("Usuario") },
                     singleLine = true,
-                    leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
+                    trailingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                    shape = MaterialTheme.shapes.medium,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    ),
                     modifier = Modifier.fillMaxWidth(),
                 )
 
                 Spacer(Modifier.height(12.dp))
 
-                OutlinedTextField(
+                AppTextField(
                     value = state.password,
                     onValueChange = onPasswordChange,
                     label = { Text("Contraseña") },
                     singleLine = true,
-                    leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
-                    visualTransformation = PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = onTogglePasswordVisibility) {
+                            Icon(
+                                imageVector = if (state.passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                contentDescription = if (state.passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
+                            )
+                        }
+                    },
+                    visualTransformation = if (state.passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    shape = MaterialTheme.shapes.medium,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    ),
                     modifier = Modifier.fillMaxWidth(),
                 )
 
@@ -172,27 +175,26 @@ private fun LoginContent(
                 Spacer(Modifier.height(16.dp))
 
                 TextButton(onClick = onToggleServer) {
+                    Text(
+                        "Configuración del servidor",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
                     Icon(
                         Icons.Filled.Dns,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(16.dp),
-                    )
-                    Text(
-                        "  Configuración del servidor",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 6.dp).size(16.dp),
                     )
                 }
 
                 AnimatedVisibility(visible = state.showServerField) {
                     Column(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
-                        OutlinedTextField(
+                        AppTextField(
                             value = state.serverUrl,
                             onValueChange = onServerUrlChange,
                             label = { Text("URL del API") },
                             singleLine = true,
-                            shape = MaterialTheme.shapes.medium,
                             modifier = Modifier.fillMaxWidth(),
                         )
                         Text(

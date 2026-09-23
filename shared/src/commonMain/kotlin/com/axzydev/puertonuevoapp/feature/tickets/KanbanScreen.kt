@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -46,6 +45,7 @@ import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.assignmentStatusLabel
 import com.axzydev.puertonuevoapp.core.util.formatShortDate
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
 fun TicketsKanbanScreen(ticketId: String? = null) {
@@ -74,12 +74,11 @@ fun TicketsKanbanScreen(ticketId: String? = null) {
                 }
             }
             Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
+            AppTextField(
                 value = state.search,
                 onValueChange = viewModel::onSearchChange,
                 placeholder = { Text("Buscar tarea o ticket…") },
                 singleLine = true,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             if (state.departmentOptions.isNotEmpty()) {
@@ -218,39 +217,35 @@ private fun CreateAssignmentModal(state: KanbanUiState, viewModel: KanbanViewMod
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(10.dp))
-        OutlinedTextField(
+        AppTextField(
             value = state.createTitle,
             onValueChange = viewModel::onCreateTitleChange,
             label = { Text("Título de la tarea") },
             singleLine = true,
-            shape = MaterialTheme.shapes.medium,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(10.dp))
-        OutlinedTextField(
+        AppTextField(
             value = state.createDescription,
             onValueChange = viewModel::onCreateDescriptionChange,
             label = { Text("Descripción") },
             minLines = 2,
-            shape = MaterialTheme.shapes.medium,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(
+            AppTextField(
                 value = state.createStartDate,
                 onValueChange = viewModel::onCreateStartDateChange,
                 label = { Text("Inicio (AAAA-MM-DD)") },
                 singleLine = true,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.weight(1f),
             )
-            OutlinedTextField(
+            AppTextField(
                 value = state.createDueDate,
                 onValueChange = viewModel::onCreateDueDateChange,
                 label = { Text("Límite (AAAA-MM-DD)") },
                 singleLine = true,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.weight(1f),
             )
         }

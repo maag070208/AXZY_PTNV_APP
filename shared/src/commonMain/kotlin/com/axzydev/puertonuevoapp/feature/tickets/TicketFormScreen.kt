@@ -15,7 +15,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,6 +28,7 @@ import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
 fun NewTicketScreen(viewModel: TicketFormViewModel = viewModel(key = "ticket-form-new") { TicketFormViewModel(null, AppContainer.ticketsApi) }) {
@@ -79,21 +79,19 @@ private fun TicketFormContent(
             .navigationBarsPadding()
             .padding(16.dp),
     ) {
-        OutlinedTextField(
+        AppTextField(
             value = state.titulo,
             onValueChange = viewModel::onTituloChange,
             label = { Text("Título") },
             singleLine = true,
-            shape = MaterialTheme.shapes.medium,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
+        AppTextField(
             value = state.descripcion,
             onValueChange = viewModel::onDescripcionChange,
             label = { Text("Descripción") },
             minLines = 4,
-            shape = MaterialTheme.shapes.medium,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(12.dp))

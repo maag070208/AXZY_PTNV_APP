@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -49,6 +48,7 @@ import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.util.roleLabel
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
 fun UsersListScreen(viewModel: UsersListViewModel = viewModel { UsersListViewModel(AppContainer.usersApi) }) {
@@ -132,7 +132,7 @@ fun UsersListScreen(viewModel: UsersListViewModel = viewModel { UsersListViewMod
             saving = state.actionSaving,
             onConfirm = viewModel::confirmChangePassword,
         ) {
-            OutlinedTextField(
+            AppTextField(
                 value = state.newPassword,
                 onValueChange = viewModel::onNewPasswordChange,
                 label = { Text("Nueva contraseña") },

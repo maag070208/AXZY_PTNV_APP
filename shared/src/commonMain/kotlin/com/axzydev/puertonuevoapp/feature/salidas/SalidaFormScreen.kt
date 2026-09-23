@@ -16,7 +16,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,6 +32,7 @@ import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
 fun SalidaFormScreen(salidaId: String? = null) {
@@ -60,76 +60,68 @@ fun SalidaFormScreen(salidaId: String? = null) {
 
         AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
             SectionLabel("Datos de la salida")
-            OutlinedTextField(
+            AppTextField(
                 value = state.descripcion,
                 onValueChange = viewModel::onDescripcionChange,
                 label = { Text("Descripción") },
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
+                AppTextField(
                     value = state.marca,
                     onValueChange = viewModel::onMarcaChange,
                     label = { Text("Marca") },
                     singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.weight(1f),
                 )
-                OutlinedTextField(
+                AppTextField(
                     value = state.modelo,
                     onValueChange = viewModel::onModeloChange,
                     label = { Text("Modelo") },
                     singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.weight(1f),
                 )
             }
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
+                AppTextField(
                     value = state.proyecto,
                     onValueChange = viewModel::onProyectoChange,
                     label = { Text("Proyecto") },
                     singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.weight(2f),
                 )
-                OutlinedTextField(
+                AppTextField(
                     value = state.cantidad,
                     onValueChange = viewModel::onCantidadChange,
                     label = { Text("Cantidad") },
                     singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.weight(1f),
                 )
             }
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            AppTextField(
                 value = state.departamento,
                 onValueChange = viewModel::onDepartamentoChange,
                 label = { Text("Departamento") },
                 singleLine = true,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            AppTextField(
                 value = state.usuario,
                 onValueChange = viewModel::onUsuarioChange,
                 label = { Text("Usuario") },
                 singleLine = true,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            AppTextField(
                 value = state.area,
                 onValueChange = viewModel::onAreaChange,
                 label = { Text("Área") },
                 singleLine = true,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
@@ -141,12 +133,11 @@ fun SalidaFormScreen(salidaId: String? = null) {
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            AppTextField(
                 value = state.observaciones,
                 onValueChange = viewModel::onObservacionesChange,
                 label = { Text("Observaciones") },
                 minLines = 2,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
         }

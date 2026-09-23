@@ -5,7 +5,30 @@ fun roleLabel(role: String?): String = when (role) {
     "GERENTE" -> "Gerente"
     "JEFE_DE_AREA" -> "Jefe de área"
     "EMPLEADO" -> "Empleado"
+    "GUARD" -> "Guardia"
     else -> role ?: "—"
+}
+
+/** Tipo de evento de control de acceso (ENTRY/EXIT). */
+fun accessEventTypeLabel(type: String?): String = when (type) {
+    "ENTRY" -> "Entrada"
+    "EXIT" -> "Salida"
+    else -> type ?: "—"
+}
+
+/** Cómo se obtuvo el "dónde" de un evento de acceso. */
+fun accessLocationSourceLabel(source: String?): String = when (source) {
+    "GPS" -> "GPS"
+    "SITE_ONLY" -> "Solo sitio"
+    "MANUAL" -> "Manual"
+    else -> source ?: "—"
+}
+
+/** Medio por el que se registró el evento de acceso. */
+fun accessMethodLabel(method: String?): String = when (method) {
+    "QR_SCAN" -> "Escaneo QR"
+    "MANUAL" -> "Manual"
+    else -> method ?: "—"
 }
 
 fun ticketStatusLabel(status: String): String = when (status) {

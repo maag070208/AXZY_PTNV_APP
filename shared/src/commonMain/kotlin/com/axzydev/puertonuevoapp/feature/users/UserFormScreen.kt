@@ -21,7 +21,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +38,7 @@ import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
 fun UserFormScreen(userId: String?) {
@@ -70,7 +70,7 @@ fun UserFormScreen(userId: String?) {
                     SectionLabel("Datos de acceso")
                     FormField("Correo", state.email, viewModel::onEmailChange, "usuario@empresa.com")
                     FormField("Username", state.username, viewModel::onUsernameChange)
-                    OutlinedTextField(
+                    AppTextField(
                         value = state.password,
                         onValueChange = viewModel::onPasswordChange,
                         label = { Text(if (isEdit) "Contraseña (opcional)" else "Contraseña") },
@@ -78,7 +78,6 @@ fun UserFormScreen(userId: String?) {
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                        shape = MaterialTheme.shapes.medium,
                     )
                 }
                 1 -> {
@@ -128,14 +127,13 @@ fun UserFormScreen(userId: String?) {
 
 @Composable
 private fun FormField(label: String, value: String, onValueChange: (String) -> Unit, placeholder: String? = null) {
-    OutlinedTextField(
+    AppTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
         placeholder = placeholder?.let { { Text(it) } },
         singleLine = true,
         modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-        shape = MaterialTheme.shapes.medium,
     )
 }
 

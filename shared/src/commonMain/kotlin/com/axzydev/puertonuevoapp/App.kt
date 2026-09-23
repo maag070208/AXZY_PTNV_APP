@@ -37,7 +37,9 @@ fun App() {
                 AuthState.Loading -> LoadingState(modifier = Modifier.fillMaxSize())
                 AuthState.LoggedOut -> LoginScreen()
                 is AuthState.LoggedIn -> {
-                    val navigator = remember(state.user.id) { Navigator(Screen.Home) }
+                    // El guardia aterriza directo en la pantalla de escaneo.
+                    val start = if (state.user.role == "GUARD") Screen.AccessScan else Screen.Home
+                    val navigator = remember(state.user.id) { Navigator(start) }
                     CompositionLocalProvider(LocalNavigator provides navigator) {
                         AppShell()
                     }

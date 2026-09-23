@@ -4,6 +4,10 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Se usa la cámara para escanear el código QR de la credencial del empleado al registrar entradas y salidas.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Se usa la ubicación al registrar una entrada o salida para dejar constancia del sitio del escaneo.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

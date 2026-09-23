@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -46,6 +45,7 @@ import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.condicionLabel
 import com.axzydev.puertonuevoapp.core.util.formatShortDate
 import com.axzydev.puertonuevoapp.core.util.movementTypeLabel
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
 fun InventoryMovementsScreen(
@@ -76,20 +76,18 @@ fun InventoryMovementsScreen(
             )
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
+                AppTextField(
                     value = state.startFilter,
                     onValueChange = viewModel::onStartFilterChange,
                     label = { Text("Desde (AAAA-MM-DD)") },
                     singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.weight(1f),
                 )
-                OutlinedTextField(
+                AppTextField(
                     value = state.endFilter,
                     onValueChange = viewModel::onEndFilterChange,
                     label = { Text("Hasta (AAAA-MM-DD)") },
                     singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.weight(1f),
                 )
             }

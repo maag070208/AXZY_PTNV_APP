@@ -18,6 +18,12 @@ data class SessionUser(
     val canDeleteTicket: Boolean get() = role == "ADMIN"
     val canSeeAdminTasks: Boolean get() = role == "ADMIN" || role == "GERENTE"
     val canSeeAudit: Boolean get() = role == "ADMIN"
+
+    /** Control de acceso — escanear credenciales y registrar entradas/salidas. */
+    val canScanCredential: Boolean get() = role in setOf("GUARD", "ADMIN")
+
+    /** Control de acceso — consultar registros de portería. */
+    val canViewAccessLog: Boolean get() = role in setOf("GUARD", "ADMIN")
 }
 
 sealed interface AuthState {

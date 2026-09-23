@@ -22,7 +22,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +44,7 @@ import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.util.formatShortDate
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 /**
  * Vista de la carta responsiva en pantalla (no PDF): el PDF se genera
@@ -202,7 +202,7 @@ fun CartaDetailScreen(cartaId: String) {
             onConfirm = viewModel::confirmReturn,
         ) {
             Column {
-                OutlinedTextField(
+                AppTextField(
                     value = state.returnedBy,
                     onValueChange = viewModel::onReturnedByChange,
                     label = { Text("Nombre de quien resguarda") },
@@ -210,7 +210,7 @@ fun CartaDetailScreen(cartaId: String) {
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(Modifier.height(10.dp))
-                OutlinedTextField(
+                AppTextField(
                     value = state.returnCondition,
                     onValueChange = viewModel::onReturnConditionChange,
                     label = { Text("Condiciones en las que se devuelve") },

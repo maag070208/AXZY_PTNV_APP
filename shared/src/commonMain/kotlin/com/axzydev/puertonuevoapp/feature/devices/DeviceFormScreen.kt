@@ -15,7 +15,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,6 +30,7 @@ import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 /**
  * Alta/edición de UN dispositivo (paridad con DeviceFormPage del web, sin el
@@ -87,60 +87,54 @@ fun DeviceFormScreen(deviceId: String?) {
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            AppTextField(
                 value = state.descripcion,
                 onValueChange = viewModel::onDescripcionChange,
                 label = { Text("Descripción") },
                 enabled = !state.blocked,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            AppTextField(
                 value = state.marca,
                 onValueChange = viewModel::onMarcaChange,
                 label = { Text("Marca") },
                 enabled = !state.blocked,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            AppTextField(
                 value = state.modelo,
                 onValueChange = viewModel::onModeloChange,
                 label = { Text("Modelo") },
                 enabled = !state.blocked,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            AppTextField(
                 value = state.area,
                 onValueChange = viewModel::onAreaChange,
                 label = { Text("Área") },
                 enabled = !state.blocked,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             if (state.showField("numeroSerie")) {
                 Spacer(Modifier.height(10.dp))
-                OutlinedTextField(
+                AppTextField(
                     value = state.numeroSerie,
                     onValueChange = viewModel::onNumeroSerieChange,
                     label = { Text("No. de serie") },
                     enabled = !state.blocked,
-                    shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
             if (state.showField("nombreEquipo")) {
                 Spacer(Modifier.height(10.dp))
-                OutlinedTextField(
+                AppTextField(
                     value = state.nombreEquipo,
                     onValueChange = viewModel::onNombreEquipoChange,
                     label = { Text("Nombre del equipo") },
                     enabled = !state.blocked,
-                    shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -151,58 +145,53 @@ fun DeviceFormScreen(deviceId: String?) {
             AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
                 SectionLabel("Especificaciones técnicas")
                 if (state.showField("ip")) {
-                    OutlinedTextField(
+                    AppTextField(
                         value = state.ip,
                         onValueChange = viewModel::onIpChange,
                         label = { Text("IP") },
                         placeholder = { Text("192.168.0.1") },
                         enabled = !state.blocked,
-                        shape = MaterialTheme.shapes.medium,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Spacer(Modifier.height(10.dp))
                 }
                 if (state.showField("macAddress")) {
-                    OutlinedTextField(
+                    AppTextField(
                         value = state.macAddress,
                         onValueChange = viewModel::onMacAddressChange,
                         label = { Text("MAC") },
                         placeholder = { Text("AA:BB:CC:DD:EE:FF") },
                         enabled = !state.blocked,
-                        shape = MaterialTheme.shapes.medium,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Spacer(Modifier.height(10.dp))
                 }
                 if (state.showField("sistemaOp")) {
-                    OutlinedTextField(
+                    AppTextField(
                         value = state.sistemaOp,
                         onValueChange = viewModel::onSistemaOpChange,
                         label = { Text("Sistema operativo") },
                         enabled = !state.blocked,
-                        shape = MaterialTheme.shapes.medium,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Spacer(Modifier.height(10.dp))
                 }
                 if (state.showField("ram")) {
-                    OutlinedTextField(
+                    AppTextField(
                         value = state.ram,
                         onValueChange = viewModel::onRamChange,
                         label = { Text("RAM") },
                         enabled = !state.blocked,
-                        shape = MaterialTheme.shapes.medium,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Spacer(Modifier.height(10.dp))
                 }
                 if (state.showField("almacenamiento")) {
-                    OutlinedTextField(
+                    AppTextField(
                         value = state.almacenamiento,
                         onValueChange = viewModel::onAlmacenamientoChange,
                         label = { Text("Almacenamiento") },
                         enabled = !state.blocked,
-                        shape = MaterialTheme.shapes.medium,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }

@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
@@ -22,6 +23,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -46,6 +48,8 @@ import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.ui.AppSnackbarHost
 import com.axzydev.puertonuevoapp.core.ui.BrandLogoBadge
 import com.axzydev.puertonuevoapp.feature.audit.AuditLogsScreen
+import com.axzydev.puertonuevoapp.feature.access.AccessLogScreen
+import com.axzydev.puertonuevoapp.feature.access.AccessScanScreen
 import com.axzydev.puertonuevoapp.feature.cartas.CartaDetailScreen
 import com.axzydev.puertonuevoapp.feature.cartas.CartaFormScreen
 import com.axzydev.puertonuevoapp.feature.cartas.CartasListScreen
@@ -103,6 +107,14 @@ fun AppShell() {
     PlatformBackHandler(enabled = navigator.backStack.size > 1) {
         navigator.pop()
     }
+
+    val navItemColors = NavigationBarItemDefaults.colors(
+        selectedIconColor = MaterialTheme.colorScheme.primary,
+        selectedTextColor = MaterialTheme.colorScheme.primary,
+        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -169,25 +181,38 @@ fun AppShell() {
                         onClick = { navigator.switchTab(Screen.Home) },
                         icon = { Icon(Icons.Filled.Home, contentDescription = null) },
                         label = { Text("Inicio") },
+                        colors = navItemColors,
                     )
                     NavigationBarItem(
                         selected = chrome.section == MainSection.TICKETS,
                         onClick = { navigator.switchTab(Screen.TicketsList) },
                         icon = { Icon(Icons.Filled.ConfirmationNumber, contentDescription = null) },
                         label = { Text("Tickets") },
+                        colors = navItemColors,
                     )
                     NavigationBarItem(
                         selected = chrome.section == MainSection.DEVICES,
                         onClick = { navigator.switchTab(Screen.DevicesList) },
                         icon = { Icon(Icons.Filled.Devices, contentDescription = null) },
                         label = { Text("Equipos") },
+                        colors = navItemColors,
                     )
+                    if (user?.canScanCredential == true) {
+                        NavigationBarItem(
+                            selected = chrome.section == MainSection.ACCESS,
+                            onClick = { navigator.switchTab(Screen.AccessScan) },
+                            icon = { Icon(Icons.Filled.QrCodeScanner, contentDescription = null) },
+                            label = { Text("Portería") },
+                            colors = navItemColors,
+                        )
+                    }
                     if (user?.canManageCatalogs == true) {
                         NavigationBarItem(
                             selected = chrome.section == MainSection.USERS,
                             onClick = { navigator.switchTab(Screen.UsersList) },
                             icon = { Icon(Icons.Filled.Group, contentDescription = null) },
                             label = { Text("Usuarios") },
+                            colors = navItemColors,
                         )
                     }
                 }
@@ -252,6 +277,11 @@ private fun AppNavHost(screen: Screen) {
         is Screen.CartaDetail -> CartaDetailScreen(screen.id)
         is Screen.CartaForm -> CartaFormScreen(screen.id)
         Screen.GenerateCarta -> GenerateCartaScreen()
+
+        // Control de acceso — módulo 6
+        Screen.AccessScan -> AccessScanScreen()
+        Screen.AccessLog -> AccessLogScreen()
+
         Screen.Reports -> ReportsScreen()
         Screen.Notifications -> NotificationsScreen()
         Screen.AuditLogs -> AuditLogsScreen()

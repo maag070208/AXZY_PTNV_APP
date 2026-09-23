@@ -27,7 +27,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -48,6 +47,7 @@ import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.deviceEstadoLabel
 import com.axzydev.puertonuevoapp.core.util.formatShortDate
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
 fun LocationDetailScreen(locationId: String) {
@@ -109,12 +109,11 @@ fun LocationDetailScreen(locationId: String) {
                     if (isAdmin) {
                         Spacer(Modifier.height(12.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            OutlinedTextField(
+                            AppTextField(
                                 value = state.newSublugar,
                                 onValueChange = viewModel::onNewSublugarChange,
                                 placeholder = { Text("Nuevo sublugar…") },
                                 singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
                                 modifier = Modifier.weight(1f),
                             )
                             Spacer(Modifier.size(8.dp))

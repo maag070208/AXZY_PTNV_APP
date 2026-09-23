@@ -18,7 +18,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +34,7 @@ import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
 fun DeviceTypeFormScreen(typeId: String? = null) {
@@ -67,34 +67,31 @@ fun DeviceTypeFormScreen(typeId: String? = null) {
 
         AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
             SectionLabel("Datos del tipo")
-            OutlinedTextField(
+            AppTextField(
                 value = state.code,
                 onValueChange = viewModel::onCodeChange,
                 label = { Text("Código interno") },
                 placeholder = { Text("LAPTOP") },
                 enabled = !isEdit,
                 singleLine = true,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            AppTextField(
                 value = state.name,
                 onValueChange = viewModel::onNameChange,
                 label = { Text("Nombre") },
                 placeholder = { Text("Laptop") },
                 singleLine = true,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            AppTextField(
                 value = state.prefix,
                 onValueChange = viewModel::onPrefixChange,
                 label = { Text("Prefijo (consecutivo)") },
                 placeholder = { Text("LPT") },
                 singleLine = true,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             Text(

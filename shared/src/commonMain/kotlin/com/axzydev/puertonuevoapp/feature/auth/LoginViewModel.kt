@@ -25,6 +25,8 @@ class LoginViewModel(
 
     fun onPasswordChange(value: String) = _uiState.update { it.copy(password = value, errorMessage = null) }
 
+    fun togglePasswordVisibility() = _uiState.update { it.copy(passwordVisible = !it.passwordVisible) }
+
     fun onServerUrlChange(value: String) = _uiState.update { it.copy(serverUrl = value) }
 
     fun toggleServerField() = _uiState.update { it.copy(showServerField = !it.showServerField) }

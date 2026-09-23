@@ -12,6 +12,7 @@ enum class MainSection {
     TICKETS,
     DEVICES,
     USERS,
+    ACCESS,
 }
 
 fun Screen.chrome(): ScreenChrome = when (this) {
@@ -60,6 +61,10 @@ fun Screen.chrome(): ScreenChrome = when (this) {
     is Screen.CartaDetail -> ScreenChrome("Carta responsiva", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
     is Screen.CartaForm -> ScreenChrome(if (id == null) "Nueva carta" else "Editar carta", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
     Screen.GenerateCarta -> ScreenChrome("Generar cartas", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
+
+    // Control de acceso (portería)
+    Screen.AccessScan -> ScreenChrome("Portería", section = MainSection.ACCESS)
+    Screen.AccessLog -> ScreenChrome("Registros de acceso", section = MainSection.ACCESS)
 
     Screen.Reports -> ScreenChrome("Reportes", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
     Screen.Notifications -> ScreenChrome("Notificaciones", showBack = true, showBottomNavigation = false, section = MainSection.HOME)

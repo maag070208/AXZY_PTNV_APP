@@ -4,6 +4,7 @@ package com.axzydev.puertonuevoapp.feature.auth
 data class LoginUiState(
     val username: String = "",
     val password: String = "",
+    val passwordVisible: Boolean = false,
     val serverUrl: String = "",
     val showServerField: Boolean = false,
     val loading: Boolean = false,

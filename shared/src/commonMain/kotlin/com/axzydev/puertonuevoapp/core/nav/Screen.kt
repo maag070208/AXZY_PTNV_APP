@@ -47,6 +47,10 @@ sealed interface Screen {
     data class CartaForm(val id: String? = null) : Screen
     data object GenerateCarta : Screen
 
+    // Control de acceso (portería)
+    data object AccessScan : Screen
+    data object AccessLog : Screen
+
     data object Reports : Screen
     data object Notifications : Screen
     data object AuditLogs : Screen

@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -47,6 +46,7 @@ import com.axzydev.puertonuevoapp.core.ui.AppSearchField
 import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
 fun DepartmentsListScreen(viewModel: DepartmentsListViewModel = viewModel { DepartmentsListViewModel(AppContainer.departmentsApi) }) {
@@ -101,13 +101,12 @@ fun DepartmentsListScreen(viewModel: DepartmentsListViewModel = viewModel { Depa
             saving = state.actionSaving,
             onConfirm = viewModel::submitCreate,
         ) {
-            OutlinedTextField(
+            AppTextField(
                 value = state.newName,
                 onValueChange = viewModel::onNewNameChange,
                 label = { Text("Nombre del departamento") },
                 placeholder = { Text("Ej. RECEPCIÓN") },
                 singleLine = true,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -123,12 +122,11 @@ fun DepartmentsListScreen(viewModel: DepartmentsListViewModel = viewModel { Depa
             saving = state.actionSaving,
             onConfirm = viewModel::submitEdit,
         ) {
-            OutlinedTextField(
+            AppTextField(
                 value = state.editName,
                 onValueChange = viewModel::onEditNameChange,
                 label = { Text("Nombre del departamento") },
                 singleLine = true,
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
         }

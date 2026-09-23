@@ -55,3 +55,33 @@ fun isOverdue(dueDateIso: String?, completed: Boolean): Boolean {
     val due = parseIsoToEpochMillis(dueDateIso) ?: return false
     return due < currentTimeMillis()
 }
+
+/**
+ * Inverso de [parseIsoToEpochMillis]: epoch millis → ISO-8601 UTC con sufijo
+ * `Z` (ej. "2026-08-20T10:00:00.000Z"), el formato que acepta `new Date(...)`
+ * en el backend. Se usa para el `deviceTimestamp` (auditoría) del evento.
+ */
+fun formatIsoUtc(millis: Long): String {
+    val epochDay = if (millis >= 0) millis / 86_400_000L else (millis - 86_399_999L) / 86_400_000L
+    val msOfDay = millis - epochDay * 86_400_000L
+
+    // civil_from_days (Howard Hinnant), inverso del usado en parseIsoToEpochMillis.
+    val z = epochDay + 719_468L
+    val era = (if (z >= 0) z else z - 146_096L) / 146_097L
+    val doe = z - era * 146_097L
+    val yoe = (doe - doe / 1_460L + doe / 36_524L - doe / 146_096L) / 365L
+    val y = yoe + era * 400L
+    val doy = doe - (365L * yoe + yoe / 4L - yoe / 100L)
+    val mp = (5L * doy + 2L) / 153L
+    val d = doy - (153L * mp + 2L) / 5L + 1L
+    val m = if (mp < 10L) mp + 3L else mp - 9L
+    val year = if (m <= 2L) y + 1L else y
+
+    val hour = (msOfDay / 3_600_000L).toInt()
+    val minute = ((msOfDay % 3_600_000L) / 60_000L).toInt()
+    val second = ((msOfDay % 60_000L) / 1_000L).toInt()
+    val milli = (msOfDay % 1_000L).toInt()
+
+    fun pad(value: Long, width: Int) = value.toString().padStart(width, '0')
+    return "${pad(year, 4)}-${pad(m, 2)}-${pad(d, 2)}T${pad(hour.toLong(), 2)}:${pad(minute.toLong(), 2)}:${pad(second.toLong(), 2)}.${pad(milli.toLong(), 3)}Z"
+}

@@ -20,7 +20,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,6 +37,7 @@ import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
 import com.axzydev.puertonuevoapp.core.util.condicionLabel
 import com.axzydev.puertonuevoapp.core.util.deviceEstadoLabel
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
 fun NewInventoryMovementScreen(deviceId: String? = null) {
@@ -108,22 +108,20 @@ fun NewInventoryMovementScreen(deviceId: String? = null) {
                 Column(modifier = Modifier.fillMaxWidth().background(AppColors.Info.copy(alpha = 0.08f), RoundedCornerShape(14.dp)).padding(12.dp)) {
                     Text("Datos de la asignación", style = MaterialTheme.typography.labelSmall, color = AppColors.Info)
                     Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
+                    AppTextField(
                         value = state.prestadoA,
                         onValueChange = viewModel::onPrestadoAChange,
                         label = { Text("Asignado a") },
                         placeholder = { Text("Nombre de quien recibe el equipo…") },
                         singleLine = true,
-                        shape = MaterialTheme.shapes.medium,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Spacer(Modifier.height(10.dp))
-                    OutlinedTextField(
+                    AppTextField(
                         value = state.fechaRetorno,
                         onValueChange = viewModel::onFechaRetornoChange,
                         label = { Text("Fecha de retorno esperada (AAAA-MM-DD)") },
                         singleLine = true,
-                        shape = MaterialTheme.shapes.medium,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -183,23 +181,21 @@ fun NewInventoryMovementScreen(deviceId: String? = null) {
                 Spacer(Modifier.height(10.dp))
                 Text("Esta acción marcará el dispositivo como BAJA. No podrá ser usado nuevamente.", style = MaterialTheme.typography.bodySmall, color = AppColors.Danger)
                 Spacer(Modifier.height(8.dp))
-                OutlinedTextField(
+                AppTextField(
                     value = state.motivoBaja,
                     onValueChange = viewModel::onMotivoBajaChange,
                     label = { Text("Motivo de la baja (opcional)") },
                     placeholder = { Text("Ej. Equipo en mal estado, robado, etc.") },
-                    shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
 
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            AppTextField(
                 value = state.notas,
                 onValueChange = viewModel::onNotasChange,
                 label = { Text("Notas (opcional)") },
                 placeholder = { Text("Observaciones adicionales…") },
-                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
