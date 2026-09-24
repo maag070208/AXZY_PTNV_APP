@@ -3,6 +3,7 @@ package com.axzydev.puertonuevoapp.core.network.tickets
 import com.axzydev.puertonuevoapp.core.network.common.DepartmentRefDto
 import com.axzydev.puertonuevoapp.core.network.common.UserRefDto
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class TicketCommentDto(
@@ -63,6 +64,14 @@ data class TicketAttachmentDto(
     val url: String,
 )
 
+/** Categoría del ticket: catálogo de la API (`/tickets/categories`). */
+@Serializable
+data class TicketCategoryRefDto(
+    val id: String,
+    val nombre: String,
+    val activo: Boolean = true,
+)
+
 @Serializable
 data class TicketDto(
     val id: String,
@@ -70,7 +79,8 @@ data class TicketDto(
     val descripcion: String,
     val status: String,
     val priority: String,
-    val category: String,
+    val categoryId: String? = null,
+    val category: TicketCategoryRefDto? = null,
     val creadoPorId: String,
     val creadoPor: UserRefDto,
     val asignadoAId: String? = null,
@@ -99,18 +109,22 @@ data class TicketCreateInput(
     val titulo: String,
     val descripcion: String,
     val priority: String? = null,
-    val category: String? = null,
+    val categoryId: String? = null,
     val departmentId: String? = null,
     val asignadoAId: String? = null,
 )
 
-/** PUT /tickets/{id} — parcial: solo se envían los campos que cambiaron. */
+/**
+ * PUT /tickets/{id} — parcial: solo se envían los campos que cambiaron.
+ * [categoryId] es un `JsonElement` para poder mandar `null` explícito (quitar la
+ * categoría): el cliente omite las propiedades en `null` (`explicitNulls = false`).
+ */
 @Serializable
 data class TicketUpdateInput(
     val titulo: String? = null,
     val descripcion: String? = null,
     val priority: String? = null,
-    val category: String? = null,
+    val categoryId: JsonElement? = null,
     val departmentId: String? = null,
     val asignadoAId: String? = null,
     val status: String? = null,
@@ -126,6 +140,10 @@ data class TicketRefDto(
     val status: String,
     val priority: String,
     val deletedAt: String? = null,
+    /** Para decidir qué puede hacer el usuario con la tarea (ver `TicketPermissions`). */
+    val creadoPorId: String? = null,
+    val asignadoAId: String? = null,
+    val departmentId: String? = null,
     val department: DepartmentRefDto? = null,
 )
 

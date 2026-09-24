@@ -12,6 +12,9 @@ class TicketsApi(private val client: ApiClient) {
 
     suspend fun kanban(): KanbanResponseDto = client.get("/tickets/kanban")
 
+    /** Categorías activas del catálogo (para el formulario de ticket). */
+    suspend fun categories(): List<TicketCategoryRefDto> = client.get("/tickets/categories")
+
     suspend fun get(id: String): TicketDto = client.get("/tickets/$id")
 
     suspend fun create(input: TicketCreateInput): TicketDto = client.post("/tickets", input)

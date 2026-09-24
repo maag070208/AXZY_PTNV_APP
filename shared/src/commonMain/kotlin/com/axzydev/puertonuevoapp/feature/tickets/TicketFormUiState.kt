@@ -7,14 +7,18 @@ data class TicketFormUiState(
     val titulo: String = "",
     val descripcion: String = "",
     val priority: String = "MEDIA",
-    val category: String = "OTRO",
+    /** "" = sin categoría. */
+    val categoryId: String = "",
+    /** Categoría con la que se cargó el ticket (para mandarla solo si cambió). */
+    val initialCategoryId: String = "",
+    /** Opciones del catálogo (`id` → nombre), con "Sin categoría" primero. */
+    val categoryOptions: List<Pair<String, String>> = listOf(NO_CATEGORY),
     val savedTicketId: String? = null,
 ) {
     val isValid: Boolean get() = titulo.isNotBlank() && descripcion.isNotBlank()
 }
 
+val NO_CATEGORY: Pair<String, String> = "" to "Sin categoría"
+
 val ticketPriorityOptions: List<Pair<String, String>> = listOf("BAJA", "MEDIA", "ALTA", "URGENTE")
     .map { it to com.axzydev.puertonuevoapp.core.util.ticketPriorityLabel(it) }
-
-val ticketCategoryOptions: List<Pair<String, String>> = listOf("MANTENIMIENTO", "EQUIPO", "SISTEMA", "OTRO")
-    .map { it to com.axzydev.puertonuevoapp.core.util.ticketCategoryLabel(it) }

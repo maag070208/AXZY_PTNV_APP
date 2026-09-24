@@ -26,7 +26,7 @@ data class DepartmentTicketDto(
     val titulo: String,
     val status: String,
     val priority: String,
-    val category: String,
+    val category: com.axzydev.puertonuevoapp.core.network.tickets.TicketCategoryRefDto? = null,
     val creadoEn: String,
     val asignadoA: UserRefDto? = null,
 )

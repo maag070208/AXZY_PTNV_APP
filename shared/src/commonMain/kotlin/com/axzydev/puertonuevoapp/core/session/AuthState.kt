@@ -8,15 +8,23 @@ data class SessionUser(
     val departmentId: String?,
 ) {
     val isAdmin: Boolean get() = role == "ADMIN"
+    val isGerente: Boolean get() = role == "GERENTE"
+    val isJefeArea: Boolean get() = role == "JEFE_DE_AREA"
+    val isEmpleado: Boolean get() = role == "EMPLEADO"
 
     /** Matriz de autorización — API_DOCUMENTATION.md §1.3. */
     val canManageCatalogs: Boolean get() = role == "ADMIN"
     val canDeleteCartas: Boolean get() = role in setOf("ADMIN", "GERENTE", "JEFE_DE_AREA")
     val canRegisterMovement: Boolean get() = role in setOf("ADMIN", "GERENTE", "JEFE_DE_AREA")
     val canGenerateCartas: Boolean get() = role in setOf("ADMIN", "GERENTE")
-    val canCreateTicket: Boolean get() = role != "EMPLEADO"
     val canDeleteTicket: Boolean get() = role == "ADMIN"
     val canSeeAdminTasks: Boolean get() = role == "ADMIN" || role == "GERENTE"
+
+    /** "Mis tareas" es la vista del empleado (en la web, igual). */
+    val canSeeMyTasks: Boolean get() = isEmpleado
+
+    /** Crear tareas desde el tablero (en la web, todos menos EMPLEADO). */
+    val canCreateAssignments: Boolean get() = !isEmpleado
     val canSeeAudit: Boolean get() = role == "ADMIN"
 
     /** Panel administrativo en el home (paridad con la web). */
