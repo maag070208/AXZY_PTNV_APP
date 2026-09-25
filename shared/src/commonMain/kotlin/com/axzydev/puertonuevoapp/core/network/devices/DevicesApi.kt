@@ -31,18 +31,6 @@ class DevicesApi(private val client: ApiClient) {
         return DeviceListResponseDto(data = filtered, total = filtered.size)
     }
 
-    suspend fun summary(): DeviceSummaryDto {
-        val dash = client.get<ApiDashboard>("/inventario/dashboard")
-        val s = dash.stats
-        return DeviceSummaryDto(
-            total = s.dispositivos,
-            disponible = s.disponible,
-            asignado = s.prestado,
-            baja = s.baja,
-            tipos = s.tipos,
-        )
-    }
-
     suspend fun get(id: String): DeviceDto =
         client.get<ApiDispositivo>("/inventario/dispositivos/$id").toDeviceDto()
 
@@ -197,18 +185,3 @@ private data class ApiUpdateDispositivo(
     val marca: String? = null,
     val modelo: String? = null,
 )
-
-@Serializable
-private data class ApiDashboardStats(
-    val tipos: Int = 0,
-    val dispositivos: Int = 0,
-    val unidadesActivas: Int = 0,
-    val disponible: Int = 0,
-    val prestado: Int = 0,
-    val danado: Int = 0,
-    val mantenimiento: Int = 0,
-    val baja: Int = 0,
-)
-
-@Serializable
-private data class ApiDashboard(val stats: ApiDashboardStats = ApiDashboardStats())

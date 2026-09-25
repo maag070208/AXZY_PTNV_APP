@@ -46,8 +46,8 @@ import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.formatDateTime
-import com.axzydev.puertonuevoapp.core.util.ticketCategoryLabel
 import com.axzydev.puertonuevoapp.core.util.ticketPriorityLabel
+import com.axzydev.puertonuevoapp.core.util.ticketStatusLabel
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
@@ -59,8 +59,6 @@ fun TicketDetailScreen(ticketId: String) {
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
     val user = (authState as? AuthState.LoggedIn)?.user
-    val isAdmin = user?.isAdmin == true
-    val canSeeAssignments = user?.role != "EMPLEADO"
 
     when {
         state.loading -> LoadingState(modifier = Modifier.fillMaxSize())
@@ -71,6 +69,13 @@ fun TicketDetailScreen(ticketId: String) {
         )
         else -> {
             val t = state.ticket!!
+            val access = t.accessInfo()
+            val canEdit = user != null && TicketPermissions.canEdit(user, access)
+            val canClose = user != null && TicketPermissions.canClose(user, access)
+            // Editar mueve entre abierto y en seguimiento; cerrar tiene su propio permiso.
+            val statusOptions = ticketStatusOptions.filter { (value, _) ->
+                value == t.status || if (value == "CERRADO") canClose else canEdit
+            }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -95,39 +100,36 @@ fun TicketDetailScreen(ticketId: String) {
 
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "${ticketCategoryLabel(t.category)} · ${t.department?.name ?: "Sin depto."} · #${t.id.take(8).uppercase()}",
+                    "${t.category?.nombre ?: "Sin categoría"} · ${t.department?.name ?: "Sin depto."} · #${t.id.take(8).uppercase()}",
                     style = MaterialTheme.typography.bodySmall,
                     color = AppColors.TextFaint,
                 )
 
-                if (isAdmin || canSeeAssignments) {
-                    Spacer(Modifier.height(10.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (isAdmin) {
-                            Text(
-                                "Editar",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = AppColors.EmeraldPrimary,
-                                modifier = Modifier
-                                    .clip(AppShape.pill)
-                                    .background(AppColors.SurfaceVariant, AppShape.pill)
-                                    .clickable { navigator.push(Screen.EditTicket(t.id)) }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                            )
-                        }
-                        if (canSeeAssignments) {
-                            Text(
-                                "Tareas del ticket",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = AppColors.EmeraldPrimary,
-                                modifier = Modifier
-                                    .clip(AppShape.pill)
-                                    .background(AppColors.SurfaceVariant, AppShape.pill)
-                                    .clickable { navigator.push(Screen.TicketsKanban(t.id)) }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                            )
-                        }
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (canEdit) {
+                        Text(
+                            "Editar",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = AppColors.EmeraldPrimary,
+                            modifier = Modifier
+                                .clip(AppShape.pill)
+                                .background(AppColors.SurfaceVariant, AppShape.pill)
+                                .clickable { navigator.push(Screen.EditTicket(t.id)) }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        )
                     }
+                    // El tablero solo trae las tareas que el rol puede ver (el empleado, las suyas).
+                    Text(
+                        "Tareas del ticket",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = AppColors.EmeraldPrimary,
+                        modifier = Modifier
+                            .clip(AppShape.pill)
+                            .background(AppColors.SurfaceVariant, AppShape.pill)
+                            .clickable { navigator.push(Screen.TicketsKanban(t.id)) }
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                    )
                 }
 
                 Spacer(Modifier.height(16.dp))
@@ -139,15 +141,16 @@ fun TicketDetailScreen(ticketId: String) {
                 Spacer(Modifier.height(14.dp))
                 InfoCard {
                     SectionLabel("Estado")
-                    if (state.updatingStatus) {
-                        CircularProgressIndicator(modifier = Modifier.size(20.dp), color = AppColors.EmeraldPrimary)
-                    } else {
-                        SimpleDropdownField(
+                    when {
+                        state.updatingStatus ->
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), color = AppColors.EmeraldPrimary)
+                        statusOptions.size > 1 -> SimpleDropdownField(
                             label = "Cambiar estado",
                             value = t.status,
-                            options = ticketStatusOptions,
+                            options = statusOptions,
                             onSelect = viewModel::onStatusChange,
                         )
+                        else -> StatusChip(ticketStatusLabel(t.status), AppColors.ticketStatusColor(t.status))
                     }
                     Spacer(Modifier.height(4.dp))
                     Text(

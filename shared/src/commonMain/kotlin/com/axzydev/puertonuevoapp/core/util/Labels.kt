@@ -71,14 +71,6 @@ fun ticketPriorityLabel(priority: String): String = when (priority) {
     else -> priority
 }
 
-fun ticketCategoryLabel(category: String): String = when (category) {
-    "MANTENIMIENTO" -> "Mantenimiento"
-    "EQUIPO" -> "Equipo"
-    "SISTEMA" -> "Sistema"
-    "OTRO" -> "Otro"
-    else -> category
-}
-
 fun assignmentStatusLabel(status: String): String = when (status) {
     "PENDIENTE" -> "Pendiente"
     "EN_PROGRESO" -> "En progreso"

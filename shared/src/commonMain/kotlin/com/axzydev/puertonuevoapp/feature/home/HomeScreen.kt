@@ -22,8 +22,9 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.AssignmentInd
 import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.ConfirmationNumber
+import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Groups
@@ -32,7 +33,7 @@ import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.QueryStats
 import androidx.compose.material.icons.filled.TaskAlt
@@ -55,11 +56,13 @@ import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.dashboard.DashboardActivityDto
 import com.axzydev.puertonuevoapp.core.network.dashboard.DashboardSummaryDto
+import com.axzydev.puertonuevoapp.core.network.tickets.KanbanAssignmentDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.session.SessionUser
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.ui.AppActionCard
+import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
@@ -67,6 +70,10 @@ import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.StatCard
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.formatDateTime
+import com.axzydev.puertonuevoapp.core.util.assignmentStatusLabel
+import com.axzydev.puertonuevoapp.core.util.roleLabel
+import com.axzydev.puertonuevoapp.feature.tickets.AssignmentRow
+import com.axzydev.puertonuevoapp.feature.tickets.assignmentStatusColor
 
 private val AGENT_COLORS = listOf(
     Color(0xFF6366F1), Color(0xFF0EA5E9), Color(0xFF10B981),
@@ -76,7 +83,7 @@ private val AGENT_COLORS = listOf(
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel {
-        HomeViewModel(AppContainer.authRepository, AppContainer.devicesApi, AppContainer.dashboardApi)
+        HomeViewModel(AppContainer.authRepository, AppContainer.ticketsApi, AppContainer.dashboardApi)
     },
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -106,6 +113,14 @@ private fun HomeContent(
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
     ) {
+        if (user != null) {
+            Text("Hola, ${user.name.substringBefore(' ')}", style = MaterialTheme.typography.titleLarge, color = AppColors.TextPrimary)
+            Text(roleLabel(user.role), style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
+            Spacer(Modifier.height(14.dp))
+        }
+        CredentialShortcut(onClick = { onNavigate(Screen.MyCredential) })
+        Spacer(Modifier.height(20.dp))
+
         when {
             state.loading -> LoadingState(modifier = Modifier.fillMaxWidth().height(200.dp))
             state.error != null -> ErrorState(
@@ -114,16 +129,21 @@ private fun HomeContent(
                 onRetry = onRetry,
             )
             state.dashboard != null -> DashboardSection(state.dashboard, onNavigate, canSeeAudit = user?.canSeeAudit == true)
-            state.summary != null -> DeviceSummarySection(state.summary, onNavigate)
+            else -> PendingTasksSection(state.tasks, title = pendingTasksTitle(user), onNavigate = onNavigate)
         }
 
         Spacer(Modifier.height(24.dp))
         SectionLabel("Accesos rápidos")
         Spacer(Modifier.height(6.dp))
 
+        // Lo operativo primero; lo administrativo, según el rol (igual que el menú).
         val actions = buildList {
             add(QuickActionSpec("Nuevo ticket", Icons.Filled.Add) { onNavigate(Screen.NewTicket) })
-            add(QuickActionSpec("Mis tareas", Icons.Filled.Assignment) { onNavigate(Screen.MyTasks) })
+            add(QuickActionSpec("Tickets", Icons.Filled.ConfirmationNumber) { onNavigate(Screen.TicketsList) })
+            add(QuickActionSpec("Tablero", Icons.Filled.Dashboard) { onNavigate(Screen.TicketsKanban()) })
+            if (user?.canSeeMyTasks == true) {
+                add(QuickActionSpec("Mis tareas", Icons.Filled.Assignment) { onNavigate(Screen.MyTasks) })
+            }
             if (user?.canSeeAdminTasks == true) {
                 add(QuickActionSpec("Tareas del equipo", Icons.Filled.AssignmentInd) { onNavigate(Screen.AdminTasks) })
             }
@@ -133,14 +153,16 @@ private fun HomeContent(
             if (user?.canViewAccessLog == true) {
                 add(QuickActionSpec("Registros de acceso", Icons.Filled.History) { onNavigate(Screen.AccessLog) })
             }
-            add(QuickActionSpec("Departamentos", Icons.Filled.Business) { onNavigate(Screen.DepartmentsList) })
-            add(QuickActionSpec("Personal", Icons.Filled.Groups) { onNavigate(Screen.PersonalList) })
-            add(QuickActionSpec("Inventario", Icons.Filled.Inventory) { onNavigate(Screen.InventoryIndex) })
-            add(QuickActionSpec("Salidas de material", Icons.Filled.ListAlt) { onNavigate(Screen.SalidasList) })
-            add(QuickActionSpec("Cartas responsivas", Icons.Filled.Description) { onNavigate(Screen.CartasList) })
-            add(QuickActionSpec("Reportes", Icons.Filled.QueryStats) { onNavigate(Screen.Reports) })
             add(QuickActionSpec("Notificaciones", Icons.Filled.Notifications) { onNavigate(Screen.Notifications) })
+            if (user?.canManageHR == true) {
+                add(QuickActionSpec("Personal", Icons.Filled.Groups) { onNavigate(Screen.PersonalList) })
+                add(QuickActionSpec("Departamentos", Icons.Filled.Business) { onNavigate(Screen.DepartmentsList) })
+            }
             if (user?.canManageCatalogs == true) {
+                add(QuickActionSpec("Inventario", Icons.Filled.Inventory) { onNavigate(Screen.InventoryIndex) })
+                add(QuickActionSpec("Salidas de material", Icons.Filled.ListAlt) { onNavigate(Screen.SalidasList) })
+                add(QuickActionSpec("Cartas responsivas", Icons.Filled.Description) { onNavigate(Screen.CartasList) })
+                add(QuickActionSpec("Reportes", Icons.Filled.QueryStats) { onNavigate(Screen.Reports) })
                 add(QuickActionSpec("Tipos de dispositivo", Icons.Filled.Devices) { onNavigate(Screen.DeviceTypesList) })
             }
             if (user?.canSeeAudit == true) {
@@ -339,44 +361,58 @@ private fun activityScreen(a: DashboardActivityDto): Screen? = when (a.scope) {
     else -> null
 }
 
+/** Acceso destacado a la credencial digital (todos los roles). */
 @Composable
-private fun DeviceSummarySection(summary: com.axzydev.puertonuevoapp.core.network.devices.DeviceSummaryDto, onNavigate: (Screen) -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-        StatCard(
-            value = summary.total.toString(),
-            label = "Total de dispositivos",
-            color = AppColors.EmeraldPrimary,
-            icon = { Icon(Icons.Filled.Devices, null, tint = AppColors.EmeraldPrimary, modifier = Modifier.size(20.dp)) },
-            modifier = Modifier.weight(1f),
-            onClick = { onNavigate(Screen.DevicesList) },
-        )
-        StatCard(
-            value = summary.disponible.toString(),
-            label = "Disponibles",
-            color = AppColors.Success,
-            icon = { Icon(Icons.Filled.CheckCircle, null, tint = AppColors.Success, modifier = Modifier.size(20.dp)) },
-            modifier = Modifier.weight(1f),
-            onClick = { onNavigate(Screen.DevicesList) },
-        )
+private fun CredentialShortcut(onClick: () -> Unit) {
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        containerColor = AppColors.EmeraldPrimary,
+        borderColor = null,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Filled.QrCode2, contentDescription = null, tint = AppColors.Surface, modifier = Modifier.size(32.dp))
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Mi credencial", style = MaterialTheme.typography.titleMedium, color = AppColors.Surface)
+                Text(
+                    "Muéstrala al guardia al entrar y al salir",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AppColors.Surface.copy(alpha = 0.85f),
+                )
+            }
+            Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = AppColors.Surface)
+        }
     }
-    Spacer(Modifier.height(12.dp))
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-        StatCard(
-            value = summary.asignado.toString(),
-            label = "Asignados",
-            color = AppColors.Warning,
-            icon = { Icon(Icons.Filled.Person, null, tint = AppColors.Warning, modifier = Modifier.size(20.dp)) },
-            modifier = Modifier.weight(1f),
-            onClick = { onNavigate(Screen.DevicesList) },
-        )
-        StatCard(
-            value = summary.baja.toString(),
-            label = "Baja",
-            color = AppColors.TextFaint,
-            icon = { Icon(Icons.Filled.Delete, null, tint = AppColors.TextFaint, modifier = Modifier.size(20.dp)) },
-            modifier = Modifier.weight(1f),
-            onClick = { onNavigate(Screen.DevicesList) },
-        )
+}
+
+private fun pendingTasksTitle(user: SessionUser?): String = when {
+    user?.isEmpleado == true -> "Mis tareas pendientes"
+    user?.isGerente == true || user?.isJefeArea == true -> "Tareas pendientes de mi área"
+    else -> "Tareas pendientes de mis tickets"
+}
+
+/** Pendientes por estado y las más próximas a vencer; cada una abre el tablero de su ticket. */
+@Composable
+private fun PendingTasksSection(tasks: List<KanbanAssignmentDto>, title: String, onNavigate: (Screen) -> Unit) {
+    SectionLabel(title)
+    Spacer(Modifier.height(8.dp))
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        listOf("PENDIENTE", "EN_PROGRESO", "EN_REVISION").forEach { status ->
+            StatusChip("${assignmentStatusLabel(status)}: ${tasks.count { it.status == status }}", assignmentStatusColor(status))
+        }
+    }
+    Spacer(Modifier.height(10.dp))
+    if (tasks.isEmpty()) {
+        Text("No hay tareas pendientes.", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
+        return
+    }
+    tasks.sortedWith(compareBy(nullsLast<String>()) { it.dueDate }).take(5).forEach { task ->
+        AssignmentRow(task, onClick = { onNavigate(Screen.TicketsKanban(task.ticketId)) })
+        Spacer(Modifier.height(8.dp))
+    }
+    if (tasks.size > 5) {
+        SeeMoreButton("Ver todas (${tasks.size})") { onNavigate(Screen.TicketsKanban()) }
     }
 }
 

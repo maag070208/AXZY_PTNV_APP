@@ -36,6 +36,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
+import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
+import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.AppShape
@@ -57,8 +59,8 @@ fun TicketsKanbanScreen(ticketId: String? = null) {
     val state by viewModel.uiState.collectAsState()
     val authState by AppContainer.authRepository.state.collectAsState()
     val user = (authState as? AuthState.LoggedIn)?.user
-    val canCreate = user?.canCreateTicket == true
-    val canComplete = user?.canSeeAdminTasks == true
+    val canCreate = user?.canCreateAssignments == true
+    val navigator = LocalNavigator.current
 
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -146,9 +148,20 @@ fun TicketsKanbanScreen(ticketId: String? = null) {
     state.selected?.let { assignment ->
         AssignmentDetailModal(
             assignment = assignment,
-            canComplete = canComplete,
+            allowedMoves = user?.let {
+                TicketPermissions.allowedAssignmentMoves(it, assignment.accessInfo(), assignment.userId, assignment.status)
+            }.orEmpty(),
             onDismiss = viewModel::dismissSelected,
             onStatusChange = viewModel::onAssignmentStatusChange,
+            // Desde el tablero de un ticket ya se viene de su detalle.
+            onOpenTicket = if (ticketId == null) {
+                {
+                    viewModel.dismissSelected()
+                    navigator.push(Screen.TicketDetail(assignment.ticketId))
+                }
+            } else {
+                null
+            },
         )
     }
 
@@ -160,9 +173,10 @@ fun TicketsKanbanScreen(ticketId: String? = null) {
 @Composable
 private fun AssignmentDetailModal(
     assignment: com.axzydev.puertonuevoapp.core.network.tickets.KanbanAssignmentDto,
-    canComplete: Boolean,
+    allowedMoves: Set<String>,
     onDismiss: () -> Unit,
     onStatusChange: (String) -> Unit,
+    onOpenTicket: (() -> Unit)?,
 ) {
     AppModal(title = assignment.title, onDismiss = onDismiss, icon = Icons.Filled.Dashboard) {
         Text(assignment.ticket.titulo, style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
@@ -175,17 +189,34 @@ private fun AssignmentDetailModal(
         assignment.dueDate?.let {
             Text("Fecha límite: ${formatShortDate(it)}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
         }
+        if (onOpenTicket != null) {
+            Spacer(Modifier.height(10.dp))
+            Text(
+                "Ver ticket",
+                style = MaterialTheme.typography.bodySmall,
+                color = AppColors.EmeraldPrimary,
+                modifier = Modifier
+                    .clip(AppShape.pill)
+                    .background(AppColors.SurfaceVariant, AppShape.pill)
+                    .clickable(onClick = onOpenTicket)
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+            )
+        }
         Spacer(Modifier.height(16.dp))
         Text("MOVER A", style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint)
         Spacer(Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            assignmentStatusOrder.forEach { status ->
-                val disabled = status == assignment.status || (status == "COMPLETADA" && !canComplete)
-                StatusChip(
-                    label = assignmentStatusLabel(status),
-                    color = if (disabled) AppColors.TextFaint else assignmentStatusColor(status),
-                    modifier = Modifier.clickable(enabled = !disabled) { onStatusChange(status) },
-                )
+        if (allowedMoves.isEmpty()) {
+            Text("No puedes mover esta tarea.", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
+        } else {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                assignmentStatusOrder.forEach { status ->
+                    val enabled = status in allowedMoves
+                    StatusChip(
+                        label = assignmentStatusLabel(status),
+                        color = if (enabled) assignmentStatusColor(status) else AppColors.TextFaint,
+                        modifier = Modifier.clip(AppShape.pill).clickable(enabled = enabled) { onStatusChange(status) },
+                    )
+                }
             }
         }
     }

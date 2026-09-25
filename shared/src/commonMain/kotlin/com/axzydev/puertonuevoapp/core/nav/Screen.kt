@@ -3,6 +3,9 @@ package com.axzydev.puertonuevoapp.core.nav
 sealed interface Screen {
     data object Home : Screen
 
+    /** Credencial digital del usuario (QR para el guardia). */
+    data object MyCredential : Screen
+
     // Tickets
     data object TicketsList : Screen
     data class TicketDetail(val id: String) : Screen

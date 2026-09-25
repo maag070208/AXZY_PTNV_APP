@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.ExpandLess
@@ -74,10 +75,12 @@ import com.axzydev.puertonuevoapp.core.ui.AppSnackbarHost
 import com.axzydev.puertonuevoapp.core.ui.BrandLogoBadge
 import com.axzydev.puertonuevoapp.core.ui.LocalTopBarActions
 import com.axzydev.puertonuevoapp.core.ui.TopBarActionsState
+import com.axzydev.puertonuevoapp.core.util.roleLabel
 import com.axzydev.puertonuevoapp.feature.access.AccessLogScreen
 import com.axzydev.puertonuevoapp.feature.access.AccessScanScreen
 import com.axzydev.puertonuevoapp.feature.audit.AuditLogsScreen
 import com.axzydev.puertonuevoapp.feature.cartas.CartaDetailScreen
+import com.axzydev.puertonuevoapp.feature.credential.MyCredentialScreen
 import com.axzydev.puertonuevoapp.feature.cartas.CartaFormScreen
 import com.axzydev.puertonuevoapp.feature.cartas.CartasListScreen
 import com.axzydev.puertonuevoapp.feature.cartas.GenerateCartaScreen
@@ -124,6 +127,8 @@ fun AppShell() {
 
     val current = navigator.current
     val chrome = current.chrome()
+    // Desde el menú la pila queda en una sola pantalla: sin a dónde regresar, va la hamburguesa.
+    val showBack = chrome.showBack && navigator.backStack.size > 1
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -173,7 +178,7 @@ fun AppShell() {
                     TopAppBar(
                         modifier = Modifier.padding(top = 20.dp),
                         navigationIcon = {
-                            if (chrome.showBack) {
+                            if (showBack) {
                                 IconButton(onClick = { navigator.pop() }) {
                                     Icon(
                                         Icons.AutoMirrored.Filled.ArrowBack,
@@ -192,7 +197,7 @@ fun AppShell() {
                             }
                         },
                         title = {
-                            if (chrome.showBack) {
+                            if (showBack) {
                                 Text(
                                     chrome.title,
                                     style = MaterialTheme.typography.titleMedium,
@@ -275,14 +280,16 @@ private data class DrawerNode(
 
 private fun drawerNodes(user: SessionUser?): List<DrawerNode> = buildList {
     add(DrawerNode("Inicio", Icons.Filled.Home, Screen.Home))
+    add(DrawerNode("Mi credencial", Icons.Filled.Badge, Screen.MyCredential))
 
     add(
         DrawerNode(
             "Tickets", Icons.Filled.ConfirmationNumber, Screen.TicketsList,
             children = buildList {
                 add(DrawerChild("Tickets", Screen.TicketsList))
+                add(DrawerChild("Tablero", Screen.TicketsKanban()))
+                if (user?.canSeeMyTasks == true) add(DrawerChild("Mis tareas", Screen.MyTasks))
                 if (user?.canSeeAdminTasks == true) add(DrawerChild("Administrar tareas", Screen.AdminTasks))
-                if (user?.canCreateTicket != true) add(DrawerChild("Mis tareas", Screen.MyTasks))
             },
         )
     )
@@ -299,6 +306,9 @@ private fun drawerNodes(user: SessionUser?): List<DrawerNode> = buildList {
         )
     }
 
+    add(DrawerNode("Notificaciones", Icons.Filled.Notifications, Screen.Notifications))
+
+    // Lo administrativo va debajo de lo operativo.
     if (user?.canManageCatalogs == true) {
         add(
             DrawerNode(
@@ -338,8 +348,6 @@ private fun drawerNodes(user: SessionUser?): List<DrawerNode> = buildList {
             )
         )
     }
-
-    add(DrawerNode("Notificaciones", Icons.Filled.Notifications, Screen.Notifications))
 }
 
 private fun isRoute(current: Screen, target: Screen): Boolean = current::class == target::class
@@ -377,7 +385,7 @@ private fun AppDrawer(
                 Column {
                     Text(user?.name ?: "Puerto Nuevo", style = MaterialTheme.typography.titleSmall, color = AppColors.TextPrimary, maxLines = 1)
                     Text(
-                        user?.role ?: "",
+                        roleLabel(user?.role),
                         style = MaterialTheme.typography.labelSmall,
                         color = AppColors.TextFaint,
                     )
@@ -503,6 +511,7 @@ private fun DrawerSubRow(label: String, selected: Boolean, onClick: () -> Unit) 
 private fun AppNavHost(screen: Screen) {
     when (screen) {
         Screen.Home -> HomeScreen()
+        Screen.MyCredential -> MyCredentialScreen()
 
         // Tickets — módulo 1
         Screen.TicketsList -> TicketsListScreen()

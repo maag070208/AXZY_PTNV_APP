@@ -90,15 +90,6 @@ data class DeviceListResponseDto(
 )
 
 @Serializable
-data class DeviceSummaryDto(
-    val total: Int,
-    val disponible: Int,
-    val asignado: Int,
-    val baja: Int,
-    val tipos: Int,
-)
-
-@Serializable
 data class DeviceCreateInput(
     val typeId: String,
     val descripcion: String,

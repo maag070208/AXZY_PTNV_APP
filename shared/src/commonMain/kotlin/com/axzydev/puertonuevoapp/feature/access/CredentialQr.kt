@@ -4,7 +4,9 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.put
 
 /** Versión del esquema de credencial que el backend acepta hoy (`v:2`). */
 const val CREDENTIAL_VERSION = 2
@@ -33,6 +35,16 @@ private val qrJson = Json {
     ignoreUnknownKeys = true
     isLenient = true
 }
+
+/**
+ * QR de la credencial digital: `{"v":2,"id":…}`. Solo lleva el id, igual que lo
+ * que valida el backend: el guardia ve nombre y foto en la respuesta del lookup.
+ * Así el código es el más chico posible y no cambia cuando llegan los datos.
+ */
+fun buildCredentialQr(employeeId: String): String = buildJsonObject {
+    put("v", CREDENTIAL_VERSION)
+    put("id", employeeId)
+}.toString()
 
 /**
  * Parsea el payload crudo del QR. Reproduce la validación del servidor:

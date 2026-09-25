@@ -42,7 +42,7 @@ fun NewTicketScreen(viewModel: TicketFormViewModel = viewModel(key = "ticket-for
         }
     }
 
-    TicketFormContent(state = state, viewModel = viewModel, submitLabel = "Crear ticket", showCategory = true)
+    TicketFormContent(state = state, viewModel = viewModel, submitLabel = "Crear ticket")
 }
 
 @Composable
@@ -60,7 +60,7 @@ fun EditTicketScreen(ticketId: String) {
     if (state.loading) {
         com.axzydev.puertonuevoapp.core.ui.LoadingState(modifier = Modifier.fillMaxSize())
     } else {
-        TicketFormContent(state = state, viewModel = viewModel, submitLabel = "Guardar cambios", showCategory = true)
+        TicketFormContent(state = state, viewModel = viewModel, submitLabel = "Guardar cambios")
     }
 }
 
@@ -69,7 +69,6 @@ private fun TicketFormContent(
     state: TicketFormUiState,
     viewModel: TicketFormViewModel,
     submitLabel: String,
-    showCategory: Boolean,
 ) {
     Column(
         modifier = Modifier
@@ -102,16 +101,14 @@ private fun TicketFormContent(
             onSelect = viewModel::onPriorityChange,
             modifier = Modifier.fillMaxWidth(),
         )
-        if (showCategory) {
-            Spacer(Modifier.height(12.dp))
-            SimpleDropdownField(
-                label = "Categoría",
-                value = state.category,
-                options = ticketCategoryOptions,
-                onSelect = viewModel::onCategoryChange,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
+        Spacer(Modifier.height(12.dp))
+        SimpleDropdownField(
+            label = "Categoría",
+            value = state.categoryId,
+            options = state.categoryOptions,
+            onSelect = viewModel::onCategoryChange,
+            modifier = Modifier.fillMaxWidth(),
+        )
 
         if (state.error != null) {
             Spacer(Modifier.height(12.dp))

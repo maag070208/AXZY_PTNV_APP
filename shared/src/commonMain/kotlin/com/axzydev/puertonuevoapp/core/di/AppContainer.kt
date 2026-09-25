@@ -1,5 +1,6 @@
 package com.axzydev.puertonuevoapp.core.di
 
+import com.axzydev.puertonuevoapp.core.network.auth.AuthApi
 import com.axzydev.puertonuevoapp.core.network.access.AccessApi
 import com.axzydev.puertonuevoapp.core.network.access.AccessApiClient
 import com.axzydev.puertonuevoapp.core.network.devices.DevicesApi
@@ -44,6 +45,7 @@ object AppContainer {
             unauthorizedActions += { it.logout() }
         }
     }
+    val authApi: AuthApi by lazy { AuthApi(apiClient) }
     val devicesApi: DevicesApi by lazy { DevicesApi(apiClient) }
     val dashboardApi: DashboardApi by lazy { DashboardApi(apiClient) }
     val deviceTypesApi: DeviceTypesApi by lazy { DeviceTypesApi(apiClient) }

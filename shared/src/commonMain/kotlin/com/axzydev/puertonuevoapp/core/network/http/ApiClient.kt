@@ -20,6 +20,22 @@ import io.ktor.http.isSuccess
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+/** JSON del API (el mismo para la app y sus pruebas). */
+internal val apiJson: Json = Json {
+    ignoreUnknownKeys = true
+    isLenient = true
+    coerceInputValues = true
+    encodeDefaults = true
+    // Los endpoints de update son parciales (zod `.optional()` en el backend,
+    // sin `.nullable()` salvo un puñado de campos). Con encodeDefaults=true
+    // pero explicitNulls por default, cualquier campo nulo del DTO (ej. los
+    // que un formulario no tocó) se serializaba como "campo": null y el
+    // backend lo rechazaba (400) por no aceptar null ahí. Al desactivar
+    // explicitNulls, un campo nulo simplemente se omite — igual que no
+    // haberlo tocado — que es la semántica correcta para un PUT parcial.
+    explicitNulls = false
+}
+
 /**
  * Cliente HTTP delgado sobre Ktor — capa de infraestructura, sin dependencias
  * de dominio/sesión (inversión de dependencias): recibe proveedores para el
@@ -41,20 +57,7 @@ class ApiClient(
     var onUnauthorized: () -> Unit = {}
 
     @PublishedApi
-    internal val json: Json = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-        coerceInputValues = true
-        encodeDefaults = true
-        // Los endpoints de update son parciales (zod `.optional()` en el backend,
-        // sin `.nullable()` salvo un puñado de campos). Con encodeDefaults=true
-        // pero explicitNulls por default, cualquier campo nulo del DTO (ej. los
-        // que un formulario no tocó) se serializaba como "campo": null y el
-        // backend lo rechazaba (400) por no aceptar null ahí. Al desactivar
-        // explicitNulls, un campo nulo simplemente se omite — igual que no
-        // haberlo tocado — que es la semántica correcta para un PUT parcial.
-        explicitNulls = false
-    }
+    internal val json: Json = apiJson
 
     @PublishedApi
     internal val httpClient: HttpClient = HttpClient {

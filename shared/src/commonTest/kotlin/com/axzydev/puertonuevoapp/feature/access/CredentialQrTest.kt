@@ -75,4 +75,13 @@ class CredentialQrTest {
         val result = parseCredentialPayload("   ")
         assertIs<QrParseResult.Invalid>(result)
     }
+
+    @Test
+    fun ownCredentialQrIsReadByTheScanner() {
+        val qr = buildCredentialQr("emp-9")
+        assertEquals("""{"v":2,"id":"emp-9"}""", qr)
+        val valid = assertIs<QrParseResult.Valid>(parseCredentialPayload(qr))
+        assertEquals(CREDENTIAL_VERSION, valid.payload.version)
+        assertEquals("emp-9", valid.payload.employeeId)
+    }
 }

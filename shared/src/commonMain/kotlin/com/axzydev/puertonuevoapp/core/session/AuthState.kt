@@ -27,9 +27,6 @@ data class SessionUser(
     val canCreateAssignments: Boolean get() = !isEmpleado
     val canSeeAudit: Boolean get() = role == "ADMIN"
 
-    /** Panel administrativo en el home (paridad con la web). */
-    val canSeeDashboard: Boolean get() = role == "ADMIN" || role == "GERENTE"
-
     /** Expediente completo de personal (médico/oficial/documentos). */
     val canManageHR: Boolean get() = role == "ADMIN" || role == "RECURSOS_HUMANOS"
 

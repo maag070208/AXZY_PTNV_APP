@@ -81,6 +81,8 @@ kotlin {
 
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.logging)
+
+            implementation(libs.qrose)
         }
 
         commonTest.dependencies {

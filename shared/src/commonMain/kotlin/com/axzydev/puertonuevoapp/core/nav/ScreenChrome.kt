@@ -17,6 +17,7 @@ enum class MainSection {
 
 fun Screen.chrome(): ScreenChrome = when (this) {
     Screen.Home -> ScreenChrome("Inicio", section = MainSection.HOME)
+    Screen.MyCredential -> ScreenChrome("Mi credencial", section = MainSection.HOME)
 
     // Tickets
     Screen.TicketsList -> ScreenChrome("Tickets", section = MainSection.TICKETS)

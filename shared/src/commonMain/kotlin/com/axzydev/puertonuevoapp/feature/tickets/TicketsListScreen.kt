@@ -36,7 +36,6 @@ import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.tickets.TicketDto
-import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.ui.AppCard
@@ -53,19 +52,16 @@ import com.axzydev.puertonuevoapp.core.util.ticketStatusLabel
 fun TicketsListScreen(viewModel: TicketsListViewModel = viewModel { TicketsListViewModel(AppContainer.ticketsApi) }) {
     val state by viewModel.uiState.collectAsState()
     val navigator = LocalNavigator.current
-    val authState by AppContainer.authRepository.state.collectAsState()
-    val canCreate = (authState as? AuthState.LoggedIn)?.user?.canCreateTicket == true
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
-            if (canCreate) {
-                FloatingActionButton(
-                    onClick = { navigator.push(Screen.NewTicket) },
-                    containerColor = AppColors.EmeraldPrimary,
-                ) {
-                    Icon(Icons.Filled.Add, contentDescription = "Nuevo ticket")
-                }
+            // Cualquier rol levanta tickets (igual que la web y la API).
+            FloatingActionButton(
+                onClick = { navigator.push(Screen.NewTicket) },
+                containerColor = AppColors.EmeraldPrimary,
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = "Nuevo ticket")
             }
         },
     ) { padding ->
