@@ -34,6 +34,11 @@ actual class TokenStore actual constructor() {
             .apply()
     }
 
+    actual fun getPermissions(): String? = prefs.getString(KEY_PERMISSIONS, null)
+    actual fun savePermissions(json: String) {
+        prefs.edit().putString(KEY_PERMISSIONS, json).apply()
+    }
+
     actual fun clear() {
         prefs.edit()
             .remove(KEY_TOKEN)
@@ -42,6 +47,7 @@ actual class TokenStore actual constructor() {
             .remove(KEY_USER_NAME)
             .remove(KEY_USER_ROLE)
             .remove(KEY_USER_DEPT)
+            .remove(KEY_PERMISSIONS)
             .apply()
     }
 
@@ -53,5 +59,6 @@ actual class TokenStore actual constructor() {
         const val KEY_USER_NAME = "user_name"
         const val KEY_USER_ROLE = "user_role"
         const val KEY_USER_DEPT = "user_dept"
+        const val KEY_PERMISSIONS = "permissions"
     }
 }

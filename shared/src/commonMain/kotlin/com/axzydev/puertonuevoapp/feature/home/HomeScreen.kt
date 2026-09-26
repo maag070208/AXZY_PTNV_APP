@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.AssignmentInd
 import androidx.compose.material.icons.filled.Business
@@ -58,6 +59,8 @@ import com.axzydev.puertonuevoapp.core.network.dashboard.DashboardActivityDto
 import com.axzydev.puertonuevoapp.core.network.dashboard.DashboardSummaryDto
 import com.axzydev.puertonuevoapp.core.network.tickets.KanbanAssignmentDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
+import com.axzydev.puertonuevoapp.core.session.PermissionKeys
+import com.axzydev.puertonuevoapp.core.session.PermissionScopes
 import com.axzydev.puertonuevoapp.core.session.SessionUser
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.AppShape
@@ -137,9 +140,11 @@ private fun HomeContent(
         SectionLabel("Accesos rápidos")
         Spacer(Modifier.height(6.dp))
 
-        // Lo operativo primero; lo administrativo, según el rol (igual que el menú).
+        // Lo operativo primero; lo administrativo, según los permisos (igual que el menú).
         val actions = buildList {
-            add(QuickActionSpec("Nuevo ticket", Icons.Filled.Add) { onNavigate(Screen.NewTicket) })
+            if (user?.canCreateTickets == true) {
+                add(QuickActionSpec("Nuevo ticket", Icons.Filled.Add) { onNavigate(Screen.NewTicket) })
+            }
             add(QuickActionSpec("Tickets", Icons.Filled.ConfirmationNumber) { onNavigate(Screen.TicketsList) })
             add(QuickActionSpec("Tablero", Icons.Filled.Dashboard) { onNavigate(Screen.TicketsKanban()) })
             if (user?.canSeeMyTasks == true) {
@@ -155,19 +160,32 @@ private fun HomeContent(
                 add(QuickActionSpec("Registros de acceso", Icons.Filled.History) { onNavigate(Screen.AccessLog) })
             }
             add(QuickActionSpec("Notificaciones", Icons.Filled.Notifications) { onNavigate(Screen.Notifications) })
-            if (user?.canManageHR == true) {
+            if (user?.canViewHR == true) {
                 add(QuickActionSpec("Personal", Icons.Filled.Groups) { onNavigate(Screen.EmployeesList) })
+            }
+            if (user?.canViewHR == true || user?.canManageDepartments == true) {
                 add(QuickActionSpec("Departamentos", Icons.Filled.Business) { onNavigate(Screen.DepartmentsList) })
             }
-            if (user?.canManageCatalogs == true) {
+            if (user?.canViewDevices == true) {
                 add(QuickActionSpec("Inventario", Icons.Filled.Inventory) { onNavigate(Screen.InventoryIndex) })
+            }
+            if (user?.canRegisterMaterialOutputs == true) {
                 add(QuickActionSpec("Salidas de material", Icons.Filled.ListAlt) { onNavigate(Screen.MaterialOutputsList) })
+            }
+            if (user?.canViewCustodyLetters == true) {
                 add(QuickActionSpec("Cartas responsivas", Icons.Filled.Description) { onNavigate(Screen.CustodyLettersList) })
+            }
+            if (user?.canViewReports == true) {
                 add(QuickActionSpec("Reportes", Icons.Filled.QueryStats) { onNavigate(Screen.Reports) })
+            }
+            if (user?.canManageCatalogs == true) {
                 add(QuickActionSpec("Tipos de dispositivo", Icons.Filled.Devices) { onNavigate(Screen.DeviceTypesList) })
             }
             if (user?.canSeeAudit == true) {
                 add(QuickActionSpec("Auditoría", Icons.Filled.History) { onNavigate(Screen.AuditLogs) })
+            }
+            if (user?.canManageRoles == true) {
+                add(QuickActionSpec("Roles y permisos", Icons.Filled.AdminPanelSettings) { onNavigate(Screen.RolesPermissions) })
             }
         }
 
@@ -387,9 +405,11 @@ private fun CredentialShortcut(onClick: () -> Unit) {
     }
 }
 
+/** El título sigue el alcance de `tasks.view` (lo que el tablero le devuelve). */
 private fun pendingTasksTitle(user: SessionUser?): String = when {
     user?.isEmployee == true -> "Mis tareas pendientes"
-    user?.isManager == true || user?.isAreaHead == true -> "Tareas pendientes de mi área"
+    user?.scopeOf(PermissionKeys.TASKS_VIEW) == PermissionScopes.ALL -> "Tareas pendientes"
+    user?.scopeOf(PermissionKeys.TASKS_VIEW) == PermissionScopes.AREA -> "Tareas pendientes de mi área"
     else -> "Tareas pendientes de mis tickets"
 }
 

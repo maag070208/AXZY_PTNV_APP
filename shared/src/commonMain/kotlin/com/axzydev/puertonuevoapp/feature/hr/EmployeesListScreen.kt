@@ -65,7 +65,7 @@ fun EmployeesListScreen(
     val departments by viewModel.departments.collectAsState()
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
-    val isAdmin = (authState as? AuthState.LoggedIn)?.user?.canManageCatalogs == true
+    val canEdit = (authState as? AuthState.LoggedIn)?.user?.canEditUsers == true
 
     AppTableScreen(
         state = state,
@@ -83,7 +83,7 @@ fun EmployeesListScreen(
     ) { person ->
         EmployeeCard(
             person = person,
-            isAdmin = isAdmin,
+            canEdit = canEdit,
             onOpenProfile = { navigator.push(Screen.EmployeeProfile(person.id)) },
             onEdit = { navigator.push(Screen.UserForm(person.id)) },
         )
@@ -124,7 +124,7 @@ private fun employeeFilterSpecs(departments: List<DepartmentDto>): List<TableFil
 @Composable
 private fun EmployeeCard(
     person: UserDto,
-    isAdmin: Boolean,
+    canEdit: Boolean,
     onOpenProfile: () -> Unit,
     onEdit: () -> Unit,
 ) {
@@ -198,7 +198,7 @@ private fun EmployeeCard(
                 color = AppColors.Info,
                 onClick = onOpenProfile,
             )
-            if (isAdmin) {
+            if (canEdit) {
                 Spacer(Modifier.width(8.dp))
                 CardActionPill(
                     label = "Editar",

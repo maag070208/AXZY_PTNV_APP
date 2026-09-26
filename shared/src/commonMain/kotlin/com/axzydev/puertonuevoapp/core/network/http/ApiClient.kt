@@ -8,6 +8,7 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -175,6 +176,19 @@ class ApiClient(
         body: B
     ): T {
         val response = httpClient.put(buildUrl(path)) {
+            authHeader()
+            contentType(ContentType.Application.Json)
+            setBody(json.encodeToString(body))
+        }
+
+        return decode(response)
+    }
+
+    suspend inline fun <reified B, reified T> patch(
+        path: String,
+        body: B
+    ): T {
+        val response = httpClient.patch(buildUrl(path)) {
             authHeader()
             contentType(ContentType.Application.Json)
             setBody(json.encodeToString(body))

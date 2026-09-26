@@ -27,8 +27,9 @@ class HomeViewModel(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    private val isAdmin: Boolean
-        get() = (authRepository.state.value as? AuthState.LoggedIn)?.user?.isAdmin == true
+    /** El panel administrativo requiere `dashboard.view` (igual que la web). */
+    private val canViewDashboard: Boolean
+        get() = (authRepository.state.value as? AuthState.LoggedIn)?.user?.canViewDashboard == true
 
     init {
         load()
@@ -37,7 +38,7 @@ class HomeViewModel(
     fun load() {
         _uiState.update { it.copy(loading = true, error = null) }
         viewModelScope.launch {
-            if (isAdmin) {
+            if (canViewDashboard) {
                 val result = runCatching { dashboardApi.summary() }
                 _uiState.update {
                     it.copy(

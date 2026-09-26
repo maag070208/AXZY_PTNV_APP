@@ -69,4 +69,5 @@ fun Screen.chrome(): ScreenChrome = when (this) {
     Screen.Reports -> ScreenChrome("Reportes", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
     Screen.Notifications -> ScreenChrome("Notificaciones", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
     Screen.AuditLogs -> ScreenChrome("Auditoría", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
+    Screen.RolesPermissions -> ScreenChrome("Roles y permisos", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
 }

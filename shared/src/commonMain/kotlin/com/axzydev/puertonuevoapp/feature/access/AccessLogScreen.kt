@@ -48,8 +48,9 @@ import com.axzydev.puertonuevoapp.core.util.formatDateTime
 @Composable
 fun AccessLogScreen(
     viewModel: AccessLogViewModel = viewModel {
-        val role = (AppContainer.authRepository.state.value as? AuthState.LoggedIn)?.user?.role
-        AccessLogViewModel(AppContainer.accessApi, isGuard = role == "GUARD")
+        // Sin `access.log` solo se ven los escaneos propios del día (`/access/me/today`).
+        val user = (AppContainer.authRepository.state.value as? AuthState.LoggedIn)?.user
+        AccessLogViewModel(AppContainer.accessApi, isGuard = user?.canQueryAccessLog != true)
     },
 ) {
     val state by viewModel.uiState.collectAsState()

@@ -58,7 +58,7 @@ fun LocationDetailScreen(locationId: String) {
     }
     val state by viewModel.uiState.collectAsState()
     val authState by AppContainer.authRepository.state.collectAsState()
-    val isAdmin = (authState as? AuthState.LoggedIn)?.user?.canManageCatalogs == true
+    val canManage = (authState as? AuthState.LoggedIn)?.user?.canManageDepartments == true
 
     when {
         state.loading -> LoadingState(Modifier.fillMaxSize())
@@ -95,7 +95,7 @@ fun LocationDetailScreen(locationId: String) {
                                     modifier = Modifier.background(AppColors.SurfaceVariant, RoundedCornerShape(20.dp)).padding(horizontal = 12.dp, vertical = 6.dp),
                                 ) {
                                     Text(s.name.uppercase(), style = MaterialTheme.typography.labelSmall, color = AppColors.TextPrimary)
-                                    if (isAdmin) {
+                                    if (canManage) {
                                         Spacer(Modifier.size(6.dp))
                                         Icon(
                                             Icons.Filled.Close,
@@ -108,7 +108,7 @@ fun LocationDetailScreen(locationId: String) {
                             }
                         }
                     }
-                    if (isAdmin) {
+                    if (canManage) {
                         Spacer(Modifier.height(12.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             AppTextField(

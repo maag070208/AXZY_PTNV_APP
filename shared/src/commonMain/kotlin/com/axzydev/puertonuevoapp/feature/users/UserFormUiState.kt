@@ -27,4 +27,6 @@ val userRoleOptions: List<Pair<String, String>> = listOf(
     "MANAGER" to "GERENTE",
     "AREA_HEAD" to "JEFE DE AREA",
     "EMPLOYEE" to "EMPLEADO",
+    "HUMAN_RESOURCES" to "RECURSOS HUMANOS",
+    "GUARD" to "GUARDIA",
 )

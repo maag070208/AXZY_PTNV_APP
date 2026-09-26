@@ -56,4 +56,5 @@ sealed interface Screen {
     data object Reports : Screen
     data object Notifications : Screen
     data object AuditLogs : Screen
+    data object RolesPermissions : Screen
 }

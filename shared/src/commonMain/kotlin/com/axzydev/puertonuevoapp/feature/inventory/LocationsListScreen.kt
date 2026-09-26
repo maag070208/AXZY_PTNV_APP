@@ -53,13 +53,13 @@ fun LocationsListScreen(viewModel: LocationsListViewModel = viewModel { Location
     val state by viewModel.uiState.collectAsState()
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
-    val isAdmin = (authState as? AuthState.LoggedIn)?.user?.canManageCatalogs == true
+    val canManage = (authState as? AuthState.LoggedIn)?.user?.canManageDepartments == true
 
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text("${state.filtered.size} ubicación(es)", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
-                if (isAdmin) {
+                if (canManage) {
                     IconButton(onClick = { navigator.push(Screen.LocationForm()) }) {
                         Icon(Icons.Filled.Add, contentDescription = "Nueva ubicación", tint = AppColors.EmeraldPrimary)
                     }
@@ -81,7 +81,7 @@ fun LocationsListScreen(viewModel: LocationsListViewModel = viewModel { Location
                 items(state.filtered, key = { it.id }) { loc ->
                     LocationCard(
                         location = loc,
-                        isAdmin = isAdmin,
+                        canManage = canManage,
                         onClick = { navigator.push(Screen.LocationDetail(loc.id)) },
                         onEdit = { navigator.push(Screen.LocationForm(loc.id)) },
                         onDelete = { viewModel.requestDelete(loc) },
@@ -118,7 +118,7 @@ fun LocationsListScreen(viewModel: LocationsListViewModel = viewModel { Location
 @Composable
 private fun LocationCard(
     location: LocationDto,
-    isAdmin: Boolean,
+    canManage: Boolean,
     onClick: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
@@ -144,7 +144,7 @@ private fun LocationCard(
                 maxLines = 1,
             )
         }
-        if (isAdmin) {
+        if (canManage) {
             IconButton(onClick = onEdit) { Icon(Icons.Filled.Edit, contentDescription = "Editar", tint = AppColors.TextFaint, modifier = Modifier.size(18.dp)) }
             IconButton(onClick = onDelete) { Icon(Icons.Filled.DeleteOutline, contentDescription = "Eliminar", tint = AppColors.Danger, modifier = Modifier.size(18.dp)) }
         }

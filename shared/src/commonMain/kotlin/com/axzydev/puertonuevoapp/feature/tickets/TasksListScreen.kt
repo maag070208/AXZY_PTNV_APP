@@ -52,7 +52,7 @@ fun AdminTasksScreen(viewModel: TasksListViewModel = viewModel(key = "admin-task
     val allowed = (authState as? AuthState.LoggedIn)?.user?.canSeeAdminTasks == true
 
     if (!allowed) {
-        ErrorState(message = "No autorizado — sólo ADMIN o GERENTE", modifier = Modifier.fillMaxSize())
+        ErrorState(message = "No autorizado — requiere el permiso Completar tareas", modifier = Modifier.fillMaxSize())
         return
     }
 
