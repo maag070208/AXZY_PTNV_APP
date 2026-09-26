@@ -12,5 +12,5 @@ data class LocationsListUiState(
     val actionError: String? = null,
 ) {
     val filtered: List<LocationDto>
-        get() = locations.filter { query.isBlank() || it.lugar.contains(query, ignoreCase = true) }
+        get() = locations.filter { query.isBlank() || it.name.contains(query, ignoreCase = true) }
 }

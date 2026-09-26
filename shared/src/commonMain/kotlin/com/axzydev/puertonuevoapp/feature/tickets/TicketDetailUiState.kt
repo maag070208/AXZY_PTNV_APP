@@ -12,7 +12,7 @@ data class TicketDetailUiState(
 )
 
 val ticketStatusOptions: List<Pair<String, String>> = listOf(
-    "ABIERTO" to "Abierto",
-    "EN_SEGUIMIENTO" to "En seguimiento",
-    "CERRADO" to "Cerrado",
+    "OPEN" to "Abierto",
+    "IN_PROGRESS" to "En seguimiento",
+    "CLOSED" to "Cerrado",
 )

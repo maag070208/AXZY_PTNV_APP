@@ -72,6 +72,7 @@ import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.formatDateTime
 import com.axzydev.puertonuevoapp.core.util.assignmentStatusLabel
 import com.axzydev.puertonuevoapp.core.util.roleLabel
+import com.axzydev.puertonuevoapp.core.util.ticketPriorityLabel
 import com.axzydev.puertonuevoapp.feature.tickets.AssignmentRow
 import com.axzydev.puertonuevoapp.feature.tickets.assignmentStatusColor
 
@@ -155,13 +156,13 @@ private fun HomeContent(
             }
             add(QuickActionSpec("Notificaciones", Icons.Filled.Notifications) { onNavigate(Screen.Notifications) })
             if (user?.canManageHR == true) {
-                add(QuickActionSpec("Personal", Icons.Filled.Groups) { onNavigate(Screen.PersonalList) })
+                add(QuickActionSpec("Personal", Icons.Filled.Groups) { onNavigate(Screen.EmployeesList) })
                 add(QuickActionSpec("Departamentos", Icons.Filled.Business) { onNavigate(Screen.DepartmentsList) })
             }
             if (user?.canManageCatalogs == true) {
                 add(QuickActionSpec("Inventario", Icons.Filled.Inventory) { onNavigate(Screen.InventoryIndex) })
-                add(QuickActionSpec("Salidas de material", Icons.Filled.ListAlt) { onNavigate(Screen.SalidasList) })
-                add(QuickActionSpec("Cartas responsivas", Icons.Filled.Description) { onNavigate(Screen.CartasList) })
+                add(QuickActionSpec("Salidas de material", Icons.Filled.ListAlt) { onNavigate(Screen.MaterialOutputsList) })
+                add(QuickActionSpec("Cartas responsivas", Icons.Filled.Description) { onNavigate(Screen.CustodyLettersList) })
                 add(QuickActionSpec("Reportes", Icons.Filled.QueryStats) { onNavigate(Screen.Reports) })
                 add(QuickActionSpec("Tipos de dispositivo", Icons.Filled.Devices) { onNavigate(Screen.DeviceTypesList) })
             }
@@ -202,10 +203,10 @@ private fun DashboardSection(summary: DashboardSummaryDto, onNavigate: (Screen) 
     }
     Spacer(Modifier.height(14.dp))
 
-    val metricas = summary.ticketMetricas
+    val metrics = summary.ticketMetrics
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
         StatCard(
-            value = metricas.tareasResueltas.toString(),
+            value = metrics.resolvedTasks.toString(),
             label = "Tareas resueltas",
             color = AppColors.Purple,
             icon = { Icon(Icons.Filled.TaskAlt, null, tint = AppColors.Purple, modifier = Modifier.size(20.dp)) },
@@ -213,7 +214,7 @@ private fun DashboardSection(summary: DashboardSummaryDto, onNavigate: (Screen) 
             onClick = { onNavigate(Screen.AdminTasks) },
         )
         StatCard(
-            value = (summary.tickets.abierto + summary.tickets.enSeguimiento).toString(),
+            value = (summary.tickets.open + summary.tickets.inProgress).toString(),
             label = "Tickets abiertos",
             color = AppColors.Warning,
             icon = { Icon(Icons.Filled.AssignmentInd, null, tint = AppColors.Warning, modifier = Modifier.size(20.dp)) },
@@ -224,14 +225,14 @@ private fun DashboardSection(summary: DashboardSummaryDto, onNavigate: (Screen) 
     Spacer(Modifier.height(12.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
         StatCard(
-            value = metricas.avgResolucionDias?.let { "$it d" } ?: "—",
+            value = metrics.avgResolutionDays?.let { "$it d" } ?: "—",
             label = "Resolución promedio",
             color = AppColors.Success,
             icon = { Icon(Icons.Filled.AccessTime, null, tint = AppColors.Success, modifier = Modifier.size(20.dp)) },
             modifier = Modifier.weight(1f),
         )
         StatCard(
-            value = metricas.tareasPendientes.toString(),
+            value = metrics.pendingTasks.toString(),
             label = "Tareas pendientes",
             color = AppColors.Danger,
             icon = { Icon(Icons.Filled.HourglassEmpty, null, tint = AppColors.Danger, modifier = Modifier.size(20.dp)) },
@@ -242,12 +243,12 @@ private fun DashboardSection(summary: DashboardSummaryDto, onNavigate: (Screen) 
     Spacer(Modifier.height(20.dp))
     AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
         SectionLabel("Eficiencia del equipo")
-        if (summary.ticketEficiencia.isEmpty()) {
+        if (summary.ticketEfficiency.isEmpty()) {
             Text("Sin datos de resolución", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
         } else {
             DonutChart(
-                segments = summary.ticketEficiencia.take(6).mapIndexed { i, e ->
-                    DonutSegment(e.user.name, e.resueltas, AGENT_COLORS[i % AGENT_COLORS.size])
+                segments = summary.ticketEfficiency.take(6).mapIndexed { i, e ->
+                    DonutSegment(e.user.name, e.resolved, AGENT_COLORS[i % AGENT_COLORS.size])
                 },
             )
         }
@@ -258,9 +259,9 @@ private fun DashboardSection(summary: DashboardSummaryDto, onNavigate: (Screen) 
         SectionLabel("Tickets por estado")
         DonutChart(
             segments = listOf(
-                DonutSegment("Abierto", summary.tickets.abierto, AppColors.Warning),
-                DonutSegment("En seguimiento", summary.tickets.enSeguimiento, AppColors.Info),
-                DonutSegment("Cerrado", summary.tickets.cerrado, AppColors.Success),
+                DonutSegment("Abierto", summary.tickets.open, AppColors.Warning),
+                DonutSegment("En seguimiento", summary.tickets.inProgress, AppColors.Info),
+                DonutSegment("Cerrado", summary.tickets.closed, AppColors.Success),
             ),
         )
     }
@@ -268,10 +269,10 @@ private fun DashboardSection(summary: DashboardSummaryDto, onNavigate: (Screen) 
     Spacer(Modifier.height(12.dp))
     AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
         SectionLabel("Tickets antiguos")
-        if (summary.ticketsUrgentes.isEmpty()) {
+        if (summary.urgentTickets.isEmpty()) {
             Text("Sin tickets antiguos. ¡Todo al día!", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
         } else {
-            summary.ticketsUrgentes.take(10).forEach { t ->
+            summary.urgentTickets.take(10).forEach { t ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -282,22 +283,22 @@ private fun DashboardSection(summary: DashboardSummaryDto, onNavigate: (Screen) 
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(t.titulo, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary, maxLines = 1)
+                        Text(t.title, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary, maxLines = 1)
                         Text(
-                            "${t.asignado ?: "Sin asignar"} · ${t.prioridad}",
+                            "${t.assigned ?: "Sin asignar"} · ${ticketPriorityLabel(t.priority)}",
                             style = MaterialTheme.typography.bodySmall,
                             color = AppColors.TextFaint,
                         )
                     }
-                    Text("${t.diasEnEspera} d", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = AppColors.TextPrimary)
+                    Text("${t.daysOnHold} d", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = AppColors.TextPrimary)
                     Spacer(Modifier.width(8.dp))
                     StatusChip(
-                        if (t.diasEnEspera >= 15) "URGENTE" else "EN ESPERA",
-                        if (t.diasEnEspera >= 15) AppColors.Danger else AppColors.Warning,
+                        if (t.daysOnHold >= 15) "URGENTE" else "EN ESPERA",
+                        if (t.daysOnHold >= 15) AppColors.Danger else AppColors.Warning,
                     )
                 }
             }
-            if (summary.ticketsUrgentes.size > 10) {
+            if (summary.urgentTickets.size > 10) {
                 SeeMoreButton("Ver más tickets") { onNavigate(Screen.TicketsList) }
             }
         }
@@ -329,8 +330,8 @@ private fun ActivityRow(a: DashboardActivityDto, onNavigate: (Screen) -> Unit) {
     val screen = activityScreen(a)
     val color = when (a.scope) {
         "tickets" -> AppColors.Warning
-        "cartas" -> AppColors.Success
-        "salidas" -> AppColors.Danger
+        "custodyLetters" -> AppColors.Success
+        "materialOutputs" -> AppColors.Danger
         "devices" -> AppColors.Info
         else -> AppColors.Purple
     }
@@ -356,7 +357,7 @@ private fun ActivityRow(a: DashboardActivityDto, onNavigate: (Screen) -> Unit) {
 
 private fun activityScreen(a: DashboardActivityDto): Screen? = when (a.scope) {
     "tickets" -> a.targetId?.let { Screen.TicketDetail(it) }
-    "cartas" -> a.targetId?.let { Screen.CartaDetail(it) }
+    "custodyLetters" -> a.targetId?.let { Screen.CustodyLetterDetail(it) }
     "inventory" -> a.deviceId?.let { Screen.DeviceDetail(it) }
     else -> null
 }
@@ -387,8 +388,8 @@ private fun CredentialShortcut(onClick: () -> Unit) {
 }
 
 private fun pendingTasksTitle(user: SessionUser?): String = when {
-    user?.isEmpleado == true -> "Mis tareas pendientes"
-    user?.isGerente == true || user?.isJefeArea == true -> "Tareas pendientes de mi área"
+    user?.isEmployee == true -> "Mis tareas pendientes"
+    user?.isManager == true || user?.isAreaHead == true -> "Tareas pendientes de mi área"
     else -> "Tareas pendientes de mis tickets"
 }
 
@@ -398,7 +399,7 @@ private fun PendingTasksSection(tasks: List<KanbanAssignmentDto>, title: String,
     SectionLabel(title)
     Spacer(Modifier.height(8.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        listOf("PENDIENTE", "EN_PROGRESO", "EN_REVISION").forEach { status ->
+        listOf("PENDING", "IN_PROGRESS", "IN_REVIEW").forEach { status ->
             StatusChip("${assignmentStatusLabel(status)}: ${tasks.count { it.status == status }}", assignmentStatusColor(status))
         }
     }

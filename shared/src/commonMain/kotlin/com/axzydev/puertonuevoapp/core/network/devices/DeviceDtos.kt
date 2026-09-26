@@ -6,8 +6,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class DeviceLocationRefDto(
     val id: String,
-    val lugar: String? = null,
-    val descripcion: String? = null,
+    val name: String? = null,
+    val description: String? = null,
 )
 
 @Serializable
@@ -16,42 +16,42 @@ data class DeviceHistoryEntryDto(
     val deviceId: String,
     val type: String,
     val detail: String? = null,
-    val autor: com.axzydev.puertonuevoapp.core.network.common.UserRefDto? = null,
+    val author: com.axzydev.puertonuevoapp.core.network.common.UserRefDto? = null,
     val createdAt: String,
 )
 
 @Serializable
-data class CartaFirmanteRefDto(
+data class CustodyLetterSignerRefDto(
     val id: String,
     val name: String,
     val username: String,
 )
 
 @Serializable
-data class DeviceCartaRefDto(
+data class DeviceCustodyLetterRefDto(
     val id: String,
     val consecutive: String,
-    val fecha: String,
-    val numeroEmpleado: String,
-    val departamento: String,
+    val date: String,
+    val employeeNumber: String,
+    val department: String,
     val deliveryBy: String,
     val returnDate: String? = null,
-    val responsable: CartaFirmanteRefDto? = null,
-    val encargado: CartaFirmanteRefDto? = null,
-    val ubicacion: DeviceLocationRefDto? = null,
+    val custodian: CustodyLetterSignerRefDto? = null,
+    val supervisor: CustodyLetterSignerRefDto? = null,
+    val location: DeviceLocationRefDto? = null,
 )
 
 @Serializable
-data class DeviceCartaItemDto(
+data class DeviceCustodyLetterItemDto(
     val id: String,
-    val carta: DeviceCartaRefDto,
+    val custodyLetter: DeviceCustodyLetterRefDto,
 )
 
 @Serializable
-data class DeviceLoteCountDto(
-    val disponible: Int = 0,
-    val asignado: Int = 0,
-    val baja: Int = 0,
+data class DeviceBatchCountDto(
+    val available: Int = 0,
+    val assigned: Int = 0,
+    val retirement: Int = 0,
 )
 
 @Serializable
@@ -59,25 +59,25 @@ data class DeviceDto(
     val id: String,
     val typeId: String,
     val type: DeviceTypeDto? = null,
-    val controlActivos: String,
-    val descripcion: String,
-    val marca: String,
-    val modelo: String,
-    val numeroSerie: String? = null,
-    val nombreEquipo: String? = null,
+    val assetTag: String,
+    val description: String,
+    val brand: String,
+    val model: String,
+    val serialNumber: String? = null,
+    val hostname: String? = null,
     val area: String,
-    val estado: String,
+    val status: String,
     val locationId: String? = null,
     val location: DeviceLocationRefDto? = null,
-    val cartaItems: List<DeviceCartaItemDto> = emptyList(),
+    val custodyLetterItems: List<DeviceCustodyLetterItemDto> = emptyList(),
     val ip: String? = null,
     val macAddress: String? = null,
-    val sistemaOp: String? = null,
+    val operatingSystem: String? = null,
     val ram: String? = null,
-    val almacenamiento: String? = null,
-    val loteId: String? = null,
-    val loteSize: Int? = null,
-    val loteCount: DeviceLoteCountDto? = null,
+    val storage: String? = null,
+    val batchId: String? = null,
+    val batchSize: Int? = null,
+    val batchCount: DeviceBatchCountDto? = null,
     val history: List<DeviceHistoryEntryDto> = emptyList(),
     val createdAt: String,
     val updatedAt: String,
@@ -92,43 +92,43 @@ data class DeviceListResponseDto(
 @Serializable
 data class DeviceCreateInput(
     val typeId: String,
-    val descripcion: String,
-    val marca: String,
-    val modelo: String,
-    val numeroSerie: String? = null,
-    val nombreEquipo: String? = null,
+    val description: String,
+    val brand: String,
+    val model: String,
+    val serialNumber: String? = null,
+    val hostname: String? = null,
     val area: String? = null,
-    val estado: String? = null,
+    val status: String? = null,
     val locationId: String? = null,
     val ip: String? = null,
     val macAddress: String? = null,
-    val sistemaOp: String? = null,
+    val operatingSystem: String? = null,
     val ram: String? = null,
-    val almacenamiento: String? = null,
+    val storage: String? = null,
 )
 
 @Serializable
 data class DeviceUpdateInput(
     val typeId: String? = null,
-    val descripcion: String? = null,
-    val marca: String? = null,
-    val modelo: String? = null,
-    val numeroSerie: String? = null,
-    val nombreEquipo: String? = null,
+    val description: String? = null,
+    val brand: String? = null,
+    val model: String? = null,
+    val serialNumber: String? = null,
+    val hostname: String? = null,
     val area: String? = null,
-    val estado: String? = null,
+    val status: String? = null,
     val locationId: String? = null,
     val ip: String? = null,
     val macAddress: String? = null,
-    val sistemaOp: String? = null,
+    val operatingSystem: String? = null,
     val ram: String? = null,
-    val almacenamiento: String? = null,
+    val storage: String? = null,
 )
 
 @Serializable
 data class DeviceBatchUnitInput(
-    val numeroSerie: String? = null,
-    val nombreEquipo: String? = null,
+    val serialNumber: String? = null,
+    val hostname: String? = null,
     val ip: String? = null,
     val macAddress: String? = null,
 )
@@ -136,46 +136,46 @@ data class DeviceBatchUnitInput(
 @Serializable
 data class DeviceBatchInput(
     val typeId: String,
-    val descripcion: String,
-    val marca: String,
-    val modelo: String,
+    val description: String,
+    val brand: String,
+    val model: String,
     val area: String? = null,
-    val estado: String? = null,
+    val status: String? = null,
     val locationId: String? = null,
-    val sistemaOp: String? = null,
+    val operatingSystem: String? = null,
     val ram: String? = null,
-    val almacenamiento: String? = null,
+    val storage: String? = null,
     val units: List<DeviceBatchUnitInput>,
 )
 
 @Serializable
-data class DeviceLoteUnitUpdateInput(
+data class DeviceBatchUnitUpdateInput(
     val id: String,
-    val numeroSerie: String? = null,
-    val nombreEquipo: String? = null,
+    val serialNumber: String? = null,
+    val hostname: String? = null,
     val ip: String? = null,
     val macAddress: String? = null,
     val area: String? = null,
 )
 
 @Serializable
-data class DeviceLoteUpdateInput(
+data class DeviceBatchUpdateInput(
     val typeId: String? = null,
-    val descripcion: String? = null,
-    val marca: String? = null,
-    val modelo: String? = null,
-    val sistemaOp: String? = null,
+    val description: String? = null,
+    val brand: String? = null,
+    val model: String? = null,
+    val operatingSystem: String? = null,
     val ram: String? = null,
-    val almacenamiento: String? = null,
-    val units: List<DeviceLoteUnitUpdateInput>? = null,
+    val storage: String? = null,
+    val units: List<DeviceBatchUnitUpdateInput>? = null,
 )
 
 @Serializable
-data class AddUnitsInput(val cantidad: Int)
+data class AddUnitsInput(val quantity: Int)
 
 @Serializable
 data class AddUnitsResponseDto(
-    val loteId: String,
+    val batchId: String,
     val data: List<DeviceDto>,
     val total: Int = 0,
 )
@@ -188,28 +188,28 @@ data class DeviceRemoveResponseDto(
 )
 
 @Serializable
-data class DeviceAvailabilityCartaDto(
+data class DeviceAvailabilityCustodyLetterDto(
     val consecutive: String,
-    val fecha: String,
-    val numeroEmpleado: String,
-    val departamento: String,
+    val date: String,
+    val employeeNumber: String,
+    val department: String,
     val deliveryBy: String,
-    val responsable: String? = null,
-    val encargado: String? = null,
-    val lugar: String? = null,
+    val custodian: String? = null,
+    val supervisor: String? = null,
+    val locationName: String? = null,
 )
 
 @Serializable
 data class DeviceAvailabilityRowDto(
     val id: String,
-    val controlActivos: String,
-    val descripcion: String,
-    val marca: String,
-    val modelo: String,
-    val estado: String,
+    val assetTag: String,
+    val description: String,
+    val brand: String,
+    val model: String,
+    val status: String,
     val area: String,
-    val ubicacion: String? = null,
-    val carta: DeviceAvailabilityCartaDto? = null,
+    val location: String? = null,
+    val custodyLetter: DeviceAvailabilityCustodyLetterDto? = null,
 )
 
 @Serializable
@@ -218,7 +218,7 @@ data class DeviceAvailabilityGroupDto(
     val code: String,
     val name: String,
     val total: Int,
-    val disponible: Int,
-    val asignado: Int,
+    val available: Int,
+    val assigned: Int,
     val devices: List<DeviceAvailabilityRowDto>,
 )

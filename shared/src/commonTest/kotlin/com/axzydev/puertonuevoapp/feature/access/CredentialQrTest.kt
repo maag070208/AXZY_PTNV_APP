@@ -15,9 +15,9 @@ class CredentialQrTest {
         val valid = assertIs<QrParseResult.Valid>(result)
         assertEquals(2, valid.payload.version)
         assertEquals("emp-1", valid.payload.employeeId)
-        assertEquals("E-001", valid.payload.numeroEmpleado)
+        assertEquals("E-001", valid.payload.employeeNumber)
         assertEquals("Ana Palma", valid.payload.name)
-        assertEquals("Analista", valid.payload.puesto)
+        assertEquals("Analista", valid.payload.jobTitle)
         assertEquals("Sistemas", valid.payload.department)
     }
 
@@ -26,9 +26,9 @@ class CredentialQrTest {
         val result = parseCredentialPayload("""{"v":2,"id":"emp-2"}""")
         val valid = assertIs<QrParseResult.Valid>(result)
         assertEquals("emp-2", valid.payload.employeeId)
-        assertNull(valid.payload.numeroEmpleado)
+        assertNull(valid.payload.employeeNumber)
         assertNull(valid.payload.name)
-        assertNull(valid.payload.puesto)
+        assertNull(valid.payload.jobTitle)
         assertNull(valid.payload.department)
     }
 

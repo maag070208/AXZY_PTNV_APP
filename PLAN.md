@@ -9,7 +9,7 @@ La app usa arquitectura KMP estándar (`core/` + `feature/<dominio>`). NO copiar
 | Web (FSD) | App KMP (actual) | Estado |
 |---|---|---|
 | `shared/` | `core/` (network, session, nav, theme, util) | ✓ equivalente |
-| `entities`+`features`+`widgets` | `feature/<dominio>` (tickets, cartas, devices…) | ✓ 1:1 con módulos API |
+| `entities`+`features`+`widgets` | `feature/<dominio>` (tickets, custodyletters, devices…) | ✓ 1:1 con módulos API |
 | Redux slices | AuthState/StateFlow + ViewModel | ✓ |
 | HashRouter/PrivateRoutes | `Navigator` + `Screen` enum + `PlatformBackHandler` | ✓ |
 | Axios client + session 401 | Ktor `ApiClient` + `TokenStore` (expect/actual) | ✓ |
@@ -43,12 +43,12 @@ dependencias externas).
   mis tareas/tareas del equipo.
 - `feature/devices` + `feature/devicetypes` — CRUD completo, catálogo de
   tipos con `fieldConfig` por campo.
-- `feature/departments`, `feature/users`, `feature/employees` — CRUD +
+- `feature/departments`, `feature/users`, `feature/hr` — CRUD +
   wizard de alta de usuario + historial de actividad.
 - `feature/inventory` — ubicaciones (+ sublugares), movimientos/kardex,
   resumen, registrar movimiento (incluye flujo de "malas condiciones").
-- `feature/salidas` — bitácora F-SIS-0005.
-- `feature/cartas` — CRUD, generar por tipo, marcar/deshacer devolución.
+- `feature/materialoutputs` — bitácora F-SIS-0005 (salidas de material).
+- `feature/custodyletters` — cartas responsivas: CRUD, generar por tipo, marcar/deshacer devolución.
 - `feature/reports`, `feature/notifications` (+ badge en AppShell),
   `feature/audit` (ADMIN).
 

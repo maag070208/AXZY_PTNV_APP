@@ -23,21 +23,21 @@ class ReportsViewModel(
     val uiState: StateFlow<ReportsUiState> = _uiState.asStateFlow()
 
     init {
-        loadAsignados()
+        loadAssignedDevices()
         loadDevices()
     }
 
     fun onTabChange(tab: Int) = _uiState.update { it.copy(tab = tab) }
 
-    fun loadAsignados() {
-        _uiState.update { it.copy(asignadosLoading = true, asignadosError = null) }
+    fun loadAssignedDevices() {
+        _uiState.update { it.copy(assignedDevicesLoading = true, assignedDevicesError = null) }
         viewModelScope.launch {
-            val result = runCatching { reportsApi.asignados() }
+            val result = runCatching { reportsApi.assignedDevices() }
             _uiState.update {
                 it.copy(
-                    asignadosLoading = false,
-                    asignadosError = result.exceptionOrNull()?.let(::networkMessage),
-                    asignados = result.getOrDefault(it.asignados),
+                    assignedDevicesLoading = false,
+                    assignedDevicesError = result.exceptionOrNull()?.let(::networkMessage),
+                    assignedDevices = result.getOrDefault(it.assignedDevices),
                 )
             }
         }

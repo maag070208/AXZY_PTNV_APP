@@ -61,7 +61,7 @@ fun MyCredentialScreen() {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RemoteImage(
-                    path = state.fotoUrl,
+                    path = state.photoUrl,
                     loadBytes = { AppContainer.apiClient.getBytes(it) },
                     modifier = Modifier.size(72.dp).clip(CircleShape),
                     contentDescription = state.name,
@@ -70,11 +70,11 @@ fun MyCredentialScreen() {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(state.name, style = MaterialTheme.typography.titleLarge, color = AppColors.TextPrimary)
                     Text(
-                        listOfNotNull(state.puesto, state.department).joinToString(" · ").ifBlank { roleLabel(state.role) },
+                        listOfNotNull(state.jobTitle, state.department).joinToString(" · ").ifBlank { roleLabel(state.role) },
                         style = MaterialTheme.typography.bodyMedium,
                         color = AppColors.TextMuted,
                     )
-                    state.numeroEmpleado?.let {
+                    state.employeeNumber?.let {
                         Text("No. de empleado: $it", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
                     }
                 }

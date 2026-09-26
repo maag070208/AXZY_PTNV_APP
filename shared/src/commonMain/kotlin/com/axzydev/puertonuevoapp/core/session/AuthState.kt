@@ -8,27 +8,27 @@ data class SessionUser(
     val departmentId: String?,
 ) {
     val isAdmin: Boolean get() = role == "ADMIN"
-    val isGerente: Boolean get() = role == "GERENTE"
-    val isJefeArea: Boolean get() = role == "JEFE_DE_AREA"
-    val isEmpleado: Boolean get() = role == "EMPLEADO"
+    val isManager: Boolean get() = role == "MANAGER"
+    val isAreaHead: Boolean get() = role == "AREA_HEAD"
+    val isEmployee: Boolean get() = role == "EMPLOYEE"
 
     /** Matriz de autorización — API_DOCUMENTATION.md §1.3. */
     val canManageCatalogs: Boolean get() = role == "ADMIN"
-    val canDeleteCartas: Boolean get() = role in setOf("ADMIN", "GERENTE", "JEFE_DE_AREA")
-    val canRegisterMovement: Boolean get() = role in setOf("ADMIN", "GERENTE", "JEFE_DE_AREA")
-    val canGenerateCartas: Boolean get() = role in setOf("ADMIN", "GERENTE")
+    val canDeleteCustodyLetters: Boolean get() = role in setOf("ADMIN", "MANAGER", "AREA_HEAD")
+    val canRegisterMovement: Boolean get() = role in setOf("ADMIN", "MANAGER", "AREA_HEAD")
+    val canGenerateCustodyLetters: Boolean get() = role in setOf("ADMIN", "MANAGER")
     val canDeleteTicket: Boolean get() = role == "ADMIN"
-    val canSeeAdminTasks: Boolean get() = role == "ADMIN" || role == "GERENTE"
+    val canSeeAdminTasks: Boolean get() = role == "ADMIN" || role == "MANAGER"
 
     /** "Mis tareas" es la vista del empleado (en la web, igual). */
-    val canSeeMyTasks: Boolean get() = isEmpleado
+    val canSeeMyTasks: Boolean get() = isEmployee
 
-    /** Crear tareas desde el tablero (en la web, todos menos EMPLEADO). */
-    val canCreateAssignments: Boolean get() = !isEmpleado
+    /** Crear tareas desde el tablero (en la web, todos menos EMPLOYEE). */
+    val canCreateAssignments: Boolean get() = !isEmployee
     val canSeeAudit: Boolean get() = role == "ADMIN"
 
     /** Expediente completo de personal (médico/oficial/documentos). */
-    val canManageHR: Boolean get() = role == "ADMIN" || role == "RECURSOS_HUMANOS"
+    val canManageHR: Boolean get() = role == "ADMIN" || role == "HUMAN_RESOURCES"
 
     /** Control de acceso — escanear credenciales y registrar entradas/salidas. */
     val canScanCredential: Boolean get() = role in setOf("GUARD", "ADMIN")

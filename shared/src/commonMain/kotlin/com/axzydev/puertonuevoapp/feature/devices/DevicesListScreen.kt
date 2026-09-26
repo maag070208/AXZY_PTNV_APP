@@ -40,7 +40,7 @@ import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
-import com.axzydev.puertonuevoapp.core.util.deviceEstadoLabel
+import com.axzydev.puertonuevoapp.core.util.deviceStatusLabel
 
 @Composable
 fun DevicesListScreen(viewModel: DevicesListViewModel = viewModel { DevicesListViewModel(AppContainer.devicesApi) }) {
@@ -65,8 +65,8 @@ fun DevicesListScreen(viewModel: DevicesListViewModel = viewModel { DevicesListV
             )
             Spacer(Modifier.height(10.dp))
             Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                deviceEstadoFilters.forEach { (value, label) ->
-                    val selected = state.estadoFilter == value
+                deviceStatusFilters.forEach { (value, label) ->
+                    val selected = state.statusFilter == value
                     Text(
                         text = label,
                         style = MaterialTheme.typography.bodySmall,
@@ -74,7 +74,7 @@ fun DevicesListScreen(viewModel: DevicesListViewModel = viewModel { DevicesListV
                         modifier = Modifier
                             .clip(AppShape.pill)
                             .background(if (selected) AppColors.EmeraldPrimary else AppColors.SurfaceVariant, AppShape.pill)
-                            .clickable { viewModel.onEstadoFilterChange(value) }
+                            .clickable { viewModel.onStatusFilterChange(value) }
                             .padding(horizontal = 12.dp, vertical = 6.dp),
                     )
                 }
@@ -124,19 +124,19 @@ private fun DeviceRow(device: DeviceDto, onClick: () -> Unit) {
             verticalAlignment = Alignment.Top,
         ) {
             Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-                Text(device.controlActivos, style = MaterialTheme.typography.titleMedium, color = AppColors.EmeraldPrimaryDark)
-                Text(device.descripcion, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
+                Text(device.assetTag, style = MaterialTheme.typography.titleMedium, color = AppColors.EmeraldPrimaryDark)
+                Text(device.description, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
             }
-            StatusChip(deviceEstadoLabel(device.estado), AppColors.deviceEstadoColor(device.estado))
+            StatusChip(deviceStatusLabel(device.status), AppColors.deviceStatusColor(device.status))
         }
         Spacer(Modifier.height(6.dp))
         Text(
-            "${device.marca} ${device.modelo} · ${device.type?.name ?: ""}",
+            "${device.brand} ${device.model} · ${device.type?.name ?: ""}",
             style = MaterialTheme.typography.bodySmall,
             color = AppColors.TextMuted,
         )
-        device.location?.lugar?.let { lugar ->
-            Text(lugar, style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
+        device.location?.name?.let { name ->
+            Text(name, style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
         }
     }
 }

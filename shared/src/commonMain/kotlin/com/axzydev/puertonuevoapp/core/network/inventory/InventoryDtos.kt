@@ -12,20 +12,20 @@ data class InventoryMovementDto(
     val device: DeviceDto? = null,
     val locationId: String? = null,
     val location: LocationDto? = null,
-    val tipo: String,
-    val notas: String? = null,
+    val type: String,
+    val notes: String? = null,
     val userId: String,
     val user: UserRefDto? = null,
-    val prestamoId: String? = null,
-    val prestadoA: String? = null,
-    val fechaRetornoEsperado: String? = null,
-    val condicion: String? = null,
-    val motivoBaja: String? = null,
+    val loanId: String? = null,
+    val loanedTo: String? = null,
+    val expectedReturnDate: String? = null,
+    val condition: String? = null,
+    val retirementReason: String? = null,
     val createdAt: String,
 )
 
 @Serializable
-data class KardexDto(
+data class StockLedgerDto(
     val device: DeviceDto,
     val movements: List<InventoryMovementDto> = emptyList(),
 )
@@ -46,31 +46,31 @@ data class InventorySummaryDto(
 @Serializable
 data class MovementInput(
     val deviceId: String,
-    val tipo: String,
+    val type: String,
     val locationId: String? = null,
-    val notas: String? = null,
+    val notes: String? = null,
     val userId: String? = null,
     val userName: String? = null,
-    val prestamoId: String? = null,
-    val prestadoA: String? = null,
-    val fechaRetornoEsperado: String? = null,
-    val condicion: String? = null,
-    val motivoBaja: String? = null,
-    val cartaId: String? = null,
+    val loanId: String? = null,
+    val loanedTo: String? = null,
+    val expectedReturnDate: String? = null,
+    val condition: String? = null,
+    val retirementReason: String? = null,
+    val custodyLetterId: String? = null,
 )
 
 val movementTypeOptions: List<Pair<String, String>> = listOf(
-    "ENTRADA" to "Entrada",
-    "SALIDA" to "Salida",
-    "TRASLADO" to "Traslado",
-    "BAJA" to "Baja",
-    "PRESTAMO" to "Asignado",
-    "DEVOLUCION" to "Devolución",
+    "STOCK_IN" to "Entrada",
+    "STOCK_OUT" to "Salida",
+    "TRANSFER" to "Traslado",
+    "RETIREMENT" to "Baja",
+    "LOAN" to "Asignado",
+    "RETURN" to "Devolución",
 )
 
-val condicionOptions: List<Pair<String, String>> = listOf(
-    "BUENO" to "Bueno",
-    "ACEPTABLE" to "Aceptable",
-    "MALO" to "Malo",
-    "ROTO" to "Roto",
+val conditionOptions: List<Pair<String, String>> = listOf(
+    "GOOD" to "Bueno",
+    "FAIR" to "Aceptable",
+    "POOR" to "Malo",
+    "BROKEN" to "Roto",
 )

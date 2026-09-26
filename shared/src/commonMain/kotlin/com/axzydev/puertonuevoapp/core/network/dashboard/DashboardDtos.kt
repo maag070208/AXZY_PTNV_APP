@@ -2,73 +2,73 @@ package com.axzydev.puertonuevoapp.core.network.dashboard
 
 import kotlinx.serialization.Serializable
 
-/** Resumen del panel administrativo (`GET /dashboard/summary`, ADMIN/GERENTE). */
+/** Resumen del panel administrativo (`GET /dashboard/summary`, ADMIN/MANAGER). */
 @Serializable
 data class DashboardSummaryDto(
     val devices: DashboardDevicesDto = DashboardDevicesDto(),
     val tickets: DashboardTicketsDto = DashboardTicketsDto(),
-    val cartas: DashboardCartasDto = DashboardCartasDto(),
-    val salidas: DashboardSalidasDto = DashboardSalidasDto(),
-    val departamentos: Int = 0,
-    val empleados: Int = 0,
-    val ticketMetricas: DashboardMetricasDto = DashboardMetricasDto(),
-    val ticketEficiencia: List<DashboardEficienciaDto> = emptyList(),
-    val ticketsUrgentes: List<DashboardUrgenteDto> = emptyList(),
+    val custodyLetters: DashboardCustodyLettersDto = DashboardCustodyLettersDto(),
+    val materialOutputs: DashboardMaterialOutputsDto = DashboardMaterialOutputsDto(),
+    val departments: Int = 0,
+    val employees: Int = 0,
+    val ticketMetrics: DashboardMetricsDto = DashboardMetricsDto(),
+    val ticketEfficiency: List<DashboardEfficiencyDto> = emptyList(),
+    val urgentTickets: List<DashboardUrgentTicketDto> = emptyList(),
     val recentActivity: List<DashboardActivityDto> = emptyList(),
 )
 
 @Serializable
 data class DashboardDevicesDto(
     val total: Int = 0,
-    val disponible: Int = 0,
-    val asignado: Int = 0,
-    val baja: Int = 0,
+    val available: Int = 0,
+    val assigned: Int = 0,
+    val retirement: Int = 0,
 )
 
 @Serializable
 data class DashboardTicketsDto(
     val total: Int = 0,
-    val abierto: Int = 0,
-    val enSeguimiento: Int = 0,
-    val cerrado: Int = 0,
+    val open: Int = 0,
+    val inProgress: Int = 0,
+    val closed: Int = 0,
 )
 
 @Serializable
-data class DashboardCartasDto(val total: Int = 0, val activas: Int = 0)
+data class DashboardCustodyLettersDto(val total: Int = 0, val active: Int = 0)
 
 @Serializable
-data class DashboardSalidasDto(val total: Int = 0, val danadas: Int = 0)
+data class DashboardMaterialOutputsDto(val total: Int = 0, val damaged: Int = 0)
 
 @Serializable
-data class DashboardMetricasDto(
-    val tareasResueltas: Int = 0,
-    val tareasPendientes: Int = 0,
-    val avgResolucionDias: Double? = null,
+data class DashboardMetricsDto(
+    val resolvedTasks: Int = 0,
+    val pendingTasks: Int = 0,
+    val avgResolutionDays: Double? = null,
 )
 
 @Serializable
 data class DashboardUserRefDto(
     val id: String = "",
     val name: String = "",
-    val puesto: String? = null,
+    val jobTitle: String? = null,
 )
 
 @Serializable
-data class DashboardEficienciaDto(
+data class DashboardEfficiencyDto(
     val user: DashboardUserRefDto = DashboardUserRefDto(),
-    val resueltas: Int = 0,
-    val pendientes: Int = 0,
-    val avgDias: Double? = null,
+    val resolved: Int = 0,
+    val pending: Int = 0,
+    val avgDays: Double? = null,
 )
 
 @Serializable
-data class DashboardUrgenteDto(
+data class DashboardUrgentTicketDto(
     val id: String,
-    val titulo: String = "",
-    val prioridad: String = "MEDIA",
-    val creadoEn: String = "",
-    val diasEnEspera: Int = 0,
-    val asignado: String? = null,
+    val title: String = "",
+    val priority: String = "MEDIUM",
+    val createdAt: String = "",
+    val daysOnHold: Int = 0,
+    val assigned: String? = null,
 )
 
 @Serializable

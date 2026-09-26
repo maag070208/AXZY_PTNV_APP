@@ -8,17 +8,17 @@ data class DeviceFormUiState(
     val error: String? = null,
     val types: List<DeviceTypeDto> = emptyList(),
     val typeId: String = "",
-    val descripcion: String = "",
-    val marca: String = "",
-    val modelo: String = "",
+    val description: String = "",
+    val brand: String = "",
+    val model: String = "",
     val area: String = "SISTEMAS",
-    val numeroSerie: String = "",
-    val nombreEquipo: String = "",
+    val serialNumber: String = "",
+    val hostname: String = "",
     val ip: String = "",
     val macAddress: String = "",
-    val sistemaOp: String = "",
+    val operatingSystem: String = "",
     val ram: String = "",
-    val almacenamiento: String = "",
+    val storage: String = "",
     val blocked: Boolean = false,
     val blockedCode: String = "",
     val saved: Boolean = false,
@@ -26,16 +26,16 @@ data class DeviceFormUiState(
     private val selectedType: DeviceTypeDto? get() = types.firstOrNull { it.id == typeId }
 
     fun showField(key: String): Boolean = when (key) {
-        "numeroSerie" -> selectedType?.fieldConfig?.numeroSerie?.enabled ?: true
-        "nombreEquipo" -> selectedType?.fieldConfig?.nombreEquipo?.enabled ?: true
+        "serialNumber" -> selectedType?.fieldConfig?.serialNumber?.enabled ?: true
+        "hostname" -> selectedType?.fieldConfig?.hostname?.enabled ?: true
         "ip" -> selectedType?.fieldConfig?.ip?.enabled ?: false
         "macAddress" -> selectedType?.fieldConfig?.macAddress?.enabled ?: false
-        "sistemaOp" -> selectedType?.fieldConfig?.sistemaOp?.enabled ?: false
+        "operatingSystem" -> selectedType?.fieldConfig?.operatingSystem?.enabled ?: false
         "ram" -> selectedType?.fieldConfig?.ram?.enabled ?: false
-        "almacenamiento" -> selectedType?.fieldConfig?.almacenamiento?.enabled ?: false
+        "storage" -> selectedType?.fieldConfig?.storage?.enabled ?: false
         else -> false
     }
 
-    val showSpecs: Boolean get() = listOf("ip", "macAddress", "sistemaOp", "ram", "almacenamiento").any(::showField)
-    val isValid: Boolean get() = typeId.isNotBlank() && descripcion.isNotBlank() && marca.isNotBlank() && modelo.isNotBlank()
+    val showSpecs: Boolean get() = listOf("ip", "macAddress", "operatingSystem", "ram", "storage").any(::showField)
+    val isValid: Boolean get() = typeId.isNotBlank() && description.isNotBlank() && brand.isNotBlank() && model.isNotBlank()
 }

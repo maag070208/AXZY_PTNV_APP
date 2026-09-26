@@ -1,6 +1,7 @@
 package com.axzydev.puertonuevoapp.core.network.http
 
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.HttpRequestBuilder
@@ -63,6 +64,13 @@ class ApiClient(
     internal val httpClient: HttpClient = HttpClient {
         expectSuccess = false
 
+        // El API traduce sus mensajes (errores de validación/negocio) según
+        // `Accept-Language` o, sin header, el idioma del sistema
+        // (`sys_config.LANGUAGE`). La UI de la app está en español.
+        defaultRequest {
+            header(HttpHeaders.AcceptLanguage, "es")
+        }
+
         install(Logging) {
             level = LogLevel.INFO
         }
@@ -99,7 +107,7 @@ class ApiClient(
 
     /**
      * Descarga bytes crudos (imágenes/archivos). El endpoint de foto del
-     * empleado (`/personal/:id/foto/raw`) vive bajo la misma base que el
+     * empleado (`/hr/:id/photo/raw`) vive bajo la misma base que el
      * resto del API; se resuelve con [buildUrl].
      */
     suspend fun getBytes(path: String): ByteArray {
@@ -194,7 +202,7 @@ class ApiClient(
         return decode(response)
     }
 
-    // Para DELETEs que responden 204 sin cuerpo (ej. `/cartas/:id`): decode<Unit>
+    // Para DELETEs que responden 204 sin cuerpo (ej. `/notifications/:id`): decode<Unit>
     // fallaría al intentar parsear un body vacío como JSON. Mismo patrón que
     // putNoContent: solo se decodifica el error si la llamada no fue exitosa.
     suspend fun deleteNoContent(path: String) {

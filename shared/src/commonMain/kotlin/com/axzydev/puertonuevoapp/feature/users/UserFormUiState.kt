@@ -12,9 +12,9 @@ data class UserFormUiState(
     val email: String = "",
     val password: String = "",
     val name: String = "",
-    val role: String = "EMPLEADO",
-    val numeroEmpleado: String = "",
-    val puesto: String = "",
+    val role: String = "EMPLOYEE",
+    val employeeNumber: String = "",
+    val jobTitle: String = "",
     val departmentId: String = "",
     val subareaId: String = "",
     val saved: Boolean = false,
@@ -24,7 +24,7 @@ data class UserFormUiState(
 
 val userRoleOptions: List<Pair<String, String>> = listOf(
     "ADMIN" to "ADMIN",
-    "GERENTE" to "GERENTE",
-    "JEFE_DE_AREA" to "JEFE DE AREA",
-    "EMPLEADO" to "EMPLEADO",
+    "MANAGER" to "GERENTE",
+    "AREA_HEAD" to "JEFE DE AREA",
+    "EMPLOYEE" to "EMPLEADO",
 )

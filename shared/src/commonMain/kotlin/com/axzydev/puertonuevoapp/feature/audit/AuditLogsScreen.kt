@@ -50,13 +50,13 @@ private fun actionLabel(action: String): String = auditActionOptions.firstOrNull
 private fun jsonString(obj: JsonObject?, key: String): String? = (obj?.get(key) as? JsonPrimitive)?.contentOrNull
 
 private fun actionColor(action: String): Color = when {
-    action.contains("ENTRADA") -> AppColors.Success
-    action.contains("SALIDA") -> AppColors.Warning
-    action.contains("TRASLADO") -> AppColors.Info
-    action.contains("BAJA") -> AppColors.Danger
-    action.contains("PRESTAMO") -> AppColors.EmeraldPrimary
-    action.contains("DEVOLUCION") -> AppColors.Info
-    action.contains("CARTA") -> AppColors.EmeraldPrimary
+    action.contains("STOCK_IN") -> AppColors.Success
+    action.contains("STOCK_OUT") -> AppColors.Warning
+    action.contains("TRANSFER") -> AppColors.Info
+    action.contains("RETIREMENT") -> AppColors.Danger
+    action.contains("LOAN") -> AppColors.EmeraldPrimary
+    action.contains("RETURN") -> AppColors.Info
+    action.contains("CUSTODY_LETTER") -> AppColors.EmeraldPrimary
     else -> AppColors.TextFaint
 }
 
@@ -149,21 +149,21 @@ private fun AuditLogCard(log: AuditLogDto) {
             color = AppColors.TextMuted,
         )
         val newState = log.newState
-        val notas = jsonString(log.metadata, "notas")
-        val tipo = jsonString(newState, "tipo")
-        val estado = jsonString(newState, "estado")
-        val condicion = jsonString(newState, "condicion")
+        val notes = jsonString(log.metadata, "notes")
+        val type = jsonString(newState, "type")
+        val status = jsonString(newState, "status")
+        val condition = jsonString(newState, "condition")
         val consecutive = jsonString(newState, "consecutive")
-        if (tipo != null || estado != null || condicion != null || consecutive != null || notas != null) {
+        if (type != null || status != null || condition != null || consecutive != null || notes != null) {
             Spacer(Modifier.height(6.dp))
             Column(
                 modifier = Modifier.fillMaxWidth().background(AppColors.SurfaceVariant, RoundedCornerShape(8.dp)).padding(10.dp),
             ) {
-                tipo?.let { Text("Tipo: $it", style = MaterialTheme.typography.labelSmall, color = AppColors.TextMuted) }
-                estado?.let { Text("Estado: $it", style = MaterialTheme.typography.labelSmall, color = AppColors.TextMuted) }
-                condicion?.let { Text("Condición: $it", style = MaterialTheme.typography.labelSmall, color = AppColors.TextMuted) }
+                type?.let { Text("Tipo: $it", style = MaterialTheme.typography.labelSmall, color = AppColors.TextMuted) }
+                status?.let { Text("Estado: $it", style = MaterialTheme.typography.labelSmall, color = AppColors.TextMuted) }
+                condition?.let { Text("Condición: $it", style = MaterialTheme.typography.labelSmall, color = AppColors.TextMuted) }
                 consecutive?.let { Text("Carta: $it", style = MaterialTheme.typography.labelSmall, color = AppColors.TextMuted) }
-                notas?.let { Text("Notas: $it", style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint) }
+                notes?.let { Text("Notas: $it", style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint) }
             }
         }
     }

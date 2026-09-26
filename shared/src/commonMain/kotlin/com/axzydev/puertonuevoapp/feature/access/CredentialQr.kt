@@ -20,9 +20,9 @@ const val CREDENTIAL_VERSION = 2
 data class CredentialPayload(
     val version: Int,
     val employeeId: String,
-    val numeroEmpleado: String? = null,
+    val employeeNumber: String? = null,
     val name: String? = null,
-    val puesto: String? = null,
+    val jobTitle: String? = null,
     val department: String? = null,
 )
 
@@ -72,9 +72,9 @@ fun parseCredentialPayload(raw: String): QrParseResult {
         CredentialPayload(
             version = version,
             employeeId = employeeId,
-            numeroEmpleado = readString(obj["no"]),
+            employeeNumber = readString(obj["no"]),
             name = readString(obj["name"]),
-            puesto = readString(obj["pos"]),
+            jobTitle = readString(obj["pos"]),
             department = readString(obj["dept"]),
         )
     )

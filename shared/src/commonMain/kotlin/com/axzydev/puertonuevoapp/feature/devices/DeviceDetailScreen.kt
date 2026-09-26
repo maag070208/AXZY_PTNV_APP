@@ -34,7 +34,7 @@ import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
-import com.axzydev.puertonuevoapp.core.util.deviceEstadoLabel
+import com.axzydev.puertonuevoapp.core.util.deviceStatusLabel
 import com.axzydev.puertonuevoapp.core.util.formatDateTime
 import com.axzydev.puertonuevoapp.core.util.formatShortDate
 
@@ -70,10 +70,10 @@ fun DeviceDetailScreen(deviceId: String) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-                        Text(d.controlActivos, style = MaterialTheme.typography.headlineSmall, color = AppColors.TextPrimary)
-                        Text(d.descripcion, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextMuted)
+                        Text(d.assetTag, style = MaterialTheme.typography.headlineSmall, color = AppColors.TextPrimary)
+                        Text(d.description, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextMuted)
                     }
-                    StatusChip(deviceEstadoLabel(d.estado), AppColors.deviceEstadoColor(d.estado))
+                    StatusChip(deviceStatusLabel(d.status), AppColors.deviceStatusColor(d.status))
                 }
 
                 if (isAdmin || canRegisterMovement) {
@@ -110,41 +110,41 @@ fun DeviceDetailScreen(deviceId: String) {
                 InfoCard {
                     SectionLabel("Información")
                     InfoRow("Tipo", d.type?.name ?: "—")
-                    InfoRow("Marca", d.marca)
-                    InfoRow("Modelo", d.modelo)
-                    d.numeroSerie?.let { InfoRow("No. de serie", it) }
-                    d.nombreEquipo?.let { InfoRow("Nombre de equipo", it) }
+                    InfoRow("Marca", d.brand)
+                    InfoRow("Modelo", d.model)
+                    d.serialNumber?.let { InfoRow("No. de serie", it) }
+                    d.hostname?.let { InfoRow("Nombre de equipo", it) }
                     InfoRow("Área", d.area)
-                    d.location?.lugar?.let { InfoRow("Ubicación", it) }
-                    d.loteId?.let { InfoRow("Lote", "${d.loteSize ?: 1} unidad(es)") }
+                    d.location?.name?.let { InfoRow("Ubicación", it) }
+                    d.batchId?.let { InfoRow("Lote", "${d.batchSize ?: 1} unidad(es)") }
                 }
 
-                val hasSpecs = d.ip != null || d.macAddress != null || d.sistemaOp != null || d.ram != null || d.almacenamiento != null
+                val hasSpecs = d.ip != null || d.macAddress != null || d.operatingSystem != null || d.ram != null || d.storage != null
                 if (hasSpecs) {
                     Spacer(Modifier.height(14.dp))
                     InfoCard {
                         SectionLabel("Especificaciones técnicas")
-                        d.sistemaOp?.let { InfoRow("Sistema operativo", it) }
+                        d.operatingSystem?.let { InfoRow("Sistema operativo", it) }
                         d.ram?.let { InfoRow("RAM", it) }
-                        d.almacenamiento?.let { InfoRow("Almacenamiento", it) }
+                        d.storage?.let { InfoRow("Almacenamiento", it) }
                         d.ip?.let { InfoRow("IP", it) }
                         d.macAddress?.let { InfoRow("MAC", it) }
                     }
                 }
 
-                if (d.cartaItems.isNotEmpty()) {
+                if (d.custodyLetterItems.isNotEmpty()) {
                     Spacer(Modifier.height(14.dp))
                     InfoCard {
                         SectionLabel("Cartas responsivas activas")
-                        d.cartaItems.forEach { item ->
+                        d.custodyLetterItems.forEach { item ->
                             Column(modifier = Modifier.padding(vertical = 4.dp)) {
                                 Text(
-                                    "${item.carta.consecutive} · ${item.carta.responsable?.name ?: item.carta.numeroEmpleado}",
+                                    "${item.custodyLetter.consecutive} · ${item.custodyLetter.custodian?.name ?: item.custodyLetter.employeeNumber}",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = AppColors.TextPrimary,
                                 )
                                 Text(
-                                    "${item.carta.departamento} · ${formatShortDate(item.carta.fecha)}",
+                                    "${item.custodyLetter.department} · ${formatShortDate(item.custodyLetter.date)}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = AppColors.TextFaint,
                                 )
@@ -161,7 +161,7 @@ fun DeviceDetailScreen(deviceId: String) {
                             Column(modifier = Modifier.padding(vertical = 4.dp)) {
                                 Text(h.detail ?: h.type, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
                                 Text(
-                                    "${h.autor?.name ?: "Sistema"} · ${formatDateTime(h.createdAt)}",
+                                    "${h.author?.name ?: "Sistema"} · ${formatDateTime(h.createdAt)}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = AppColors.TextFaint,
                                 )

@@ -15,30 +15,31 @@ data class SubareaDto(
 @Serializable
 data class DepartmentLocationDto(
     val id: String,
-    val lugar: String,
-    val descripcion: String? = null,
+    val name: String,
+    val description: String? = null,
     val active: Boolean = true,
 )
 
 @Serializable
 data class DepartmentTicketDto(
     val id: String,
-    val titulo: String,
+    val title: String,
     val status: String,
     val priority: String,
-    val category: com.axzydev.puertonuevoapp.core.network.tickets.TicketCategoryRefDto? = null,
-    val creadoEn: String,
-    val asignadoA: UserRefDto? = null,
+    /** Nombre de la categoría (el API la manda aplanada como texto). */
+    val category: String? = null,
+    val createdAt: String,
+    val assignedTo: UserRefDto? = null,
 )
 
 @Serializable
-data class DepartmentCartaDto(
+data class DepartmentCustodyLetterDto(
     val id: String,
     val consecutive: String,
-    val fecha: String,
+    val date: String,
     val returnDate: String? = null,
-    val responsable: UserRefDto? = null,
-    val encargado: UserRefDto? = null,
+    val custodian: UserRefDto? = null,
+    val supervisor: UserRefDto? = null,
     val itemsCount: Int = 0,
 )
 
@@ -54,8 +55,8 @@ data class DepartmentDto(
     val locations: List<DepartmentLocationDto> = emptyList(),
     val tickets: List<DepartmentTicketDto> = emptyList(),
     val ticketsTotal: Int = 0,
-    val cartas: List<DepartmentCartaDto> = emptyList(),
-    val cartasTotal: Int = 0,
+    val custodyLetters: List<DepartmentCustodyLetterDto> = emptyList(),
+    val custodyLettersTotal: Int = 0,
     @SerialName("_count") val count: DeptCountDto? = null,
 )
 

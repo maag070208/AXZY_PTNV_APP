@@ -12,11 +12,11 @@ data class AuthUserDto(
     val role: String,
     val departmentId: String? = null,
     // Datos de la credencial: solo `GET /auth/me` los trae (el login no).
-    val numeroEmpleado: String? = null,
-    val puesto: String? = null,
+    val employeeNumber: String? = null,
+    val jobTitle: String? = null,
     val department: DepartmentRefDto? = null,
-    /** Ruta de la foto (`/personal/:id/foto/raw`) o null si no tiene. */
-    val fotoUrl: String? = null,
+    /** Ruta de la foto (`/hr/:id/photo/raw`) o null si no tiene. */
+    val photoUrl: String? = null,
 )
 
 @Serializable

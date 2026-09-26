@@ -119,7 +119,7 @@ fun InventoryIndexScreen(viewModel: InventoryIndexViewModel = viewModel { Invent
                                         contentAlignment = Alignment.Center,
                                     ) { Icon(Icons.Filled.LocationOn, contentDescription = null, tint = AppColors.Info, modifier = Modifier.size(14.dp)) }
                                     Spacer(Modifier.size(8.dp))
-                                    Text(loc.lugar, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
+                                    Text(loc.name, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
                                 }
                                 Text("${loc.count?.devices ?: 0}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
                             }

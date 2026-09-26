@@ -84,7 +84,7 @@ fun DeviceTypesListScreen(viewModel: DeviceTypesListViewModel = viewModel { Devi
 
 @Composable
 private fun DeviceTypeCard(type: DeviceTypeDto, clickable: Boolean, onClick: () -> Unit) {
-    val nextFolio = "${type.prefix}-${(type.contador + 1).toString().padStart(4, '0')}"
+    val nextFolio = "${type.prefix}-${(type.counter + 1).toString().padStart(4, '0')}"
     AppCard(
         modifier = Modifier.fillMaxWidth(),
         onClick = if (clickable) onClick else null,

@@ -79,11 +79,11 @@ import com.axzydev.puertonuevoapp.core.util.roleLabel
 import com.axzydev.puertonuevoapp.feature.access.AccessLogScreen
 import com.axzydev.puertonuevoapp.feature.access.AccessScanScreen
 import com.axzydev.puertonuevoapp.feature.audit.AuditLogsScreen
-import com.axzydev.puertonuevoapp.feature.cartas.CartaDetailScreen
+import com.axzydev.puertonuevoapp.feature.custodyletters.CustodyLetterDetailScreen
 import com.axzydev.puertonuevoapp.feature.credential.MyCredentialScreen
-import com.axzydev.puertonuevoapp.feature.cartas.CartaFormScreen
-import com.axzydev.puertonuevoapp.feature.cartas.CartasListScreen
-import com.axzydev.puertonuevoapp.feature.cartas.GenerateCartaScreen
+import com.axzydev.puertonuevoapp.feature.custodyletters.CustodyLetterFormScreen
+import com.axzydev.puertonuevoapp.feature.custodyletters.CustodyLettersListScreen
+import com.axzydev.puertonuevoapp.feature.custodyletters.GenerateCustodyLetterScreen
 import com.axzydev.puertonuevoapp.feature.departments.DepartmentDetailScreen
 import com.axzydev.puertonuevoapp.feature.departments.DepartmentsListScreen
 import com.axzydev.puertonuevoapp.feature.devices.DeviceDetailScreen
@@ -91,8 +91,8 @@ import com.axzydev.puertonuevoapp.feature.devices.DeviceFormScreen
 import com.axzydev.puertonuevoapp.feature.devices.DevicesListScreen
 import com.axzydev.puertonuevoapp.feature.devicetypes.DeviceTypeFormScreen
 import com.axzydev.puertonuevoapp.feature.devicetypes.DeviceTypesListScreen
-import com.axzydev.puertonuevoapp.feature.personal.PersonalListScreen
-import com.axzydev.puertonuevoapp.feature.personal.PersonalProfileScreen
+import com.axzydev.puertonuevoapp.feature.hr.EmployeesListScreen
+import com.axzydev.puertonuevoapp.feature.hr.EmployeeProfileScreen
 import com.axzydev.puertonuevoapp.feature.inventory.InventoryIndexScreen
 import com.axzydev.puertonuevoapp.feature.inventory.InventoryMovementsScreen
 import com.axzydev.puertonuevoapp.feature.inventory.LocationDetailScreen
@@ -101,8 +101,8 @@ import com.axzydev.puertonuevoapp.feature.inventory.LocationsListScreen
 import com.axzydev.puertonuevoapp.feature.inventory.NewInventoryMovementScreen
 import com.axzydev.puertonuevoapp.feature.notifications.NotificationsScreen
 import com.axzydev.puertonuevoapp.feature.reports.ReportsScreen
-import com.axzydev.puertonuevoapp.feature.salidas.SalidaFormScreen
-import com.axzydev.puertonuevoapp.feature.salidas.SalidasListScreen
+import com.axzydev.puertonuevoapp.feature.materialoutputs.MaterialOutputFormScreen
+import com.axzydev.puertonuevoapp.feature.materialoutputs.MaterialOutputsListScreen
 import com.axzydev.puertonuevoapp.feature.tickets.AdminTasksScreen
 import com.axzydev.puertonuevoapp.feature.tickets.EditTicketScreen
 import com.axzydev.puertonuevoapp.feature.tickets.MyTasksScreen
@@ -317,8 +317,8 @@ private fun drawerNodes(user: SessionUser?): List<DrawerNode> = buildList {
                     DrawerChild("Resumen", Screen.InventoryIndex),
                     DrawerChild("Dispositivos", Screen.DevicesList),
                     DrawerChild("Movimientos", Screen.InventoryMovements),
-                    DrawerChild("Cartas responsivas", Screen.CartasList),
-                    DrawerChild("Salidas de material", Screen.SalidasList),
+                    DrawerChild("Cartas responsivas", Screen.CustodyLettersList),
+                    DrawerChild("Salidas de material", Screen.MaterialOutputsList),
                 ),
             )
         )
@@ -330,7 +330,7 @@ private fun drawerNodes(user: SessionUser?): List<DrawerNode> = buildList {
             DrawerNode(
                 "Recursos Humanos", Icons.Filled.Groups,
                 children = listOf(
-                    DrawerChild("Personal", Screen.PersonalList),
+                    DrawerChild("Personal", Screen.EmployeesList),
                     DrawerChild("Departamentos", Screen.DepartmentsList),
                 ),
             )
@@ -531,8 +531,8 @@ private fun AppNavHost(screen: Screen) {
 
         // Users / employees — módulo 3
         is Screen.UserForm -> UserFormScreen(screen.id)
-        Screen.PersonalList -> PersonalListScreen()
-        is Screen.PersonalProfile -> PersonalProfileScreen(screen.id)
+        Screen.EmployeesList -> EmployeesListScreen()
+        is Screen.EmployeeProfile -> EmployeeProfileScreen(screen.id)
 
         // Departments — módulo 3
         Screen.DepartmentsList -> DepartmentsListScreen()
@@ -547,12 +547,12 @@ private fun AppNavHost(screen: Screen) {
         is Screen.NewInventoryMovement -> NewInventoryMovementScreen(screen.deviceId)
 
         // Salidas / Cartas / Reports / Notifications / Audit — módulo 5
-        Screen.SalidasList -> SalidasListScreen()
-        is Screen.SalidaForm -> SalidaFormScreen(screen.id)
-        Screen.CartasList -> CartasListScreen()
-        is Screen.CartaDetail -> CartaDetailScreen(screen.id)
-        is Screen.CartaForm -> CartaFormScreen(screen.id)
-        Screen.GenerateCarta -> GenerateCartaScreen()
+        Screen.MaterialOutputsList -> MaterialOutputsListScreen()
+        is Screen.MaterialOutputForm -> MaterialOutputFormScreen(screen.id)
+        Screen.CustodyLettersList -> CustodyLettersListScreen()
+        is Screen.CustodyLetterDetail -> CustodyLetterDetailScreen(screen.id)
+        is Screen.CustodyLetterForm -> CustodyLetterFormScreen(screen.id)
+        Screen.GenerateCustodyLetter -> GenerateCustodyLetterScreen()
 
         // Control de acceso — módulo 6
         Screen.AccessScan -> AccessScanScreen()

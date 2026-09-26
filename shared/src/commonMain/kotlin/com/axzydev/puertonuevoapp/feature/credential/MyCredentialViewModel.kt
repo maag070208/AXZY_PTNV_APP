@@ -37,10 +37,10 @@ class MyCredentialViewModel(
                         state.copy(
                             loading = false,
                             name = me.name,
-                            numeroEmpleado = me.numeroEmpleado,
-                            puesto = me.puesto,
+                            employeeNumber = me.employeeNumber,
+                            jobTitle = me.jobTitle,
                             department = me.department?.name,
-                            fotoUrl = me.fotoUrl,
+                            photoUrl = me.photoUrl,
                         )
                     },
                     onFailure = { state.copy(loading = false, error = networkMessage(it)) },

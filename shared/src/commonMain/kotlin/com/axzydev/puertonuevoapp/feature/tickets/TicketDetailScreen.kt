@@ -74,7 +74,7 @@ fun TicketDetailScreen(ticketId: String) {
             val canClose = user != null && TicketPermissions.canClose(user, access)
             // Editar mueve entre abierto y en seguimiento; cerrar tiene su propio permiso.
             val statusOptions = ticketStatusOptions.filter { (value, _) ->
-                value == t.status || if (value == "CERRADO") canClose else canEdit
+                value == t.status || if (value == "CLOSED") canClose else canEdit
             }
             Column(
                 modifier = Modifier
@@ -90,7 +90,7 @@ fun TicketDetailScreen(ticketId: String) {
                     verticalAlignment = Alignment.Top,
                 ) {
                     Text(
-                        t.titulo,
+                        t.title,
                         style = MaterialTheme.typography.headlineSmall,
                         color = AppColors.TextPrimary,
                         modifier = Modifier.weight(1f).padding(end = 8.dp),
@@ -100,7 +100,7 @@ fun TicketDetailScreen(ticketId: String) {
 
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "${t.category?.nombre ?: "Sin categoría"} · ${t.department?.name ?: "Sin depto."} · #${t.id.take(8).uppercase()}",
+                    "${t.category?.name ?: "Sin categoría"} · ${t.department?.name ?: "Sin depto."} · #${t.id.take(8).uppercase()}",
                     style = MaterialTheme.typography.bodySmall,
                     color = AppColors.TextFaint,
                 )
@@ -135,7 +135,7 @@ fun TicketDetailScreen(ticketId: String) {
                 Spacer(Modifier.height(16.dp))
                 InfoCard {
                     SectionLabel("Descripción")
-                    Text(t.descripcion, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
+                    Text(t.description, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
                 }
 
                 Spacer(Modifier.height(14.dp))
@@ -154,12 +154,12 @@ fun TicketDetailScreen(ticketId: String) {
                     }
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "Creado por ${t.creadoPor.name} · ${formatDateTime(t.creadoEn)}",
+                        "Creado por ${t.createdBy.name} · ${formatDateTime(t.createdAt)}",
                         style = MaterialTheme.typography.bodySmall,
                         color = AppColors.TextFaint,
                     )
                     Text(
-                        "Asignado a: ${t.asignadoA?.name ?: "Sin asignar"}",
+                        "Asignado a: ${t.assignedTo?.name ?: "Sin asignar"}",
                         style = MaterialTheme.typography.bodySmall,
                         color = AppColors.TextFaint,
                     )
@@ -171,11 +171,11 @@ fun TicketDetailScreen(ticketId: String) {
                     t.comments.forEach { c ->
                         Column(modifier = Modifier.padding(vertical = 6.dp)) {
                             Text(
-                                "${c.autor.name} · ${formatDateTime(c.creadoEn)}",
+                                "${c.author.name} · ${formatDateTime(c.createdAt)}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = AppColors.TextFaint,
                             )
-                            Text(c.texto, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
+                            Text(c.text, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
                         }
                     }
                     Spacer(Modifier.height(8.dp))
@@ -204,7 +204,7 @@ fun TicketDetailScreen(ticketId: String) {
                             Column(modifier = Modifier.padding(vertical = 4.dp)) {
                                 Text(h.detail ?: h.type, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
                                 Text(
-                                    "${h.autor?.name ?: "Sistema"} · ${formatDateTime(h.createdAt)}",
+                                    "${h.author?.name ?: "Sistema"} · ${formatDateTime(h.createdAt)}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = AppColors.TextFaint,
                                 )

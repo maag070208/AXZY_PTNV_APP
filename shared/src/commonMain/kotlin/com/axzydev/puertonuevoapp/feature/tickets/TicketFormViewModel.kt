@@ -42,8 +42,8 @@ class TicketFormViewModel(
                     loading = false,
                     error = ticket?.exceptionOrNull()?.let(::networkMessage),
                     categoryOptions = options,
-                    titulo = t?.titulo ?: it.titulo,
-                    descripcion = t?.descripcion ?: it.descripcion,
+                    title = t?.title ?: it.title,
+                    description = t?.description ?: it.description,
                     priority = t?.priority ?: it.priority,
                     categoryId = t?.categoryId.orEmpty(),
                     initialCategoryId = t?.categoryId.orEmpty(),
@@ -56,12 +56,12 @@ class TicketFormViewModel(
     private fun categoryOptions(active: List<TicketCategoryRefDto>, ticket: TicketDto?): List<Pair<String, String>> {
         val current = ticket?.category?.takeIf { cat -> active.none { it.id == cat.id } }
         return listOf(NO_CATEGORY) + (active + listOfNotNull(current))
-            .sortedBy { it.nombre.lowercase() }
-            .map { it.id to it.nombre }
+            .sortedBy { it.name.lowercase() }
+            .map { it.id to it.name }
     }
 
-    fun onTituloChange(value: String) = _uiState.update { it.copy(titulo = value, error = null) }
-    fun onDescripcionChange(value: String) = _uiState.update { it.copy(descripcion = value, error = null) }
+    fun onTitleChange(value: String) = _uiState.update { it.copy(title = value, error = null) }
+    fun onDescriptionChange(value: String) = _uiState.update { it.copy(description = value, error = null) }
     fun onPriorityChange(value: String) = _uiState.update { it.copy(priority = value) }
     fun onCategoryChange(value: String) = _uiState.update { it.copy(categoryId = value) }
 
@@ -74,8 +74,8 @@ class TicketFormViewModel(
                 if (ticketId == null) {
                     ticketsApi.create(
                         TicketCreateInput(
-                            titulo = state.titulo.trim(),
-                            descripcion = state.descripcion.trim(),
+                            title = state.title.trim(),
+                            description = state.description.trim(),
                             priority = state.priority,
                             categoryId = state.categoryId.ifBlank { null },
                         ),
@@ -84,8 +84,8 @@ class TicketFormViewModel(
                     ticketsApi.update(
                         ticketId,
                         TicketUpdateInput(
-                            titulo = state.titulo.trim(),
-                            descripcion = state.descripcion.trim(),
+                            title = state.title.trim(),
+                            description = state.description.trim(),
                             priority = state.priority,
                             // Solo si cambió; `JsonNull` la quita.
                             categoryId = when {

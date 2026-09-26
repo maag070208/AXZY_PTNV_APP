@@ -121,7 +121,7 @@ private fun TicketRow(ticket: TicketDto, onClick: () -> Unit) {
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
             Text(
-                ticket.titulo,
+                ticket.title,
                 style = MaterialTheme.typography.titleMedium,
                 color = AppColors.TextPrimary,
                 modifier = Modifier.weight(1f).padding(end = 8.dp),
@@ -129,11 +129,11 @@ private fun TicketRow(ticket: TicketDto, onClick: () -> Unit) {
             StatusChip(ticketPriorityLabel(ticket.priority), AppColors.ticketPriorityColor(ticket.priority))
         }
         Spacer(Modifier.height(6.dp))
-        Text(ticket.descripcion, style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted, maxLines = 2)
+        Text(ticket.description, style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted, maxLines = 2)
         Spacer(Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             StatusChip(ticketStatusLabel(ticket.status), AppColors.ticketStatusColor(ticket.status))
-            Text(formatShortDate(ticket.creadoEn), style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
+            Text(formatShortDate(ticket.createdAt), style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
         }
     }
 }

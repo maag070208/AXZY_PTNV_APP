@@ -5,136 +5,136 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Adaptador al contrato REAL del API (`/inventario/tipos`), que difiere del
- * contrato documentado (`/device-types`). La app mantiene su modelo
+ * Adaptador al contrato REAL del API (`/inventory/device-types`), que difiere
+ * del contrato documentado (`/device-types`). La app mantiene su modelo
  * ([DeviceTypeDto]) y aquí se traduce la respuesta del backend.
  *
- * El backend expone 4 flags (`useSerie/useMac/useIp/useEquipo`), no un
- * `fieldConfig`; se mapean a los campos equivalentes y el resto queda apagado.
+ * El backend expone 4 flags (`useSerialNumber/useMac/useIp/useHostname`), no
+ * un `fieldConfig`; se mapean a los campos equivalentes y el resto queda apagado.
  */
-private fun ApiTipoDispositivo.toDto(): DeviceTypeDto = DeviceTypeDto(
+private fun ApiDeviceType.toDto(): DeviceTypeDto = DeviceTypeDto(
     id = id,
     code = code,
     name = name,
-    prefix = folioPrefix,
-    contador = contador,
+    prefix = assetTagPrefix,
+    counter = counter,
     active = active,
     fieldConfig = DeviceFieldConfigDto(
-        numeroSerie = DeviceFieldSettingDto(enabled = useSerie),
-        nombreEquipo = DeviceFieldSettingDto(enabled = useEquipo),
+        serialNumber = DeviceFieldSettingDto(enabled = useSerialNumber),
+        hostname = DeviceFieldSettingDto(enabled = useHostname),
         ip = DeviceFieldSettingDto(enabled = useIp),
         macAddress = DeviceFieldSettingDto(enabled = useMac),
-        sistemaOp = DeviceFieldSettingDto(enabled = false),
+        operatingSystem = DeviceFieldSettingDto(enabled = false),
         ram = DeviceFieldSettingDto(enabled = false),
-        almacenamiento = DeviceFieldSettingDto(enabled = false),
+        storage = DeviceFieldSettingDto(enabled = false),
     ),
-    count = count?.let { DeviceTypeCountDto(it.dispositivos) },
+    count = count?.let { DeviceTypeCountDto(it.devices) },
 )
 
 private fun DeviceFieldConfigDto.toUseFlags() = UseFlags(
-    useSerie = numeroSerie.enabled,
+    useSerialNumber = serialNumber.enabled,
     useMac = macAddress.enabled,
     useIp = ip.enabled,
-    useEquipo = nombreEquipo.enabled,
+    useHostname = hostname.enabled,
 )
 
 class DeviceTypesApi(private val client: ApiClient) {
     suspend fun list(includeInactive: Boolean = false): List<DeviceTypeDto> =
-        client.get<List<ApiTipoDispositivo>>("/inventario/tipos")
+        client.get<List<ApiDeviceType>>("/inventory/device-types")
             .map { it.toDto() }
             .filter { includeInactive || it.active }
 
     suspend fun get(id: String): DeviceTypeDto =
-        client.get<List<ApiTipoDispositivo>>("/inventario/tipos")
+        client.get<List<ApiDeviceType>>("/inventory/device-types")
             .firstOrNull { it.id == id }
             ?.toDto()
             ?: error("Tipo de dispositivo no encontrado")
 
     /** El backend no expone folios anticipados; se sintetiza el siguiente. */
     suspend fun peek(id: String): String {
-        val tipo = get(id)
-        return "${tipo.prefix}-${(tipo.contador + 1).toString().padStart(4, '0')}"
+        val type = get(id)
+        return "${type.prefix}-${(type.counter + 1).toString().padStart(4, '0')}"
     }
 
     /** En el contrato real no existe folio de carta por tipo. */
-    suspend fun peekCarta(id: String): String = ""
+    suspend fun peekCustodyLetter(id: String): String = ""
 
     suspend fun create(input: DeviceTypeCreateInput): DeviceTypeDto {
         val flags = input.fieldConfig?.toUseFlags() ?: UseFlags()
-        return client.post<ApiCreateTipo, ApiTipoDispositivo>(
-            "/inventario/tipos",
-            ApiCreateTipo(
+        return client.post<ApiCreateDeviceType, ApiDeviceType>(
+            "/inventory/device-types",
+            ApiCreateDeviceType(
                 code = input.code,
                 name = input.name,
-                folioPrefix = input.prefix,
-                useSerie = flags.useSerie,
+                assetTagPrefix = input.prefix,
+                useSerialNumber = flags.useSerialNumber,
                 useMac = flags.useMac,
                 useIp = flags.useIp,
-                useEquipo = flags.useEquipo,
+                useHostname = flags.useHostname,
             ),
         ).toDto()
     }
 
     suspend fun update(id: String, input: DeviceTypeUpdateInput): DeviceTypeDto {
         val flags = input.fieldConfig?.toUseFlags()
-        return client.put<ApiUpdateTipo, ApiTipoDispositivo>(
-            "/inventario/tipos/$id",
-            ApiUpdateTipo(
+        return client.put<ApiUpdateDeviceType, ApiDeviceType>(
+            "/inventory/device-types/$id",
+            ApiUpdateDeviceType(
                 name = input.name,
                 active = input.active,
-                useSerie = flags?.useSerie,
+                useSerialNumber = flags?.useSerialNumber,
                 useMac = flags?.useMac,
                 useIp = flags?.useIp,
-                useEquipo = flags?.useEquipo,
+                useHostname = flags?.useHostname,
             ),
         ).toDto()
     }
 
-    suspend fun delete(id: String) = client.deleteNoContent("/inventario/tipos/$id")
+    suspend fun delete(id: String) = client.deleteNoContent("/inventory/device-types/$id")
 }
 
 private data class UseFlags(
-    val useSerie: Boolean = false,
+    val useSerialNumber: Boolean = false,
     val useMac: Boolean = false,
     val useIp: Boolean = false,
-    val useEquipo: Boolean = false,
+    val useHostname: Boolean = false,
 )
 
 @Serializable
-private data class ApiTipoCount(val dispositivos: Int = 0)
+private data class ApiDeviceTypeCount(val devices: Int = 0)
 
 @Serializable
-private data class ApiTipoDispositivo(
+private data class ApiDeviceType(
     val id: String,
     val code: String,
     val name: String,
-    val folioPrefix: String = "",
-    val contador: Int = 0,
+    val assetTagPrefix: String = "",
+    val counter: Int = 0,
     val active: Boolean = true,
-    val useSerie: Boolean = false,
+    val useSerialNumber: Boolean = false,
     val useMac: Boolean = false,
     val useIp: Boolean = false,
-    val useEquipo: Boolean = false,
-    @SerialName("_count") val count: ApiTipoCount? = null,
+    val useHostname: Boolean = false,
+    @SerialName("_count") val count: ApiDeviceTypeCount? = null,
 )
 
 @Serializable
-private data class ApiCreateTipo(
+private data class ApiCreateDeviceType(
     val code: String,
     val name: String,
-    val folioPrefix: String,
-    val useSerie: Boolean,
+    val assetTagPrefix: String,
+    val useSerialNumber: Boolean,
     val useMac: Boolean,
     val useIp: Boolean,
-    val useEquipo: Boolean,
+    val useHostname: Boolean,
 )
 
 @Serializable
-private data class ApiUpdateTipo(
+private data class ApiUpdateDeviceType(
     val name: String? = null,
     val active: Boolean? = null,
-    val useSerie: Boolean? = null,
+    val useSerialNumber: Boolean? = null,
     val useMac: Boolean? = null,
     val useIp: Boolean? = null,
-    val useEquipo: Boolean? = null,
+    val useHostname: Boolean? = null,
 )

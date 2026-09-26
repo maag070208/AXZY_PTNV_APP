@@ -6,34 +6,34 @@ import com.axzydev.puertonuevoapp.core.network.devicetypes.DeviceFieldSettingDto
 data class DeviceTypeFieldDef(val key: String, val label: String)
 
 val deviceTypeFieldDefs = listOf(
-    DeviceTypeFieldDef("numeroSerie", "Número de serie"),
-    DeviceTypeFieldDef("nombreEquipo", "Nombre de equipo"),
+    DeviceTypeFieldDef("serialNumber", "Número de serie"),
+    DeviceTypeFieldDef("hostname", "Nombre de equipo"),
     DeviceTypeFieldDef("ip", "Dirección IP"),
     DeviceTypeFieldDef("macAddress", "MAC Address"),
-    DeviceTypeFieldDef("sistemaOp", "Sistema operativo"),
+    DeviceTypeFieldDef("operatingSystem", "Sistema operativo"),
     DeviceTypeFieldDef("ram", "RAM"),
-    DeviceTypeFieldDef("almacenamiento", "Almacenamiento"),
+    DeviceTypeFieldDef("storage", "Almacenamiento"),
 )
 
 fun DeviceFieldConfigDto.settingFor(key: String): DeviceFieldSettingDto = when (key) {
-    "numeroSerie" -> numeroSerie
-    "nombreEquipo" -> nombreEquipo
+    "serialNumber" -> serialNumber
+    "hostname" -> hostname
     "ip" -> ip
     "macAddress" -> macAddress
-    "sistemaOp" -> sistemaOp
+    "operatingSystem" -> operatingSystem
     "ram" -> ram
-    "almacenamiento" -> almacenamiento
+    "storage" -> storage
     else -> DeviceFieldSettingDto()
 }
 
 fun DeviceFieldConfigDto.withSetting(key: String, setting: DeviceFieldSettingDto): DeviceFieldConfigDto = when (key) {
-    "numeroSerie" -> copy(numeroSerie = setting)
-    "nombreEquipo" -> copy(nombreEquipo = setting)
+    "serialNumber" -> copy(serialNumber = setting)
+    "hostname" -> copy(hostname = setting)
     "ip" -> copy(ip = setting)
     "macAddress" -> copy(macAddress = setting)
-    "sistemaOp" -> copy(sistemaOp = setting)
+    "operatingSystem" -> copy(operatingSystem = setting)
     "ram" -> copy(ram = setting)
-    "almacenamiento" -> copy(almacenamiento = setting)
+    "storage" -> copy(storage = setting)
     else -> this
 }
 

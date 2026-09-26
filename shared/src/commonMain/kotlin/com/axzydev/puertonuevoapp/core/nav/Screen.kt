@@ -24,8 +24,8 @@ sealed interface Screen {
 
     // Users / employees
     data class UserForm(val id: String? = null) : Screen
-    data object PersonalList : Screen
-    data class PersonalProfile(val id: String) : Screen
+    data object EmployeesList : Screen
+    data class EmployeeProfile(val id: String) : Screen
 
     // Departments
     data object DepartmentsList : Screen
@@ -40,14 +40,14 @@ sealed interface Screen {
     data class NewInventoryMovement(val deviceId: String? = null) : Screen
 
     // Salidas
-    data object SalidasList : Screen
-    data class SalidaForm(val id: String? = null) : Screen
+    data object MaterialOutputsList : Screen
+    data class MaterialOutputForm(val id: String? = null) : Screen
 
     // Cartas
-    data object CartasList : Screen
-    data class CartaDetail(val id: String) : Screen
-    data class CartaForm(val id: String? = null) : Screen
-    data object GenerateCarta : Screen
+    data object CustodyLettersList : Screen
+    data class CustodyLetterDetail(val id: String) : Screen
+    data class CustodyLetterForm(val id: String? = null) : Screen
+    data object GenerateCustodyLetter : Screen
 
     // Control de acceso (portería)
     data object AccessScan : Screen
