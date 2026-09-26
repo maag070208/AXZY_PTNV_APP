@@ -15,8 +15,8 @@ data class UserRefDto(
     val id: String,
     val name: String,
     val username: String,
-    val puesto: String? = null,
-    val numeroEmpleado: String? = null,
+    val jobTitle: String? = null,
+    val employeeNumber: String? = null,
 )
 
 // Varios DELETE (ej. `/locations/:id`) responden `{ success: true }` en vez

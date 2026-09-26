@@ -83,8 +83,8 @@ fun UserFormScreen(userId: String?) {
                 1 -> {
                     SectionLabel("Información personal")
                     FormField("Nombre completo", state.name, viewModel::onNameChange)
-                    FormField("No. Empleado", state.numeroEmpleado, viewModel::onNumeroEmpleadoChange)
-                    FormField("Puesto", state.puesto, viewModel::onPuestoChange)
+                    FormField("No. Empleado", state.employeeNumber, viewModel::onEmployeeNumberChange)
+                    FormField("Puesto", state.jobTitle, viewModel::onJobTitleChange)
                 }
                 else -> {
                     SectionLabel("Organización y permisos")

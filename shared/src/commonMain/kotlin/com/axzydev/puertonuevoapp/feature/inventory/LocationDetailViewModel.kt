@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.axzydev.puertonuevoapp.core.network.http.networkMessage
 import com.axzydev.puertonuevoapp.core.network.locations.LocationsApi
-import com.axzydev.puertonuevoapp.core.network.locations.SublugarDto
+import com.axzydev.puertonuevoapp.core.network.locations.SubLocationDto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,15 +33,15 @@ class LocationDetailViewModel(
         }
     }
 
-    fun onNewSublugarChange(value: String) = _uiState.update { it.copy(newSublugar = value) }
+    fun onNewSubLocationChange(value: String) = _uiState.update { it.copy(newSubLocation = value) }
 
-    fun addSublugar() {
-        val name = _uiState.value.newSublugar.trim()
+    fun addSubLocation() {
+        val name = _uiState.value.newSubLocation.trim()
         if (name.isBlank()) return
         viewModelScope.launch {
-            val result = runCatching { locationsApi.addSublugar(locationId, name) }
+            val result = runCatching { locationsApi.addSubLocation(locationId, name) }
             if (result.isSuccess) {
-                _uiState.update { it.copy(newSublugar = "") }
+                _uiState.update { it.copy(newSubLocation = "") }
                 load()
             } else {
                 _uiState.update { it.copy(error = result.exceptionOrNull()?.let(::networkMessage)) }
@@ -49,16 +49,16 @@ class LocationDetailViewModel(
         }
     }
 
-    fun requestDeleteSublugar(sublugar: SublugarDto) = _uiState.update { it.copy(sublugarToDelete = sublugar) }
-    fun dismissDeleteSublugar() = _uiState.update { it.copy(sublugarToDelete = null) }
+    fun requestDeleteSubLocation(subLocation: SubLocationDto) = _uiState.update { it.copy(subLocationToDelete = subLocation) }
+    fun dismissDeleteSubLocation() = _uiState.update { it.copy(subLocationToDelete = null) }
 
-    fun confirmDeleteSublugar() {
-        val sublugar = _uiState.value.sublugarToDelete ?: return
+    fun confirmDeleteSubLocation() {
+        val subLocation = _uiState.value.subLocationToDelete ?: return
         _uiState.update { it.copy(saving = true) }
         viewModelScope.launch {
-            val result = runCatching { locationsApi.removeSublugar(sublugar.id) }
+            val result = runCatching { locationsApi.removeSubLocation(subLocation.id) }
             _uiState.update {
-                it.copy(saving = false, sublugarToDelete = null, error = result.exceptionOrNull()?.let(::networkMessage) ?: it.error)
+                it.copy(saving = false, subLocationToDelete = null, error = result.exceptionOrNull()?.let(::networkMessage) ?: it.error)
             }
             if (result.isSuccess) load()
         }

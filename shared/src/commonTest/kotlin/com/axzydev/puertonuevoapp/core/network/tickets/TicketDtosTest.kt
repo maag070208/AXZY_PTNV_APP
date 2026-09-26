@@ -13,18 +13,18 @@ import kotlin.test.assertTrue
 class TicketDtosTest {
 
     private val base = """
-        "id":"t1","titulo":"Fuga","descripcion":"Baño 2","status":"ABIERTO","priority":"ALTA",
-        "creadoPorId":"u1","creadoPor":{"id":"u1","name":"Ana Palma","username":"apalma"},
-        "creadoEn":"2026-09-24T10:00:00.000Z","actualizadoEn":"2026-09-24T10:00:00.000Z"
+        "id":"t1","title":"Fuga","description":"Baño 2","status":"OPEN","priority":"HIGH",
+        "createdById":"u1","createdBy":{"id":"u1","name":"Ana Palma","username":"apalma"},
+        "createdAt":"2026-09-24T10:00:00.000Z","updatedAt":"2026-09-24T10:00:00.000Z"
     """.trimIndent()
 
     @Test
     fun decodesCategoryObject() {
         val ticket = apiJson.decodeFromString<TicketDto>(
-            """{$base,"categoryId":"c1","category":{"id":"c1","nombre":"Plomería","activo":true}}""",
+            """{$base,"categoryId":"c1","category":{"id":"c1","name":"Plomería","active":true}}""",
         )
         assertEquals("c1", ticket.categoryId)
-        assertEquals("Plomería", ticket.category?.nombre)
+        assertEquals("Plomería", ticket.category?.name)
     }
 
     @Test
@@ -36,7 +36,7 @@ class TicketDtosTest {
 
     @Test
     fun updateSendsCategoryOnlyWhenItChanged() {
-        val untouched = apiJson.encodeToString(TicketUpdateInput.serializer(), TicketUpdateInput(titulo = "Fuga"))
+        val untouched = apiJson.encodeToString(TicketUpdateInput.serializer(), TicketUpdateInput(title = "Fuga"))
         assertFalse("categoryId" in untouched)
 
         val cleared = apiJson.encodeToString(TicketUpdateInput.serializer(), TicketUpdateInput(categoryId = JsonNull))

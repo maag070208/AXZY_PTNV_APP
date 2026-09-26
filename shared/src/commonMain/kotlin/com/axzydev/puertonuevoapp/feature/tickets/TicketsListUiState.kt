@@ -12,13 +12,13 @@ data class TicketsListUiState(
     val filtered: List<TicketDto>
         get() = tickets.filter { t ->
             (statusFilter == null || t.status == statusFilter) &&
-                (query.isBlank() || t.titulo.contains(query, ignoreCase = true) || t.descripcion.contains(query, ignoreCase = true))
+                (query.isBlank() || t.title.contains(query, ignoreCase = true) || t.description.contains(query, ignoreCase = true))
         }
 }
 
 val ticketStatusFilters: List<Pair<String?, String>> = listOf(
     null to "Todos",
-    "ABIERTO" to "Abiertos",
-    "EN_SEGUIMIENTO" to "Seguimiento",
-    "CERRADO" to "Cerrados",
+    "OPEN" to "Abiertos",
+    "IN_PROGRESS" to "Seguimiento",
+    "CLOSED" to "Cerrados",
 )

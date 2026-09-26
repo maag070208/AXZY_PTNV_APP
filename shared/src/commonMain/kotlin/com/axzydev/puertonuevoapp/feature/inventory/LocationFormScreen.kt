@@ -48,8 +48,8 @@ fun LocationFormScreen(locationId: String? = null) {
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).imePadding().navigationBarsPadding().padding(16.dp),
     ) {
         AppTextField(
-            value = state.lugar,
-            onValueChange = viewModel::onLugarChange,
+            value = state.name,
+            onValueChange = viewModel::onNameChange,
             label = { Text("Lugar") },
             placeholder = { Text("Ej. OFICINA, BODEGA") },
             singleLine = true,
@@ -57,8 +57,8 @@ fun LocationFormScreen(locationId: String? = null) {
         )
         Spacer(Modifier.height(12.dp))
         AppTextField(
-            value = state.descripcion,
-            onValueChange = viewModel::onDescripcionChange,
+            value = state.description,
+            onValueChange = viewModel::onDescriptionChange,
             label = { Text("Descripción") },
             modifier = Modifier.fillMaxWidth(),
         )

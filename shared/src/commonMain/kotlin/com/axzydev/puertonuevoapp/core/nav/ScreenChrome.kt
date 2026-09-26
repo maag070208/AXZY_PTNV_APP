@@ -37,8 +37,8 @@ fun Screen.chrome(): ScreenChrome = when (this) {
 
     // Users / employees
     is Screen.UserForm -> ScreenChrome(if (id == null) "Nuevo personal" else "Editar personal", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
-    Screen.PersonalList -> ScreenChrome("Personal", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
-    is Screen.PersonalProfile -> ScreenChrome("Perfil", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
+    Screen.EmployeesList -> ScreenChrome("Personal", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
+    is Screen.EmployeeProfile -> ScreenChrome("Perfil", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
 
     // Departments
     Screen.DepartmentsList -> ScreenChrome("Departamentos", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
@@ -53,14 +53,14 @@ fun Screen.chrome(): ScreenChrome = when (this) {
     is Screen.NewInventoryMovement -> ScreenChrome("Registrar movimiento", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
 
     // Salidas
-    Screen.SalidasList -> ScreenChrome("Salidas de material", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
-    is Screen.SalidaForm -> ScreenChrome(if (id == null) "Nueva salida" else "Editar salida", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
+    Screen.MaterialOutputsList -> ScreenChrome("Salidas de material", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
+    is Screen.MaterialOutputForm -> ScreenChrome(if (id == null) "Nueva salida" else "Editar salida", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
 
     // Cartas
-    Screen.CartasList -> ScreenChrome("Cartas responsivas", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
-    is Screen.CartaDetail -> ScreenChrome("Carta responsiva", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
-    is Screen.CartaForm -> ScreenChrome(if (id == null) "Nueva carta" else "Editar carta", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
-    Screen.GenerateCarta -> ScreenChrome("Generar cartas", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
+    Screen.CustodyLettersList -> ScreenChrome("Cartas responsivas", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
+    is Screen.CustodyLetterDetail -> ScreenChrome("Carta responsiva", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
+    is Screen.CustodyLetterForm -> ScreenChrome(if (id == null) "Nueva carta" else "Editar carta", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
+    Screen.GenerateCustodyLetter -> ScreenChrome("Generar cartas", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
 
     // Control de acceso (portería)
     Screen.AccessScan -> ScreenChrome("Portería", section = MainSection.ACCESS)

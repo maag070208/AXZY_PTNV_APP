@@ -45,7 +45,7 @@ import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
-import com.axzydev.puertonuevoapp.core.util.condicionLabel
+import com.axzydev.puertonuevoapp.core.util.conditionLabel
 import com.axzydev.puertonuevoapp.core.util.formatShortDate
 import com.axzydev.puertonuevoapp.core.util.movementTypeLabel
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
@@ -73,7 +73,7 @@ fun InventoryMovementsScreen(
             SimpleDropdownField(
                 label = "Ubicación",
                 value = state.locationFilter,
-                options = listOf("" to "Todas") + state.locations.map { it.id to it.lugar },
+                options = listOf("" to "Todas") + state.locations.map { it.id to it.name },
                 onSelect = viewModel::onLocationFilterChange,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -131,37 +131,37 @@ private fun MovementCard(movement: InventoryMovementDto) {
     ) {
         Row {
             Box(
-                modifier = Modifier.size(34.dp).background(AppColors.movementTypeColor(movement.tipo), CircleShape),
+                modifier = Modifier.size(34.dp).background(AppColors.movementTypeColor(movement.type), CircleShape),
                 contentAlignment = Alignment.Center,
             ) { Icon(Icons.Filled.SwapHoriz, contentDescription = null, tint = AppColors.Surface, modifier = Modifier.size(16.dp)) }
             Spacer(Modifier.size(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Row {
-                        StatusChip(movementTypeLabel(movement.tipo), AppColors.movementTypeColor(movement.tipo))
-                        movement.condicion?.let {
+                        StatusChip(movementTypeLabel(movement.type), AppColors.movementTypeColor(movement.type))
+                        movement.condition?.let {
                             Spacer(Modifier.size(6.dp))
-                            StatusChip(condicionLabel(it), AppColors.condicionColor(it))
+                            StatusChip(conditionLabel(it), AppColors.conditionColor(it))
                         }
                     }
                     Text(formatShortDate(movement.createdAt), style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "${movement.device?.controlActivos ?: "—"} · ${movement.device?.descripcion ?: ""}",
+                    "${movement.device?.assetTag ?: "—"} · ${movement.device?.description ?: ""}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = AppColors.TextPrimary,
                     maxLines = 1,
                 )
-                movement.motivoBaja?.let {
+                movement.retirementReason?.let {
                     Text(it, style = MaterialTheme.typography.bodySmall, color = AppColors.Danger, maxLines = 1)
                 }
                 Spacer(Modifier.height(4.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(movement.location?.lugar ?: "—", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
+                    Text(movement.location?.name ?: "—", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
                     Text("Por: ${movement.user?.name ?: "—"}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
                 }
-                movement.notas?.takeIf { it.isNotBlank() }?.let {
+                movement.notes?.takeIf { it.isNotBlank() }?.let {
                     Text("\"$it\"", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint, modifier = Modifier.padding(top = 4.dp))
                 }
             }

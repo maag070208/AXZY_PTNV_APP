@@ -3,8 +3,8 @@ package com.axzydev.puertonuevoapp.core.network.reports
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class AsignadosResponseDto(
-    val data: List<AsignadoRowDto>,
+data class AssignedDevicesResponseDto(
+    val data: List<AssignedDeviceRowDto>,
     val total: Int = 0,
 )
 
@@ -15,44 +15,44 @@ data class DevicesReportResponseDto(
 )
 
 @Serializable
-data class AsignadoRowDto(
+data class AssignedDeviceRowDto(
     val deviceId: String,
-    val controlActivos: String,
-    val descripcion: String,
-    val marca: String,
-    val modelo: String,
-    val tipo: String,
-    val responsable: String,
-    val numeroEmpleado: String? = null,
-    val departamento: String? = null,
-    val fecha: String? = null,
-    val diasAsignado: Int? = null,
-    val origen: String,
+    val assetTag: String,
+    val description: String,
+    val brand: String,
+    val model: String,
+    val type: String,
+    val custodian: String,
+    val employeeNumber: String? = null,
+    val department: String? = null,
+    val date: String? = null,
+    val daysAssigned: Int? = null,
+    val source: String,
     val folio: String? = null,
 )
 
 @Serializable
 data class DeviceReportRowDto(
     val deviceId: String,
-    val controlActivos: String,
-    val descripcion: String,
-    val marca: String,
-    val modelo: String,
-    val tipo: String,
-    val numeroSerie: String? = null,
-    val nombreEquipo: String? = null,
+    val assetTag: String,
+    val description: String,
+    val brand: String,
+    val model: String,
+    val type: String,
+    val serialNumber: String? = null,
+    val hostname: String? = null,
     val ip: String? = null,
     val macAddress: String? = null,
     val area: String,
     val location: String? = null,
-    val estado: String,
-    val loteId: String? = null,
-    val cantidad: Int = 1,
-    val responsable: String? = null,
-    val numeroEmpleado: String? = null,
-    val departamento: String? = null,
-    val fecha: String? = null,
-    val diasAsignado: Int? = null,
-    val origen: String? = null,
+    val status: String,
+    val batchId: String? = null,
+    val quantity: Int = 1,
+    val custodian: String? = null,
+    val employeeNumber: String? = null,
+    val department: String? = null,
+    val date: String? = null,
+    val daysAssigned: Int? = null,
+    val source: String? = null,
     val folio: String? = null,
 )

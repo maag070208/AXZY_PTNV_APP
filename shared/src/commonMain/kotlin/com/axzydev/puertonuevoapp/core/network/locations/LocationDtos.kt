@@ -6,11 +6,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SublugarDto(
+data class SubLocationDto(
     val id: String,
     val locationId: String,
     val name: String,
-    val numero: String? = null,
+    val number: String? = null,
     val active: Boolean = true,
     val createdAt: String = "",
 )
@@ -18,53 +18,53 @@ data class SublugarDto(
 @Serializable
 data class LocationCountDto(
     val devices: Int = 0,
-    val cartas: Int = 0,
+    val custodyLetters: Int = 0,
 )
 
 @Serializable
-data class LocationCartaItemDto(
+data class LocationCustodyLetterItemDto(
     val id: String,
-    val controlActivos: String,
-    val descripcion: String,
+    val assetTag: String,
+    val description: String,
 )
 
 @Serializable
-data class LocationCartaDto(
+data class LocationCustodyLetterDto(
     val id: String,
     val consecutive: String,
-    val fecha: String,
+    val date: String,
     val returnDate: String? = null,
     val returnCondition: String? = null,
-    val responsable: UserRefDto? = null,
-    val encargado: UserRefDto? = null,
-    val items: List<LocationCartaItemDto> = emptyList(),
+    val custodian: UserRefDto? = null,
+    val supervisor: UserRefDto? = null,
+    val items: List<LocationCustodyLetterItemDto> = emptyList(),
 )
 
 @Serializable
 data class LocationDto(
     val id: String,
-    val lugar: String,
+    val name: String,
     val active: Boolean = true,
-    val descripcion: String? = null,
+    val description: String? = null,
     val departmentId: String? = null,
     val createdAt: String = "",
     val updatedAt: String = "",
-    val sublugares: List<SublugarDto> = emptyList(),
+    val subLocations: List<SubLocationDto> = emptyList(),
     @SerialName("_count") val count: LocationCountDto? = null,
     val devices: List<DeviceDto> = emptyList(),
-    val cartas: List<LocationCartaDto> = emptyList(),
+    val custodyLetters: List<LocationCustodyLetterDto> = emptyList(),
 )
 
 @Serializable
 data class LocationCreateInput(
-    val lugar: String,
-    val descripcion: String? = null,
+    val name: String,
+    val description: String? = null,
 )
 
 @Serializable
 data class LocationUpdateInput(
-    val lugar: String? = null,
-    val descripcion: String? = null,
+    val name: String? = null,
+    val description: String? = null,
     val active: Boolean? = null,
 )
 
@@ -75,10 +75,10 @@ data class LocationDeleteResultDto(
 )
 
 @Serializable
-data class SublugarCreateInput(val name: String)
+data class SubLocationCreateInput(val name: String)
 
 @Serializable
-data class SublugarDeleteResultDto(
+data class SubLocationDeleteResultDto(
     val soft: Boolean = false,
-    val data: SublugarDto? = null,
+    val data: SubLocationDto? = null,
 )

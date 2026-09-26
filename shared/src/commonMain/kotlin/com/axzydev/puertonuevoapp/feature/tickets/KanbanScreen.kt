@@ -179,7 +179,7 @@ private fun AssignmentDetailModal(
     onOpenTicket: (() -> Unit)?,
 ) {
     AppModal(title = assignment.title, onDismiss = onDismiss, icon = Icons.Filled.Dashboard) {
-        Text(assignment.ticket.titulo, style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
+        Text(assignment.ticket.title, style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
         Spacer(Modifier.height(8.dp))
         if (assignment.description.isNotBlank()) {
             Text(assignment.description, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
@@ -237,7 +237,7 @@ private fun CreateAssignmentModal(state: KanbanUiState, viewModel: KanbanViewMod
             SimpleDropdownField(
                 label = "Ticket",
                 value = state.createTicketId,
-                options = state.createTickets.map { it.id to it.titulo },
+                options = state.createTickets.map { it.id to it.title },
                 onSelect = viewModel::onCreateTicketChange,
                 modifier = Modifier.fillMaxWidth(),
             )

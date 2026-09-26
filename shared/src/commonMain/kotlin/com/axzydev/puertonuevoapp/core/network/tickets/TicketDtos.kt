@@ -9,10 +9,10 @@ import kotlinx.serialization.json.JsonElement
 data class TicketCommentDto(
     val id: String,
     val ticketId: String,
-    val autorId: String,
-    val autor: UserRefDto,
-    val texto: String,
-    val creadoEn: String,
+    val authorId: String,
+    val author: UserRefDto,
+    val text: String,
+    val createdAt: String,
 )
 
 @Serializable
@@ -21,7 +21,7 @@ data class TicketHistoryEntryDto(
     val ticketId: String,
     val type: String,
     val detail: String? = null,
-    val autor: UserRefDto? = null,
+    val author: UserRefDto? = null,
     val createdAt: String,
 )
 
@@ -29,9 +29,9 @@ data class TicketHistoryEntryDto(
 data class TicketAssignmentCommentDto(
     val id: String,
     val assignmentId: String,
-    val autorId: String,
-    val autor: UserRefDto,
-    val texto: String,
+    val authorId: String,
+    val author: UserRefDto,
+    val text: String,
     val createdAt: String,
 )
 
@@ -68,23 +68,23 @@ data class TicketAttachmentDto(
 @Serializable
 data class TicketCategoryRefDto(
     val id: String,
-    val nombre: String,
-    val activo: Boolean = true,
+    val name: String,
+    val active: Boolean = true,
 )
 
 @Serializable
 data class TicketDto(
     val id: String,
-    val titulo: String,
-    val descripcion: String,
+    val title: String,
+    val description: String,
     val status: String,
     val priority: String,
     val categoryId: String? = null,
     val category: TicketCategoryRefDto? = null,
-    val creadoPorId: String,
-    val creadoPor: UserRefDto,
-    val asignadoAId: String? = null,
-    val asignadoA: UserRefDto? = null,
+    val createdById: String,
+    val createdBy: UserRefDto,
+    val assignedToId: String? = null,
+    val assignedTo: UserRefDto? = null,
     val departmentId: String? = null,
     val department: DepartmentRefDto? = null,
     val closedAt: String? = null,
@@ -94,8 +94,8 @@ data class TicketDto(
     val attachments: List<TicketAttachmentDto> = emptyList(),
     val comments: List<TicketCommentDto> = emptyList(),
     val history: List<TicketHistoryEntryDto> = emptyList(),
-    val creadoEn: String,
-    val actualizadoEn: String,
+    val createdAt: String,
+    val updatedAt: String,
 )
 
 @Serializable
@@ -106,12 +106,12 @@ data class TicketListResponseDto(
 
 @Serializable
 data class TicketCreateInput(
-    val titulo: String,
-    val descripcion: String,
+    val title: String,
+    val description: String,
     val priority: String? = null,
     val categoryId: String? = null,
     val departmentId: String? = null,
-    val asignadoAId: String? = null,
+    val assignedToId: String? = null,
 )
 
 /**
@@ -121,28 +121,28 @@ data class TicketCreateInput(
  */
 @Serializable
 data class TicketUpdateInput(
-    val titulo: String? = null,
-    val descripcion: String? = null,
+    val title: String? = null,
+    val description: String? = null,
     val priority: String? = null,
     val categoryId: JsonElement? = null,
     val departmentId: String? = null,
-    val asignadoAId: String? = null,
+    val assignedToId: String? = null,
     val status: String? = null,
 )
 
 @Serializable
-data class TicketCommentInput(val texto: String)
+data class TicketCommentInput(val text: String)
 
 @Serializable
 data class TicketRefDto(
     val id: String,
-    val titulo: String,
+    val title: String,
     val status: String,
     val priority: String,
     val deletedAt: String? = null,
     /** Para decidir qué puede hacer el usuario con la tarea (ver `TicketPermissions`). */
-    val creadoPorId: String? = null,
-    val asignadoAId: String? = null,
+    val createdById: String? = null,
+    val assignedToId: String? = null,
     val departmentId: String? = null,
     val department: DepartmentRefDto? = null,
 )
@@ -188,4 +188,4 @@ data class TicketAssignmentUpdateInput(
 )
 
 @Serializable
-data class TicketAssignmentCommentInput(val texto: String)
+data class TicketAssignmentCommentInput(val text: String)

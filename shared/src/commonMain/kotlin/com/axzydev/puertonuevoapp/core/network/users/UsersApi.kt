@@ -7,7 +7,7 @@ import com.axzydev.puertonuevoapp.core.network.http.TableResponse
 
 class UsersApi(private val client: ApiClient) {
     /** Selector liviano para firmas/asignaciones — cualquier autenticado. */
-    suspend fun empleados(): List<UserDto> = client.get("/users/empleados")
+    suspend fun employees(): List<UserDto> = client.get("/users/employees")
 
     suspend fun query(request: TableRequest): TableResponse<UserDto> = client.post("/users/query", request)
 

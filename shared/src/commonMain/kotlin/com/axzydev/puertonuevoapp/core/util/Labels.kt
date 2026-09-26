@@ -2,10 +2,10 @@ package com.axzydev.puertonuevoapp.core.util
 
 fun roleLabel(role: String?): String = when (role) {
     "ADMIN" -> "Administrador"
-    "GERENTE" -> "Gerente"
-    "JEFE_DE_AREA" -> "Jefe de área"
-    "EMPLEADO" -> "Empleado"
-    "RECURSOS_HUMANOS" -> "Recursos Humanos"
+    "MANAGER" -> "Gerente"
+    "AREA_HEAD" -> "Jefe de área"
+    "EMPLOYEE" -> "Empleado"
+    "HUMAN_RESOURCES" -> "Recursos Humanos"
     "GUARD" -> "Guardia"
     else -> role ?: "—"
 }
@@ -15,11 +15,11 @@ fun initials(name: String): String =
     name.trim().split(" ").take(2).mapNotNull { it.firstOrNull() }.joinToString("").uppercase()
 
 /** Etiqueta legible del tipo de descuento de un empleado. */
-fun discountTypeLabel(tipo: String): String = when (tipo) {
+fun discountTypeLabel(type: String): String = when (type) {
     "INFONAVIT" -> "Infonavit"
     "IMSS" -> "IMSS"
-    "DEUDOR_ALIMENTICIO" -> "Deudor alimenticio"
-    else -> tipo
+    "CHILD_SUPPORT" -> "Deudor alimenticio"
+    else -> type
 }
 
 /** Tamaño de archivo en KB/MB (el backend manda bytes). */
@@ -57,54 +57,56 @@ fun accessMethodLabel(method: String?): String = when (method) {
 }
 
 fun ticketStatusLabel(status: String): String = when (status) {
-    "ABIERTO" -> "Abierto"
-    "EN_SEGUIMIENTO" -> "En seguimiento"
-    "CERRADO" -> "Cerrado"
+    "OPEN" -> "Abierto"
+    "IN_PROGRESS" -> "En seguimiento"
+    "CLOSED" -> "Cerrado"
     else -> status
 }
 
 fun ticketPriorityLabel(priority: String): String = when (priority) {
-    "BAJA" -> "Baja"
-    "MEDIA" -> "Media"
-    "ALTA" -> "Alta"
-    "URGENTE" -> "Urgente"
+    "LOW" -> "Baja"
+    "MEDIUM" -> "Media"
+    "HIGH" -> "Alta"
+    "URGENT" -> "Urgente"
     else -> priority
 }
 
 fun assignmentStatusLabel(status: String): String = when (status) {
-    "PENDIENTE" -> "Pendiente"
-    "EN_PROGRESO" -> "En progreso"
-    "EN_REVISION" -> "En revisión"
-    "COMPLETADA" -> "Completada"
+    "PENDING" -> "Pendiente"
+    "IN_PROGRESS" -> "En progreso"
+    "IN_REVIEW" -> "En revisión"
+    "COMPLETED" -> "Completada"
     else -> status
 }
 
-fun deviceEstadoLabel(estado: String): String = when (estado) {
-    "DISPONIBLE" -> "Disponible"
-    "ASIGNADO" -> "Asignado"
-    "BAJA" -> "Baja"
-    else -> estado
+fun deviceStatusLabel(status: String): String = when (status) {
+    "AVAILABLE" -> "Disponible"
+    "ASSIGNED" -> "Asignado"
+    "DAMAGED" -> "Dañado"
+    "IN_MAINTENANCE" -> "Mantenimiento"
+    "RETIRED" -> "Baja"
+    else -> status
 }
 
-fun movementTypeLabel(tipo: String): String = when (tipo) {
-    "ENTRADA" -> "Entrada"
-    "SALIDA" -> "Salida"
-    "TRASLADO" -> "Traslado"
-    "BAJA" -> "Baja"
-    "PRESTAMO" -> "Asignado"
-    "DEVOLUCION" -> "Devolución"
-    else -> tipo
+fun movementTypeLabel(type: String): String = when (type) {
+    "STOCK_IN" -> "Entrada"
+    "STOCK_OUT" -> "Salida"
+    "TRANSFER" -> "Traslado"
+    "RETIREMENT" -> "Baja"
+    "LOAN" -> "Asignado"
+    "RETURN" -> "Devolución"
+    else -> type
 }
 
-fun condicionLabel(condicion: String): String = when (condicion) {
-    "BUENO" -> "Bueno"
-    "ACEPTABLE" -> "Aceptable"
-    "MALO" -> "Malo"
-    "ROTO" -> "Roto"
-    else -> condicion
+fun conditionLabel(condition: String): String = when (condition) {
+    "GOOD" -> "Bueno"
+    "FAIR" -> "Aceptable"
+    "POOR" -> "Malo"
+    "BROKEN" -> "Roto"
+    else -> condition
 }
 
-fun formatLocation(lugar: String?, subLugar: String?, numero: String?): String {
-    val parts = listOfNotNull(lugar, subLugar, numero).filter { it.isNotBlank() }
+fun formatLocation(name: String?, subLocation: String?, number: String?): String {
+    val parts = listOfNotNull(name, subLocation, number).filter { it.isNotBlank() }
     return if (parts.isNotEmpty()) parts.joinToString("-") else "Sin ubicación"
 }

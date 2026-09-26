@@ -7,6 +7,7 @@ import com.axzydev.puertonuevoapp.core.network.http.networkMessage
 import com.axzydev.puertonuevoapp.core.network.inventory.InventoryApi
 import com.axzydev.puertonuevoapp.core.network.inventory.MovementInput
 import com.axzydev.puertonuevoapp.core.network.locations.LocationsApi
+import com.axzydev.puertonuevoapp.core.util.conditionLabel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +17,7 @@ import kotlinx.coroutines.launch
 /**
  * Registrar movimiento de inventario, incluyendo el flujo especial de
  * "malas condiciones" al hacer una devolución: da de baja el equipo (dos
- * movimientos: BAJA + DEVOLUCION) o solo registra la devolución con la
+ * movimientos: RETIREMENT + RETURN) o solo registra la devolución con la
  * condición (paridad con NewInventoryMovementPage del web).
  */
 class NewInventoryMovementViewModel(
@@ -62,14 +63,14 @@ class NewInventoryMovementViewModel(
         state.copy(deviceId = id, locationId = state.devices.firstOrNull { it.id == id }?.locationId ?: "")
     }
 
-    fun onTipoChange(value: String) = _uiState.update { it.copy(tipo = value, condicion = "", accionMalasCondiciones = "") }
+    fun onTypeChange(value: String) = _uiState.update { it.copy(type = value, condition = "", poorConditionAction = "") }
     fun onLocationChange(value: String) = _uiState.update { it.copy(locationId = value) }
-    fun onNotasChange(value: String) = _uiState.update { it.copy(notas = value) }
-    fun onPrestadoAChange(value: String) = _uiState.update { it.copy(prestadoA = value) }
-    fun onFechaRetornoChange(value: String) = _uiState.update { it.copy(fechaRetorno = value) }
-    fun onCondicionChange(value: String) = _uiState.update { it.copy(condicion = value, accionMalasCondiciones = "") }
-    fun onMotivoBajaChange(value: String) = _uiState.update { it.copy(motivoBaja = value) }
-    fun onAccionMalasCondicionesChange(value: String) = _uiState.update { it.copy(accionMalasCondiciones = value) }
+    fun onNotesChange(value: String) = _uiState.update { it.copy(notes = value) }
+    fun onLoanedToChange(value: String) = _uiState.update { it.copy(loanedTo = value) }
+    fun onReturnDateChange(value: String) = _uiState.update { it.copy(returnDate = value) }
+    fun onConditionChange(value: String) = _uiState.update { it.copy(condition = value, poorConditionAction = "") }
+    fun onRetirementReasonChange(value: String) = _uiState.update { it.copy(retirementReason = value) }
+    fun onPoorConditionActionChange(value: String) = _uiState.update { it.copy(poorConditionAction = value) }
 
     fun submit() {
         val state = _uiState.value
@@ -78,35 +79,35 @@ class NewInventoryMovementViewModel(
         viewModelScope.launch {
             val result = runCatching {
                 when {
-                    state.isMalasCondiciones && state.accionMalasCondiciones == "BAJA" -> {
+                    state.isPoorCondition && state.poorConditionAction == "RETIREMENT" -> {
                         inventoryApi.registerMovement(
                             MovementInput(
                                 deviceId = state.deviceId,
-                                tipo = "BAJA",
-                                notas = if (state.notas.isNotBlank()) "${state.notas} | Condición: ${state.condicion}" else "Condición: ${state.condicion}",
-                                motivoBaja = "Equipo devuelto en condiciones ${state.condicion.lowercase()}",
+                                type = "RETIREMENT",
+                                notes = if (state.notes.isNotBlank()) "${state.notes} | Condición: ${conditionLabel(state.condition)}" else "Condición: ${conditionLabel(state.condition)}",
+                                retirementReason = "Equipo devuelto en condiciones ${conditionLabel(state.condition).lowercase()}",
                             ),
                         )
                         inventoryApi.registerMovement(
-                            MovementInput(deviceId = state.deviceId, tipo = "DEVOLUCION", notas = state.notas.ifBlank { null }, condicion = state.condicion),
+                            MovementInput(deviceId = state.deviceId, type = "RETURN", notes = state.notes.ifBlank { null }, condition = state.condition),
                         )
                     }
-                    state.isMalasCondiciones && state.accionMalasCondiciones == "TICKET" -> {
+                    state.isPoorCondition && state.poorConditionAction == "TICKET" -> {
                         inventoryApi.registerMovement(
-                            MovementInput(deviceId = state.deviceId, tipo = "DEVOLUCION", notas = state.notas.ifBlank { null }, condicion = state.condicion),
+                            MovementInput(deviceId = state.deviceId, type = "RETURN", notes = state.notes.ifBlank { null }, condition = state.condition),
                         )
                     }
                     else -> {
                         inventoryApi.registerMovement(
                             MovementInput(
                                 deviceId = state.deviceId,
-                                tipo = state.tipo,
+                                type = state.type,
                                 locationId = if (state.requiresLocation) state.locationId else null,
-                                notas = state.notas.trim().ifBlank { null },
-                                prestadoA = if (state.requiresPrestamo) state.prestadoA.trim() else null,
-                                fechaRetornoEsperado = if (state.requiresPrestamo) state.fechaRetorno.trim() else null,
-                                condicion = if (state.requiresDevolucion) state.condicion else null,
-                                motivoBaja = if (state.tipo == "BAJA") state.motivoBaja.trim().ifBlank { null } else null,
+                                notes = state.notes.trim().ifBlank { null },
+                                loanedTo = if (state.requiresLoan) state.loanedTo.trim() else null,
+                                expectedReturnDate = if (state.requiresLoan) state.returnDate.trim() else null,
+                                condition = if (state.requiresReturn) state.condition else null,
+                                retirementReason = if (state.type == "RETIREMENT") state.retirementReason.trim().ifBlank { null } else null,
                             ),
                         )
                     }

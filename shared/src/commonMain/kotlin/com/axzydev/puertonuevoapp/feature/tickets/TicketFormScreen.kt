@@ -79,16 +79,16 @@ private fun TicketFormContent(
             .padding(16.dp),
     ) {
         AppTextField(
-            value = state.titulo,
-            onValueChange = viewModel::onTituloChange,
+            value = state.title,
+            onValueChange = viewModel::onTitleChange,
             label = { Text("Título") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(12.dp))
         AppTextField(
-            value = state.descripcion,
-            onValueChange = viewModel::onDescripcionChange,
+            value = state.description,
+            onValueChange = viewModel::onDescriptionChange,
             label = { Text("Descripción") },
             minLines = 4,
             modifier = Modifier.fillMaxWidth(),

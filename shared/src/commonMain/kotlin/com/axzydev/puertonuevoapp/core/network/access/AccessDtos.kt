@@ -60,12 +60,12 @@ data class AccessEventDto(
 data class AccessLookupResultDto(
     val id: String,
     val name: String,
-    val numeroEmpleado: String? = null,
-    val puesto: String? = null,
+    val employeeNumber: String? = null,
+    val jobTitle: String? = null,
     val department: String? = null,
     val active: Boolean = true,
     /** Ruta relativa a la base del API (`.../api/v1`); `null` si no hay foto. */
-    val fotoUrl: String? = null,
+    val photoUrl: String? = null,
     val credentialVersion: Int = 2,
     val lastEvent: AccessLastEventDto? = null,
     val suggestedType: String = "ENTRY",
@@ -76,7 +76,7 @@ data class AccessLookupResultDto(
 data class AccessStatusEmployeeDto(
     val id: String,
     val name: String,
-    val numeroEmpleado: String? = null,
+    val employeeNumber: String? = null,
     val active: Boolean = true,
 )
 

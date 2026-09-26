@@ -20,12 +20,12 @@ class LocationsApi(private val client: ApiClient) {
         client.get<ApiDepartment>("/departments/$id").toDto()
 
     suspend fun create(input: LocationCreateInput): LocationDto =
-        client.post<ApiDepartmentCreate, ApiDepartment>("/departments", ApiDepartmentCreate(name = input.lugar)).toDto()
+        client.post<ApiDepartmentCreate, ApiDepartment>("/departments", ApiDepartmentCreate(name = input.name)).toDto()
 
     suspend fun update(id: String, input: LocationUpdateInput): LocationDto =
         client.put<ApiDepartmentUpdate, ApiDepartment>(
             "/departments/$id",
-            ApiDepartmentUpdate(name = input.lugar, active = input.active),
+            ApiDepartmentUpdate(name = input.name, active = input.active),
         ).toDto()
 
     suspend fun remove(id: String): LocationDeleteResultDto {
@@ -33,25 +33,25 @@ class LocationsApi(private val client: ApiClient) {
         return LocationDeleteResultDto(soft = res.soft, data = res.data?.toDto())
     }
 
-    suspend fun addSublugar(locationId: String, name: String): SublugarDto =
+    suspend fun addSubLocation(locationId: String, name: String): SubLocationDto =
         client.post<ApiSubareaCreate, ApiSubarea>("/departments/$locationId/subareas", ApiSubareaCreate(name)).toDto(locationId)
 
-    suspend fun removeSublugar(sublugarId: String): SublugarDeleteResultDto {
-        val res = client.delete<ApiSubareaDeleteResult>("/departments/subareas/$sublugarId")
-        return SublugarDeleteResultDto(soft = res.soft, data = res.data?.toDto(res.data.departmentId))
+    suspend fun removeSubLocation(subLocationId: String): SubLocationDeleteResultDto {
+        val res = client.delete<ApiSubareaDeleteResult>("/departments/subareas/$subLocationId")
+        return SubLocationDeleteResultDto(soft = res.soft, data = res.data?.toDto(res.data.departmentId))
     }
 }
 
 private fun ApiDepartment.toDto(): LocationDto = LocationDto(
     id = id,
-    lugar = name,
+    name = name,
     active = active,
     departmentId = id,
-    sublugares = subareas.map { it.toDto(id) },
-    count = count?.let { LocationCountDto(devices = 0, cartas = 0) },
+    subLocations = subareas.map { it.toDto(id) },
+    count = count?.let { LocationCountDto(devices = 0, custodyLetters = 0) },
 )
 
-private fun ApiSubarea.toDto(departmentId: String): SublugarDto = SublugarDto(
+private fun ApiSubarea.toDto(departmentId: String): SubLocationDto = SubLocationDto(
     id = id,
     locationId = this.departmentId.ifBlank { departmentId },
     name = name,

@@ -10,178 +10,178 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Adaptador al contrato REAL del API (`/inventario`), que difiere del
+ * Adaptador al contrato REAL del API (`/inventory/devices`), que difiere del
  * contrato documentado (`/devices`, `/device-types`). La app conserva su
  * modelo ([DeviceDto]) y aquí se traduce.
  *
- * El backend separa `Dispositivo` (modelo/lote) de `UnidadFisica` (activo
- * fijo). La lista de la app trabaja a nivel modelo, con conteos por estado
- * derivados de `existencias` (`?existencias=true`).
+ * El backend separa `Device` (modelo/lote) de `DeviceUnit` (activo fijo).
+ * La lista de la app trabaja a nivel modelo, con conteos por estado
+ * derivados de `stock` (`?stock=true`).
  */
 class DevicesApi(private val client: ApiClient) {
-    suspend fun list(estado: String? = null, q: String? = null, typeId: String? = null): DeviceListResponseDto {
+    suspend fun list(status: String? = null, q: String? = null, typeId: String? = null): DeviceListResponseDto {
         val params = buildList {
-            add("existencias=true")
-            typeId?.takeIf { it.isNotBlank() }?.let { add("tipoId=$it") }
+            add("stock=true")
+            typeId?.takeIf { it.isNotBlank() }?.let { add("typeId=$it") }
             q?.takeIf { it.isNotBlank() }?.let { add("q=${it.encodeURLParameter()}") }
         }
         val qs = "?" + params.joinToString("&")
-        val all = client.get<List<ApiDispositivo>>("/inventario/dispositivos$qs").map { it.toDeviceDto() }
-        val filtered = estado?.takeIf { it.isNotBlank() }?.let { e -> all.filter { it.estado == e } } ?: all
+        val all = client.get<List<ApiDevice>>("/inventory/devices$qs").map { it.toDeviceDto() }
+        val filtered = status?.takeIf { it.isNotBlank() }?.let { e -> all.filter { it.status == e } } ?: all
         return DeviceListResponseDto(data = filtered, total = filtered.size)
     }
 
     suspend fun get(id: String): DeviceDto =
-        client.get<ApiDispositivo>("/inventario/dispositivos/$id").toDeviceDto()
+        client.get<ApiDevice>("/inventory/devices/$id").toDeviceDto()
 
     suspend fun create(input: DeviceCreateInput): DeviceDto {
-        val body = ApiCreateDispositivo(
-            tipoId = input.typeId,
-            nombre = input.descripcion,
-            marca = input.marca,
-            modelo = input.modelo,
-            descripcion = null,
-            observaciones = null,
-            cantidadInicial = 1,
-            unidades = listOf(
-                ApiUnidadInput(
-                    numeroSerie = input.numeroSerie,
+        val body = ApiCreateDevice(
+            typeId = input.typeId,
+            name = input.description,
+            brand = input.brand,
+            model = input.model,
+            description = null,
+            notes = null,
+            initialQuantity = 1,
+            units = listOf(
+                ApiUnitInput(
+                    serialNumber = input.serialNumber,
                     macAddress = input.macAddress,
                     ip = input.ip,
-                    nombreEquipo = input.nombreEquipo,
+                    hostname = input.hostname,
                 )
             ),
         )
-        return client.post<ApiCreateDispositivo, ApiDispositivo>("/inventario/dispositivos", body).toDeviceDto()
+        return client.post<ApiCreateDevice, ApiDevice>("/inventory/devices", body).toDeviceDto()
     }
 
     suspend fun update(id: String, input: DeviceUpdateInput): DeviceDto {
-        val body = ApiUpdateDispositivo(
-            nombre = input.descripcion,
-            marca = input.marca,
-            modelo = input.modelo,
+        val body = ApiUpdateDevice(
+            name = input.description,
+            brand = input.brand,
+            model = input.model,
         )
-        return client.put<ApiUpdateDispositivo, ApiDispositivo>("/inventario/dispositivos/$id", body).toDeviceDto()
+        return client.put<ApiUpdateDevice, ApiDevice>("/inventory/devices/$id", body).toDeviceDto()
     }
 
     suspend fun remove(id: String, force: Boolean = false): DeviceRemoveResponseDto {
-        val data = client.delete<ApiDispositivo>("/inventario/dispositivos/$id").toDeviceDto()
+        val data = client.delete<ApiDevice>("/inventory/devices/$id").toDeviceDto()
         return DeviceRemoveResponseDto(soft = !force, forced = force, data = data)
     }
 }
 
-private fun ApiDispositivo.toDeviceDto(): DeviceDto {
-    val ex = existencias
-    val estado = when {
-        (ex?.PRESTADO ?: 0) > 0 -> "ASIGNADO"
-        (ex?.DISPONIBLE ?: 0) > 0 -> "DISPONIBLE"
-        (ex?.MANTENIMIENTO ?: 0) > 0 -> "DISPONIBLE"
-        (ex?.BAJA ?: 0) > 0 -> "BAJA"
-        else -> "DISPONIBLE"
+private fun ApiDevice.toDeviceDto(): DeviceDto {
+    val ex = stock
+    val status = when {
+        (ex?.ON_LOAN ?: 0) > 0 -> "ASSIGNED"
+        (ex?.AVAILABLE ?: 0) > 0 -> "AVAILABLE"
+        (ex?.IN_MAINTENANCE ?: 0) > 0 -> "AVAILABLE"
+        (ex?.RETIRED ?: 0) > 0 -> "RETIRED"
+        else -> "AVAILABLE"
     }
     return DeviceDto(
         id = id,
-        typeId = tipoId,
-        type = tipo?.toDeviceTypeDto(),
-        controlActivos = nombre,
-        descripcion = nombre,
-        marca = marca,
-        modelo = modelo,
+        typeId = typeId,
+        type = type?.toDeviceTypeDto(),
+        assetTag = name,
+        description = name,
+        brand = brand,
+        model = model,
         area = "",
-        estado = estado,
-        loteId = id,
-        loteSize = ex?.total,
-        loteCount = ex?.let {
-            DeviceLoteCountDto(disponible = it.DISPONIBLE, asignado = it.PRESTADO, baja = it.BAJA)
+        status = status,
+        batchId = id,
+        batchSize = ex?.total,
+        batchCount = ex?.let {
+            DeviceBatchCountDto(available = it.AVAILABLE, assigned = it.ON_LOAN, retirement = it.RETIRED)
         },
         createdAt = "",
         updatedAt = "",
     )
 }
 
-private fun ApiTipoDispositivo.toDeviceTypeDto(): DeviceTypeDto = DeviceTypeDto(
+private fun ApiDeviceType.toDeviceTypeDto(): DeviceTypeDto = DeviceTypeDto(
     id = id,
     code = code,
     name = name,
-    prefix = folioPrefix,
-    contador = contador,
+    prefix = assetTagPrefix,
+    counter = counter,
     active = active,
     fieldConfig = DeviceFieldConfigDto(
-        numeroSerie = DeviceFieldSettingDto(enabled = useSerie),
-        nombreEquipo = DeviceFieldSettingDto(enabled = useEquipo),
+        serialNumber = DeviceFieldSettingDto(enabled = useSerialNumber),
+        hostname = DeviceFieldSettingDto(enabled = useHostname),
         ip = DeviceFieldSettingDto(enabled = useIp),
         macAddress = DeviceFieldSettingDto(enabled = useMac),
-        sistemaOp = DeviceFieldSettingDto(enabled = false),
+        operatingSystem = DeviceFieldSettingDto(enabled = false),
         ram = DeviceFieldSettingDto(enabled = false),
-        almacenamiento = DeviceFieldSettingDto(enabled = false),
+        storage = DeviceFieldSettingDto(enabled = false),
     ),
-    count = count?.let { DeviceTypeCountDto(it.dispositivos) },
+    count = count?.let { DeviceTypeCountDto(it.devices) },
 )
 
 @Serializable
-private data class ApiExistencias(
+private data class ApiStock(
     val total: Int = 0,
-    val DISPONIBLE: Int = 0,
-    val PRESTADO: Int = 0,
-    val DANADO: Int = 0,
-    val MANTENIMIENTO: Int = 0,
-    val BAJA: Int = 0,
+    val AVAILABLE: Int = 0,
+    val ON_LOAN: Int = 0,
+    val DAMAGED: Int = 0,
+    val IN_MAINTENANCE: Int = 0,
+    val RETIRED: Int = 0,
 )
 
 @Serializable
-private data class ApiTipoCount(val dispositivos: Int = 0)
+private data class ApiDeviceTypeCount(val devices: Int = 0)
 
 @Serializable
-private data class ApiTipoDispositivo(
+private data class ApiDeviceType(
     val id: String,
     val code: String,
     val name: String,
-    val folioPrefix: String = "",
-    val contador: Int = 0,
+    val assetTagPrefix: String = "",
+    val counter: Int = 0,
     val active: Boolean = true,
-    val useSerie: Boolean = false,
+    val useSerialNumber: Boolean = false,
     val useMac: Boolean = false,
     val useIp: Boolean = false,
-    val useEquipo: Boolean = false,
-    @SerialName("_count") val count: ApiTipoCount? = null,
+    val useHostname: Boolean = false,
+    @SerialName("_count") val count: ApiDeviceTypeCount? = null,
 )
 
 @Serializable
-private data class ApiDispositivo(
+private data class ApiDevice(
     val id: String,
-    val tipoId: String,
-    val tipo: ApiTipoDispositivo? = null,
-    val nombre: String,
-    val marca: String,
-    val modelo: String,
-    val descripcion: String? = null,
-    val observaciones: String? = null,
-    val existencias: ApiExistencias? = null,
+    val typeId: String,
+    val type: ApiDeviceType? = null,
+    val name: String,
+    val brand: String,
+    val model: String,
+    val description: String? = null,
+    val notes: String? = null,
+    val stock: ApiStock? = null,
 )
 
 @Serializable
-private data class ApiUnidadInput(
-    val numeroSerie: String? = null,
+private data class ApiUnitInput(
+    val serialNumber: String? = null,
     val macAddress: String? = null,
     val ip: String? = null,
-    val nombreEquipo: String? = null,
+    val hostname: String? = null,
 )
 
 @Serializable
-private data class ApiCreateDispositivo(
-    val tipoId: String,
-    val nombre: String,
-    val marca: String,
-    val modelo: String,
-    val descripcion: String? = null,
-    val observaciones: String? = null,
-    val cantidadInicial: Int = 1,
-    val unidades: List<ApiUnidadInput> = emptyList(),
+private data class ApiCreateDevice(
+    val typeId: String,
+    val name: String,
+    val brand: String,
+    val model: String,
+    val description: String? = null,
+    val notes: String? = null,
+    val initialQuantity: Int = 1,
+    val units: List<ApiUnitInput> = emptyList(),
 )
 
 @Serializable
-private data class ApiUpdateDispositivo(
-    val nombre: String? = null,
-    val marca: String? = null,
-    val modelo: String? = null,
+private data class ApiUpdateDevice(
+    val name: String? = null,
+    val brand: String? = null,
+    val model: String? = null,
 )

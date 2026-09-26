@@ -7,10 +7,10 @@ import com.axzydev.puertonuevoapp.core.network.users.UserDto
 data class KanbanColumn(val status: String, val label: String)
 
 val kanbanColumns = listOf(
-    KanbanColumn("PENDIENTE", "Pendiente"),
-    KanbanColumn("EN_PROGRESO", "En progreso"),
-    KanbanColumn("EN_REVISION", "En revisión"),
-    KanbanColumn("COMPLETADA", "Completada"),
+    KanbanColumn("PENDING", "Pendiente"),
+    KanbanColumn("IN_PROGRESS", "En progreso"),
+    KanbanColumn("IN_REVIEW", "En revisión"),
+    KanbanColumn("COMPLETED", "Completada"),
 )
 
 data class KanbanUiState(
@@ -39,7 +39,7 @@ data class KanbanUiState(
         get() = rows.filter { r ->
             val deptName = r.ticket.department?.name ?: "General"
             (departmentFilter.isBlank() || deptName == departmentFilter) &&
-                (search.isBlank() || r.title.contains(search, ignoreCase = true) || r.ticket.titulo.contains(search, ignoreCase = true))
+                (search.isBlank() || r.title.contains(search, ignoreCase = true) || r.ticket.title.contains(search, ignoreCase = true))
         }
 
     val createValid: Boolean

@@ -28,17 +28,17 @@ import com.axzydev.puertonuevoapp.core.util.formatShortDate
 import com.axzydev.puertonuevoapp.core.util.isOverdue
 
 /** Estados del kanban de tareas, en el orden en el que se muestran las columnas. */
-val assignmentStatusOrder = listOf("PENDIENTE", "EN_PROGRESO", "EN_REVISION", "COMPLETADA")
+val assignmentStatusOrder = listOf("PENDING", "IN_PROGRESS", "IN_REVIEW", "COMPLETED")
 
 fun assignmentStatusColor(status: String): Color = when (status) {
-    "PENDIENTE" -> AppColors.TextFaint
-    "EN_PROGRESO" -> AppColors.Info
-    "EN_REVISION" -> AppColors.Purple
-    "COMPLETADA" -> AppColors.Success
+    "PENDING" -> AppColors.TextFaint
+    "IN_PROGRESS" -> AppColors.Info
+    "IN_REVIEW" -> AppColors.Purple
+    "COMPLETED" -> AppColors.Success
     else -> AppColors.TextFaint
 }
 
-fun KanbanAssignmentDto.overdue(): Boolean = isOverdue(dueDate, status == "COMPLETADA")
+fun KanbanAssignmentDto.overdue(): Boolean = isOverdue(dueDate, status == "COMPLETED")
 
 @Composable
 fun AssignmentRow(assignment: KanbanAssignmentDto, onClick: () -> Unit, modifier: Modifier = Modifier) {
@@ -51,7 +51,7 @@ fun AssignmentRow(assignment: KanbanAssignmentDto, onClick: () -> Unit, modifier
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
             Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                 Text(assignment.title, style = MaterialTheme.typography.titleMedium, color = AppColors.TextPrimary)
-                Text(assignment.ticket.titulo, style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
+                Text(assignment.ticket.title, style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
             }
             StatusChip(assignmentStatusLabel(assignment.status), assignmentStatusColor(assignment.status))
         }

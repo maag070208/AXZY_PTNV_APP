@@ -37,8 +37,8 @@ import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
-import com.axzydev.puertonuevoapp.core.util.condicionLabel
-import com.axzydev.puertonuevoapp.core.util.deviceEstadoLabel
+import com.axzydev.puertonuevoapp.core.util.conditionLabel
+import com.axzydev.puertonuevoapp.core.util.deviceStatusLabel
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
 @Composable
@@ -69,16 +69,16 @@ fun NewInventoryMovementScreen(deviceId: String? = null) {
             SimpleDropdownField(
                 label = "Dispositivo",
                 value = state.deviceId,
-                options = state.devices.map { it.id to "${it.controlActivos} - ${it.descripcion}" },
+                options = state.devices.map { it.id to "${it.assetTag} - ${it.description}" },
                 onSelect = viewModel::onDeviceChange,
                 modifier = Modifier.fillMaxWidth(),
             )
             state.selectedDevice?.let { d ->
                 Spacer(Modifier.height(10.dp))
                 Column(modifier = Modifier.fillMaxWidth().background(AppColors.SurfaceVariant, RoundedCornerShape(12.dp)).padding(12.dp)) {
-                    Text("${d.controlActivos} · ${deviceEstadoLabel(d.estado)}", style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
+                    Text("${d.assetTag} · ${deviceStatusLabel(d.status)}", style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
                     Text(
-                        "Ubicación actual: ${d.location?.lugar ?: "Sin ubicación"}",
+                        "Ubicación actual: ${d.location?.name ?: "Sin ubicación"}",
                         style = MaterialTheme.typography.bodySmall,
                         color = AppColors.TextMuted,
                     )
@@ -88,9 +88,9 @@ fun NewInventoryMovementScreen(deviceId: String? = null) {
             Spacer(Modifier.height(10.dp))
             SimpleDropdownField(
                 label = "Tipo de movimiento",
-                value = state.tipo,
-                options = movementTipoOptions,
-                onSelect = viewModel::onTipoChange,
+                value = state.type,
+                options = movementTypeFormOptions,
+                onSelect = viewModel::onTypeChange,
                 modifier = Modifier.fillMaxWidth(),
             )
 
@@ -99,20 +99,20 @@ fun NewInventoryMovementScreen(deviceId: String? = null) {
                 SimpleDropdownField(
                     label = "Ubicación destino",
                     value = state.locationId,
-                    options = state.locations.map { it.id to it.lugar },
+                    options = state.locations.map { it.id to it.name },
                     onSelect = viewModel::onLocationChange,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
 
-            if (state.requiresPrestamo) {
+            if (state.requiresLoan) {
                 Spacer(Modifier.height(14.dp))
                 Column(modifier = Modifier.fillMaxWidth().background(AppColors.Info.copy(alpha = 0.08f), RoundedCornerShape(14.dp)).padding(12.dp)) {
                     Text("Datos de la asignación", style = MaterialTheme.typography.labelSmall, color = AppColors.Info)
                     Spacer(Modifier.height(8.dp))
                     AppTextField(
-                        value = state.prestadoA,
-                        onValueChange = viewModel::onPrestadoAChange,
+                        value = state.loanedTo,
+                        onValueChange = viewModel::onLoanedToChange,
                         label = { Text("Asignado a") },
                         placeholder = { Text("Nombre de quien recibe el equipo…") },
                         singleLine = true,
@@ -120,8 +120,8 @@ fun NewInventoryMovementScreen(deviceId: String? = null) {
                     )
                     Spacer(Modifier.height(10.dp))
                     AppTextField(
-                        value = state.fechaRetorno,
-                        onValueChange = viewModel::onFechaRetornoChange,
+                        value = state.returnDate,
+                        onValueChange = viewModel::onReturnDateChange,
                         label = { Text("Fecha de retorno esperada (AAAA-MM-DD)") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -129,22 +129,22 @@ fun NewInventoryMovementScreen(deviceId: String? = null) {
                 }
             }
 
-            if (state.requiresDevolucion) {
+            if (state.requiresReturn) {
                 Spacer(Modifier.height(14.dp))
                 Column(modifier = Modifier.fillMaxWidth().background(AppColors.Success.copy(alpha = 0.08f), RoundedCornerShape(14.dp)).padding(12.dp)) {
                     Text("Condición del equipo al regresar", style = MaterialTheme.typography.labelSmall, color = AppColors.Success)
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        movementCondicionCodes.forEach { c ->
-                            val selected = state.condicion == c
+                        movementConditionCodes.forEach { c ->
+                            val selected = state.condition == c
                             Text(
-                                condicionLabel(c),
+                                conditionLabel(c),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (selected) AppColors.Surface else AppColors.TextMuted,
                                 modifier = Modifier
                                     .clip(AppShape.pill)
-                                    .background(if (selected) AppColors.condicionColor(c) else AppColors.SurfaceVariant, AppShape.pill)
-                                    .clickable { viewModel.onCondicionChange(c) }
+                                    .background(if (selected) AppColors.conditionColor(c) else AppColors.SurfaceVariant, AppShape.pill)
+                                    .clickable { viewModel.onConditionChange(c) }
                                     .padding(horizontal = 12.dp, vertical = 6.dp),
                             )
                         }
@@ -152,22 +152,22 @@ fun NewInventoryMovementScreen(deviceId: String? = null) {
                 }
             }
 
-            if (state.isMalasCondiciones) {
+            if (state.isPoorCondition) {
                 Spacer(Modifier.height(14.dp))
                 Column(modifier = Modifier.fillMaxWidth().background(AppColors.Danger.copy(alpha = 0.08f), RoundedCornerShape(14.dp)).padding(12.dp)) {
                     Text("El equipo está en malas condiciones. ¿Qué acción deseas tomar?", style = MaterialTheme.typography.labelSmall, color = AppColors.Danger)
                     Spacer(Modifier.height(10.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(
-                            onClick = { viewModel.onAccionMalasCondicionesChange("BAJA") },
-                            colors = if (state.accionMalasCondiciones == "BAJA") ButtonDefaults.buttonColors(containerColor = AppColors.Danger, contentColor = AppColors.Surface) else ButtonDefaults.outlinedButtonColors(contentColor = AppColors.Danger),
+                            onClick = { viewModel.onPoorConditionActionChange("RETIREMENT") },
+                            colors = if (state.poorConditionAction == "RETIREMENT") ButtonDefaults.buttonColors(containerColor = AppColors.Danger, contentColor = AppColors.Surface) else ButtonDefaults.outlinedButtonColors(contentColor = AppColors.Danger),
                         ) { Text("Dar de baja") }
                         OutlinedButton(
-                            onClick = { viewModel.onAccionMalasCondicionesChange("TICKET") },
-                            colors = if (state.accionMalasCondiciones == "TICKET") ButtonDefaults.buttonColors(containerColor = AppColors.Warning, contentColor = AppColors.Surface) else ButtonDefaults.outlinedButtonColors(contentColor = AppColors.Warning),
+                            onClick = { viewModel.onPoorConditionActionChange("TICKET") },
+                            colors = if (state.poorConditionAction == "TICKET") ButtonDefaults.buttonColors(containerColor = AppColors.Warning, contentColor = AppColors.Surface) else ButtonDefaults.outlinedButtonColors(contentColor = AppColors.Warning),
                         ) { Text("Solo registrar") }
                     }
-                    if (state.accionMalasCondiciones == "BAJA") {
+                    if (state.poorConditionAction == "RETIREMENT") {
                         Spacer(Modifier.height(8.dp))
                         Text("El dispositivo será dado de baja permanentemente.", style = MaterialTheme.typography.bodySmall, color = AppColors.Danger)
                     }
@@ -175,18 +175,18 @@ fun NewInventoryMovementScreen(deviceId: String? = null) {
             }
 
             val currentDeviceLocation = state.selectedDevice?.location
-            if (state.tipo == "SALIDA" && currentDeviceLocation != null) {
+            if (state.type == "STOCK_OUT" && currentDeviceLocation != null) {
                 Spacer(Modifier.height(10.dp))
-                Text("El dispositivo se retirará de: ${currentDeviceLocation.lugar}", style = MaterialTheme.typography.bodySmall, color = AppColors.Danger)
+                Text("El dispositivo se retirará de: ${currentDeviceLocation.name}", style = MaterialTheme.typography.bodySmall, color = AppColors.Danger)
             }
 
-            if (state.tipo == "BAJA") {
+            if (state.type == "RETIREMENT") {
                 Spacer(Modifier.height(10.dp))
                 Text("Esta acción marcará el dispositivo como BAJA. No podrá ser usado nuevamente.", style = MaterialTheme.typography.bodySmall, color = AppColors.Danger)
                 Spacer(Modifier.height(8.dp))
                 AppTextField(
-                    value = state.motivoBaja,
-                    onValueChange = viewModel::onMotivoBajaChange,
+                    value = state.retirementReason,
+                    onValueChange = viewModel::onRetirementReasonChange,
                     label = { Text("Motivo de la baja (opcional)") },
                     placeholder = { Text("Ej. Equipo en mal estado, robado, etc.") },
                     modifier = Modifier.fillMaxWidth(),
@@ -195,8 +195,8 @@ fun NewInventoryMovementScreen(deviceId: String? = null) {
 
             Spacer(Modifier.height(10.dp))
             AppTextField(
-                value = state.notas,
-                onValueChange = viewModel::onNotasChange,
+                value = state.notes,
+                onValueChange = viewModel::onNotesChange,
                 label = { Text("Notas (opcional)") },
                 placeholder = { Text("Observaciones adicionales…") },
                 modifier = Modifier.fillMaxWidth(),

@@ -6,16 +6,16 @@ import com.axzydev.puertonuevoapp.core.network.access.AccessApiClient
 import com.axzydev.puertonuevoapp.core.network.devices.DevicesApi
 import com.axzydev.puertonuevoapp.core.network.departments.DepartmentsApi
 import com.axzydev.puertonuevoapp.core.network.audit.AuditApi
-import com.axzydev.puertonuevoapp.core.network.cartas.CartasApi
+import com.axzydev.puertonuevoapp.core.network.custodyletters.CustodyLettersApi
 import com.axzydev.puertonuevoapp.core.network.dashboard.DashboardApi
 import com.axzydev.puertonuevoapp.core.network.devicetypes.DeviceTypesApi
 import com.axzydev.puertonuevoapp.core.network.http.ApiClient
 import com.axzydev.puertonuevoapp.core.network.inventory.InventoryApi
 import com.axzydev.puertonuevoapp.core.network.locations.LocationsApi
 import com.axzydev.puertonuevoapp.core.network.notifications.NotificationsApi
-import com.axzydev.puertonuevoapp.core.network.personal.PersonalApi
+import com.axzydev.puertonuevoapp.core.network.hr.HrApi
 import com.axzydev.puertonuevoapp.core.network.reports.ReportsApi
-import com.axzydev.puertonuevoapp.core.network.salidas.SalidasApi
+import com.axzydev.puertonuevoapp.core.network.materialoutputs.MaterialOutputsApi
 import com.axzydev.puertonuevoapp.core.network.tickets.TicketsApi
 import com.axzydev.puertonuevoapp.core.network.users.UsersApi
 import com.axzydev.puertonuevoapp.core.location.LocationProvider
@@ -51,12 +51,12 @@ object AppContainer {
     val deviceTypesApi: DeviceTypesApi by lazy { DeviceTypesApi(apiClient) }
     val ticketsApi: TicketsApi by lazy { TicketsApi(apiClient) }
     val usersApi: UsersApi by lazy { UsersApi(apiClient) }
-    val personalApi: PersonalApi by lazy { PersonalApi(apiClient) }
+    val hrApi: HrApi by lazy { HrApi(apiClient) }
     val departmentsApi: DepartmentsApi by lazy { DepartmentsApi(apiClient) }
     val locationsApi: LocationsApi by lazy { LocationsApi(apiClient) }
     val inventoryApi: InventoryApi by lazy { InventoryApi(apiClient) }
-    val salidasApi: SalidasApi by lazy { SalidasApi(apiClient) }
-    val cartasApi: CartasApi by lazy { CartasApi(apiClient) }
+    val materialOutputsApi: MaterialOutputsApi by lazy { MaterialOutputsApi(apiClient) }
+    val custodyLettersApi: CustodyLettersApi by lazy { CustodyLettersApi(apiClient) }
     val reportsApi: ReportsApi by lazy { ReportsApi(apiClient) }
     val notificationsApi: NotificationsApi by lazy { NotificationsApi(apiClient) }
     val auditApi: AuditApi by lazy { AuditApi(apiClient) }

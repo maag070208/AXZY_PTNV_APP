@@ -29,12 +29,12 @@ data class AuditLogListResponseDto(
 
 val auditActionOptions: List<Pair<String, String>> = listOf(
     "" to "Todas",
-    "MOVEMENT_ENTRADA" to "Entrada",
-    "MOVEMENT_SALIDA" to "Salida",
-    "MOVEMENT_TRASLADO" to "Traslado",
-    "MOVEMENT_BAJA" to "Baja",
-    "MOVEMENT_PRESTAMO" to "Asignado",
-    "MOVEMENT_DEVOLUCION" to "Devolución",
-    "CARTA_CREATED" to "Carta creada",
+    "MOVEMENT_STOCK_IN" to "Entrada",
+    "MOVEMENT_STOCK_OUT" to "Salida",
+    "MOVEMENT_TRANSFER" to "Traslado",
+    "MOVEMENT_RETIREMENT" to "Baja",
+    "MOVEMENT_LOAN" to "Asignado",
+    "MOVEMENT_RETURN" to "Devolución",
+    "CUSTODY_LETTER_CREATED" to "Carta creada",
     "DEVICE_UPDATED" to "Dispositivo actualizado",
 )

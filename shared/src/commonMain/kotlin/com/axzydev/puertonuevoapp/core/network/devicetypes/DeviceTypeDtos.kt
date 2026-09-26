@@ -11,13 +11,13 @@ data class DeviceFieldSettingDto(
 
 @Serializable
 data class DeviceFieldConfigDto(
-    val numeroSerie: DeviceFieldSettingDto = DeviceFieldSettingDto(),
-    val nombreEquipo: DeviceFieldSettingDto = DeviceFieldSettingDto(),
+    val serialNumber: DeviceFieldSettingDto = DeviceFieldSettingDto(),
+    val hostname: DeviceFieldSettingDto = DeviceFieldSettingDto(),
     val ip: DeviceFieldSettingDto = DeviceFieldSettingDto(enabled = false),
     val macAddress: DeviceFieldSettingDto = DeviceFieldSettingDto(enabled = false),
-    val sistemaOp: DeviceFieldSettingDto = DeviceFieldSettingDto(enabled = false),
+    val operatingSystem: DeviceFieldSettingDto = DeviceFieldSettingDto(enabled = false),
     val ram: DeviceFieldSettingDto = DeviceFieldSettingDto(enabled = false),
-    val almacenamiento: DeviceFieldSettingDto = DeviceFieldSettingDto(enabled = false),
+    val storage: DeviceFieldSettingDto = DeviceFieldSettingDto(enabled = false),
 )
 
 @Serializable
@@ -29,7 +29,7 @@ data class DeviceTypeDto(
     val code: String,
     val name: String,
     val prefix: String,
-    val contador: Int = 0,
+    val counter: Int = 0,
     val active: Boolean = true,
     val fieldConfig: DeviceFieldConfigDto = DeviceFieldConfigDto(),
     @SerialName("_count") val count: DeviceTypeCountDto? = null,
@@ -51,4 +51,4 @@ data class DeviceTypeUpdateInput(
 )
 
 @Serializable
-data class NextFolioDto(val siguiente: String)
+data class NextFolioDto(val next: String)

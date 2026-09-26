@@ -45,8 +45,8 @@ class UserFormViewModel(
                                 email = user.email.orEmpty(),
                                 name = user.name,
                                 role = user.role,
-                                numeroEmpleado = user.numeroEmpleado.orEmpty(),
-                                puesto = user.puesto.orEmpty(),
+                                employeeNumber = user.employeeNumber.orEmpty(),
+                                jobTitle = user.jobTitle.orEmpty(),
                                 departmentId = user.departmentId.orEmpty(),
                                 subareaId = user.subareaId.orEmpty(),
                             )
@@ -65,8 +65,8 @@ class UserFormViewModel(
     fun onPasswordChange(value: String) = _uiState.update { it.copy(password = value, error = null) }
     fun onNameChange(value: String) = _uiState.update { it.copy(name = value, error = null) }
     fun onRoleChange(value: String) = _uiState.update { it.copy(role = value) }
-    fun onNumeroEmpleadoChange(value: String) = _uiState.update { it.copy(numeroEmpleado = value) }
-    fun onPuestoChange(value: String) = _uiState.update { it.copy(puesto = value) }
+    fun onEmployeeNumberChange(value: String) = _uiState.update { it.copy(employeeNumber = value) }
+    fun onJobTitleChange(value: String) = _uiState.update { it.copy(jobTitle = value) }
     fun onDepartmentChange(value: String) = _uiState.update { it.copy(departmentId = value, subareaId = "") }
     fun onSubareaChange(value: String) = _uiState.update { it.copy(subareaId = value) }
 
@@ -104,8 +104,8 @@ class UserFormViewModel(
                             password = state.password,
                             name = state.name.trim(),
                             role = state.role,
-                            puesto = state.puesto.trim().ifBlank { null },
-                            numeroEmpleado = state.numeroEmpleado.trim().ifBlank { null },
+                            jobTitle = state.jobTitle.trim().ifBlank { null },
+                            employeeNumber = state.employeeNumber.trim().ifBlank { null },
                             departmentId = state.departmentId.ifBlank { null },
                             subareaId = state.subareaId.ifBlank { null },
                         ),
@@ -118,8 +118,8 @@ class UserFormViewModel(
                             email = state.email.trim().ifBlank { null },
                             name = state.name.trim(),
                             role = state.role,
-                            puesto = state.puesto.trim().ifBlank { null },
-                            numeroEmpleado = state.numeroEmpleado.trim().ifBlank { null },
+                            jobTitle = state.jobTitle.trim().ifBlank { null },
+                            employeeNumber = state.employeeNumber.trim().ifBlank { null },
                             departmentId = state.departmentId.ifBlank { null },
                             subareaId = state.subareaId.ifBlank { null },
                         ),

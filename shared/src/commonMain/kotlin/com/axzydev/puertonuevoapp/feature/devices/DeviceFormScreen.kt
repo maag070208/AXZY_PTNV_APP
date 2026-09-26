@@ -88,24 +88,24 @@ fun DeviceFormScreen(deviceId: String?) {
             )
             Spacer(Modifier.height(10.dp))
             AppTextField(
-                value = state.descripcion,
-                onValueChange = viewModel::onDescripcionChange,
+                value = state.description,
+                onValueChange = viewModel::onDescriptionChange,
                 label = { Text("Descripción") },
                 enabled = !state.blocked,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
             AppTextField(
-                value = state.marca,
-                onValueChange = viewModel::onMarcaChange,
+                value = state.brand,
+                onValueChange = viewModel::onBrandChange,
                 label = { Text("Marca") },
                 enabled = !state.blocked,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
             AppTextField(
-                value = state.modelo,
-                onValueChange = viewModel::onModeloChange,
+                value = state.model,
+                onValueChange = viewModel::onModelChange,
                 label = { Text("Modelo") },
                 enabled = !state.blocked,
                 modifier = Modifier.fillMaxWidth(),
@@ -118,21 +118,21 @@ fun DeviceFormScreen(deviceId: String?) {
                 enabled = !state.blocked,
                 modifier = Modifier.fillMaxWidth(),
             )
-            if (state.showField("numeroSerie")) {
+            if (state.showField("serialNumber")) {
                 Spacer(Modifier.height(10.dp))
                 AppTextField(
-                    value = state.numeroSerie,
-                    onValueChange = viewModel::onNumeroSerieChange,
+                    value = state.serialNumber,
+                    onValueChange = viewModel::onSerialNumberChange,
                     label = { Text("No. de serie") },
                     enabled = !state.blocked,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
-            if (state.showField("nombreEquipo")) {
+            if (state.showField("hostname")) {
                 Spacer(Modifier.height(10.dp))
                 AppTextField(
-                    value = state.nombreEquipo,
-                    onValueChange = viewModel::onNombreEquipoChange,
+                    value = state.hostname,
+                    onValueChange = viewModel::onHostnameChange,
                     label = { Text("Nombre del equipo") },
                     enabled = !state.blocked,
                     modifier = Modifier.fillMaxWidth(),
@@ -166,10 +166,10 @@ fun DeviceFormScreen(deviceId: String?) {
                     )
                     Spacer(Modifier.height(10.dp))
                 }
-                if (state.showField("sistemaOp")) {
+                if (state.showField("operatingSystem")) {
                     AppTextField(
-                        value = state.sistemaOp,
-                        onValueChange = viewModel::onSistemaOpChange,
+                        value = state.operatingSystem,
+                        onValueChange = viewModel::onOperatingSystemChange,
                         label = { Text("Sistema operativo") },
                         enabled = !state.blocked,
                         modifier = Modifier.fillMaxWidth(),
@@ -186,10 +186,10 @@ fun DeviceFormScreen(deviceId: String?) {
                     )
                     Spacer(Modifier.height(10.dp))
                 }
-                if (state.showField("almacenamiento")) {
+                if (state.showField("storage")) {
                     AppTextField(
-                        value = state.almacenamiento,
-                        onValueChange = viewModel::onAlmacenamientoChange,
+                        value = state.storage,
+                        onValueChange = viewModel::onStorageChange,
                         label = { Text("Almacenamiento") },
                         enabled = !state.blocked,
                         modifier = Modifier.fillMaxWidth(),

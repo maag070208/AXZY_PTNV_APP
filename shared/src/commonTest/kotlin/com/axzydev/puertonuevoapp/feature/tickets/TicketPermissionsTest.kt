@@ -14,8 +14,8 @@ class TicketPermissionsTest {
 
     /** Ticket de Recepción creado por "creador", con una tarea de "emp". */
     private val ticket = TicketAccessInfo(
-        creadoPorId = "creador",
-        asignadoAId = null,
+        createdById = "creador",
+        assignedToId = null,
         departmentId = "rec",
         assignmentUserIds = listOf("emp"),
     )
@@ -25,43 +25,43 @@ class TicketPermissionsTest {
 
     @Test
     fun employeeOnlyAdvancesTheirOwnTaskUntilReview() {
-        val emp = user("EMPLEADO", "emp")
-        assertEquals(setOf("EN_PROGRESO", "EN_REVISION"), moves(emp, "emp", "PENDIENTE"))
-        assertEquals(setOf("EN_REVISION"), moves(emp, "emp", "EN_PROGRESO"))
-        assertEquals(emptySet(), moves(emp, "emp", "EN_REVISION"))
-        assertEquals(emptySet(), moves(emp, "otro", "PENDIENTE"))
+        val emp = user("EMPLOYEE", "emp")
+        assertEquals(setOf("IN_PROGRESS", "IN_REVIEW"), moves(emp, "emp", "PENDING"))
+        assertEquals(setOf("IN_REVIEW"), moves(emp, "emp", "IN_PROGRESS"))
+        assertEquals(emptySet(), moves(emp, "emp", "IN_REVIEW"))
+        assertEquals(emptySet(), moves(emp, "otro", "PENDING"))
     }
 
     @Test
-    fun onlyAdminAndGerenteCompleteTasks() {
-        assertTrue("COMPLETADA" in moves(user("ADMIN", "a"), "emp", "EN_REVISION"))
-        assertTrue("COMPLETADA" in moves(user("GERENTE", "g"), "emp", "EN_REVISION"))
+    fun onlyAdminAndManagerCompleteTasks() {
+        assertTrue("COMPLETED" in moves(user("ADMIN", "a"), "emp", "IN_REVIEW"))
+        assertTrue("COMPLETED" in moves(user("MANAGER", "g"), "emp", "IN_REVIEW"))
         // Quien creó el ticket mueve la tarea a cualquier estado menos completada.
-        assertEquals(setOf("PENDIENTE", "EN_PROGRESO"), moves(user("JEFE_DE_AREA", "creador"), "emp", "EN_REVISION"))
+        assertEquals(setOf("PENDING", "IN_PROGRESS"), moves(user("AREA_HEAD", "creador"), "emp", "IN_REVIEW"))
     }
 
     @Test
     fun editingAndClosingFollowTheWeb() {
-        val jefeCreadorOtraArea = user("JEFE_DE_AREA", "creador", departmentId = "mant")
-        assertTrue(TicketPermissions.canEdit(jefeCreadorOtraArea, ticket))
-        assertFalse(TicketPermissions.canClose(jefeCreadorOtraArea, ticket))
+        val areaHeadCreatorOtherArea = user("AREA_HEAD", "creador", departmentId = "mant")
+        assertTrue(TicketPermissions.canEdit(areaHeadCreatorOtherArea, ticket))
+        assertFalse(TicketPermissions.canClose(areaHeadCreatorOtherArea, ticket))
 
-        val jefeDeLaArea = user("JEFE_DE_AREA", "jefe")
-        assertFalse(TicketPermissions.canEdit(jefeDeLaArea, ticket))
-        assertTrue(TicketPermissions.canClose(jefeDeLaArea, ticket))
+        val areaHeadOfArea = user("AREA_HEAD", "jefe")
+        assertFalse(TicketPermissions.canEdit(areaHeadOfArea, ticket))
+        assertTrue(TicketPermissions.canClose(areaHeadOfArea, ticket))
 
-        for (role in listOf("EMPLEADO", "GUARD")) {
-            val creador = user(role, "creador", departmentId = null)
-            assertFalse(TicketPermissions.canEdit(creador, ticket), role)
-            assertFalse(TicketPermissions.canClose(creador, ticket), role)
+        for (role in listOf("EMPLOYEE", "GUARD")) {
+            val creator = user(role, "creador", departmentId = null)
+            assertFalse(TicketPermissions.canEdit(creator, ticket), role)
+            assertFalse(TicketPermissions.canClose(creator, ticket), role)
         }
     }
 
     @Test
     fun evidenceGoesOnYourOwnTaskOrAsManager() {
-        val emp = user("EMPLEADO", "emp")
+        val emp = user("EMPLOYEE", "emp")
         assertTrue(TicketPermissions.canUploadEvidence(emp, ticket, assignmentUserId = "emp"))
         assertFalse(TicketPermissions.canUploadEvidence(emp, ticket, assignmentUserId = "otro"))
-        assertTrue(TicketPermissions.canUploadEvidence(user("GERENTE", "g"), ticket, assignmentUserId = "emp"))
+        assertTrue(TicketPermissions.canUploadEvidence(user("MANAGER", "g"), ticket, assignmentUserId = "emp"))
     }
 }

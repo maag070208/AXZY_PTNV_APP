@@ -159,7 +159,7 @@ fun DepartmentDetailScreen(departmentId: String) {
                     AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
                         SectionLabel("Ubicaciones (${d.locations.size})")
                         d.locations.forEach { loc ->
-                            Text(loc.lugar, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary, modifier = Modifier.padding(vertical = 3.dp))
+                            Text(loc.name, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary, modifier = Modifier.padding(vertical = 3.dp))
                         }
                     }
                 }
@@ -170,26 +170,26 @@ fun DepartmentDetailScreen(departmentId: String) {
                         SectionLabel("Tickets (${d.ticketsTotal})")
                         d.tickets.forEach { t ->
                             Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                                Text(t.titulo, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary, modifier = Modifier.weight(1f))
+                                Text(t.title, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary, modifier = Modifier.weight(1f))
                                 StatusChip(ticketStatusLabel(t.status), AppColors.ticketStatusColor(t.status))
                             }
                         }
                     }
                 }
 
-                if (d.cartas.isNotEmpty() || d.cartasTotal > 0) {
+                if (d.custodyLetters.isNotEmpty() || d.custodyLettersTotal > 0) {
                     Spacer(Modifier.height(14.dp))
                     AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
-                        SectionLabel("Cartas responsivas (${d.cartasTotal})")
-                        d.cartas.forEach { c ->
+                        SectionLabel("Cartas responsivas (${d.custodyLettersTotal})")
+                        d.custodyLetters.forEach { c ->
                             Column(modifier = Modifier.padding(vertical = 4.dp)) {
                                 Text(
-                                    "${c.consecutive} · ${c.responsable?.name ?: "—"}",
+                                    "${c.consecutive} · ${c.custodian?.name ?: "—"}",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = AppColors.TextPrimary,
                                 )
                                 Text(
-                                    "${c.itemsCount} artículo(s) · ${formatShortDate(c.fecha)}${if (c.returnDate != null) " · devuelta" else ""}",
+                                    "${c.itemsCount} artículo(s) · ${formatShortDate(c.date)}${if (c.returnDate != null) " · devuelta" else ""}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = AppColors.TextFaint,
                                 )

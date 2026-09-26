@@ -28,14 +28,14 @@ class LocationFormViewModel(
         viewModelScope.launch {
             val result = runCatching { locationsApi.get(id) }
             result.fold(
-                onSuccess = { loc -> _uiState.update { it.copy(loading = false, lugar = loc.lugar, descripcion = loc.descripcion ?: "") } },
+                onSuccess = { loc -> _uiState.update { it.copy(loading = false, name = loc.name, description = loc.description ?: "") } },
                 onFailure = { e -> _uiState.update { it.copy(loading = false, error = networkMessage(e)) } },
             )
         }
     }
 
-    fun onLugarChange(value: String) = _uiState.update { it.copy(lugar = value.uppercase()) }
-    fun onDescripcionChange(value: String) = _uiState.update { it.copy(descripcion = value) }
+    fun onNameChange(value: String) = _uiState.update { it.copy(name = value.uppercase()) }
+    fun onDescriptionChange(value: String) = _uiState.update { it.copy(description = value) }
 
     fun submit() {
         val state = _uiState.value
@@ -44,9 +44,9 @@ class LocationFormViewModel(
         viewModelScope.launch {
             val result = runCatching {
                 if (locationId == null) {
-                    locationsApi.create(LocationCreateInput(lugar = state.lugar.trim(), descripcion = state.descripcion.trim().ifBlank { null }))
+                    locationsApi.create(LocationCreateInput(name = state.name.trim(), description = state.description.trim().ifBlank { null }))
                 } else {
-                    locationsApi.update(locationId, LocationUpdateInput(lugar = state.lugar.trim(), descripcion = state.descripcion.trim().ifBlank { null }))
+                    locationsApi.update(locationId, LocationUpdateInput(name = state.name.trim(), description = state.description.trim().ifBlank { null }))
                 }
             }
             _uiState.update { it.copy(saving = false, error = result.exceptionOrNull()?.let(::networkMessage), saved = result.isSuccess) }

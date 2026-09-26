@@ -79,7 +79,7 @@ class KanbanViewModel(
             )
         }
         viewModelScope.launch {
-            val employees = runCatching { usersApi.empleados() }.getOrDefault(emptyList())
+            val employees = runCatching { usersApi.employees() }.getOrDefault(emptyList())
             val tickets = if (fixedTicketId == null) runCatching { ticketsApi.list().data }.getOrDefault(emptyList()) else emptyList()
             _uiState.update { it.copy(createEmployees = employees, createTickets = tickets) }
         }

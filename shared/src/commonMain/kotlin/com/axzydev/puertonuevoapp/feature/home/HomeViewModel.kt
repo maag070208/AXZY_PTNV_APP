@@ -48,7 +48,7 @@ class HomeViewModel(
                 }
             } else {
                 val result = runCatching {
-                    ticketsApi.kanban().data.filter { it.ticket.deletedAt == null && it.status != "COMPLETADA" }
+                    ticketsApi.kanban().data.filter { it.ticket.deletedAt == null && it.status != "COMPLETED" }
                 }
                 _uiState.update {
                     it.copy(

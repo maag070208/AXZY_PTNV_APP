@@ -268,7 +268,7 @@ private fun ReviewCard(
 private fun EmployeeHeader(employee: AccessLookupResultDto) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         RemoteImage(
-            path = employee.fotoUrl,
+            path = employee.photoUrl,
             loadBytes = { AppContainer.accessApi.photoBytes(it) },
             modifier = Modifier.size(64.dp).clip(CircleShape),
             contentDescription = employee.name,
@@ -281,12 +281,12 @@ private fun EmployeeHeader(employee: AccessLookupResultDto) {
                 color = AppColors.TextPrimary,
             )
             Text(
-                employee.numeroEmpleado ?: "Sin número de empleado",
+                employee.employeeNumber ?: "Sin número de empleado",
                 style = MaterialTheme.typography.bodySmall,
                 color = AppColors.TextMuted,
             )
             Text(
-                listOfNotNull(employee.puesto, employee.department).joinToString(" · ").ifBlank { "—" },
+                listOfNotNull(employee.jobTitle, employee.department).joinToString(" · ").ifBlank { "—" },
                 style = MaterialTheme.typography.bodySmall,
                 color = AppColors.TextMuted,
             )

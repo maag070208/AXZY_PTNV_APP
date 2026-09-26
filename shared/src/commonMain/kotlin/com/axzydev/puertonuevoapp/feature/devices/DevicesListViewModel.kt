@@ -36,5 +36,5 @@ class DevicesListViewModel(
     }
 
     fun onQueryChange(value: String) = _uiState.update { it.copy(query = value) }
-    fun onEstadoFilterChange(value: String?) = _uiState.update { it.copy(estadoFilter = value) }
+    fun onStatusFilterChange(value: String?) = _uiState.update { it.copy(statusFilter = value) }
 }

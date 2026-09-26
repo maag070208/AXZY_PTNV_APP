@@ -7,24 +7,24 @@ data class DevicesListUiState(
     val error: String? = null,
     val devices: List<DeviceDto> = emptyList(),
     val query: String = "",
-    val estadoFilter: String? = null,
+    val statusFilter: String? = null,
 ) {
     val filtered: List<DeviceDto>
         get() = devices
-            .filter { estadoFilter == null || it.estado == estadoFilter }
+            .filter { statusFilter == null || it.status == statusFilter }
             .filter {
                 query.isBlank() ||
-                    it.controlActivos.contains(query, ignoreCase = true) ||
-                    it.descripcion.contains(query, ignoreCase = true) ||
-                    it.marca.contains(query, ignoreCase = true) ||
-                    it.modelo.contains(query, ignoreCase = true)
+                    it.assetTag.contains(query, ignoreCase = true) ||
+                    it.description.contains(query, ignoreCase = true) ||
+                    it.brand.contains(query, ignoreCase = true) ||
+                    it.model.contains(query, ignoreCase = true)
             }
-            .sortedBy { it.controlActivos }
+            .sortedBy { it.assetTag }
 }
 
-val deviceEstadoFilters: List<Pair<String?, String>> = listOf(
+val deviceStatusFilters: List<Pair<String?, String>> = listOf(
     null to "Todos",
-    "DISPONIBLE" to "Disponibles",
-    "ASIGNADO" to "Asignados",
-    "BAJA" to "Baja",
+    "AVAILABLE" to "Disponibles",
+    "ASSIGNED" to "Asignados",
+    "RETIRED" to "Baja",
 )
