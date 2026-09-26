@@ -54,13 +54,13 @@ fun DepartmentsListScreen(viewModel: DepartmentsListViewModel = viewModel { Depa
     val state by viewModel.uiState.collectAsState()
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
-    val isAdmin = (authState as? AuthState.LoggedIn)?.user?.canManageCatalogs == true
+    val canManage = (authState as? AuthState.LoggedIn)?.user?.canManageDepartments == true
 
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text("Estructura organizacional · ${state.filtered.size} resultados", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
-                if (isAdmin) {
+                if (canManage) {
                     IconButton(onClick = viewModel::openCreate) {
                         Icon(Icons.Filled.Add, contentDescription = "Nuevo departamento", tint = AppColors.EmeraldPrimary)
                     }
@@ -82,7 +82,7 @@ fun DepartmentsListScreen(viewModel: DepartmentsListViewModel = viewModel { Depa
                 items(state.filtered, key = { it.id }) { d ->
                     DepartmentCard(
                         department = d,
-                        isAdmin = isAdmin,
+                        canManage = canManage,
                         onClick = { navigator.push(Screen.DepartmentDetail(d.id)) },
                         onEdit = { viewModel.openEdit(d) },
                         onDelete = { viewModel.requestDelete(d) },
@@ -165,7 +165,7 @@ fun DepartmentsListScreen(viewModel: DepartmentsListViewModel = viewModel { Depa
 @Composable
 private fun DepartmentCard(
     department: DepartmentDto,
-    isAdmin: Boolean,
+    canManage: Boolean,
     onClick: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
@@ -201,7 +201,7 @@ private fun DepartmentCard(
                 )
                 Spacer(Modifier.size(8.dp))
             }
-            if (isAdmin) {
+            if (canManage) {
                 IconButton(onClick = onEdit) { Icon(Icons.Filled.Edit, contentDescription = "Editar", tint = AppColors.TextFaint, modifier = Modifier.size(18.dp)) }
                 IconButton(onClick = onDelete) { Icon(Icons.Filled.DeleteOutline, contentDescription = "Eliminar", tint = AppColors.Danger, modifier = Modifier.size(18.dp)) }
             } else {

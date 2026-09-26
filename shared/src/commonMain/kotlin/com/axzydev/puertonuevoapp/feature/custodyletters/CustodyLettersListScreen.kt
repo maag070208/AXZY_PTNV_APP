@@ -54,9 +54,8 @@ fun CustodyLettersListScreen(viewModel: CustodyLettersListViewModel = viewModel 
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
     val user = (authState as? AuthState.LoggedIn)?.user
-    val role = user?.role
-    val canCreate = role != "AREA_HEAD"
-    val canDelete = role != "EMPLOYEE"
+    val canCreate = user?.canCreateCustodyLetters == true
+    val canDelete = user?.canDeleteCustodyLetters == true
     val canGenerate = user?.canGenerateCustodyLetters == true
 
     Column(modifier = Modifier.fillMaxSize()) {

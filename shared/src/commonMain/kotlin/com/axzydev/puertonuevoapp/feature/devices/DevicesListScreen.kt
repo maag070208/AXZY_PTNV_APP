@@ -47,7 +47,7 @@ fun DevicesListScreen(viewModel: DevicesListViewModel = viewModel { DevicesListV
     val state by viewModel.uiState.collectAsState()
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
-    val isAdmin = (authState as? AuthState.LoggedIn)?.user?.canManageCatalogs == true
+    val canManageTypes = (authState as? AuthState.LoggedIn)?.user?.canManageCatalogs == true
 
     Column(modifier = Modifier.fillMaxSize().imePadding()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -78,7 +78,7 @@ fun DevicesListScreen(viewModel: DevicesListViewModel = viewModel { DevicesListV
                             .padding(horizontal = 12.dp, vertical = 6.dp),
                     )
                 }
-                if (isAdmin) {
+                if (canManageTypes) {
                     Text(
                         text = "Tipos de equipo",
                         style = MaterialTheme.typography.bodySmall,

@@ -47,13 +47,13 @@ fun DeviceTypesListScreen(viewModel: DeviceTypesListViewModel = viewModel { Devi
     val state by viewModel.uiState.collectAsState()
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
-    val isAdmin = (authState as? AuthState.LoggedIn)?.user?.canManageCatalogs == true
+    val canManage = (authState as? AuthState.LoggedIn)?.user?.canManageCatalogs == true
 
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text("Cada tipo tiene su propio consecutivo (prefijo)", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
-                if (isAdmin) {
+                if (canManage) {
                     IconButton(onClick = { navigator.push(Screen.DeviceTypeForm()) }) {
                         Icon(Icons.Filled.Add, contentDescription = "Nuevo tipo", tint = AppColors.EmeraldPrimary)
                     }
@@ -73,8 +73,8 @@ fun DeviceTypesListScreen(viewModel: DeviceTypesListViewModel = viewModel { Devi
                 items(state.types, key = { it.id }) { t ->
                     DeviceTypeCard(
                         type = t,
-                        clickable = isAdmin,
-                        onClick = { if (isAdmin) navigator.push(Screen.DeviceTypeForm(t.id)) },
+                        clickable = canManage,
+                        onClick = { if (canManage) navigator.push(Screen.DeviceTypeForm(t.id)) },
                     )
                 }
             }

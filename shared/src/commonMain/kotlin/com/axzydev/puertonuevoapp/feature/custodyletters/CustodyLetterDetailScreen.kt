@@ -57,7 +57,10 @@ fun CustodyLetterDetailScreen(custodyLetterId: String) {
     val state by viewModel.uiState.collectAsState()
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
-    val canDelete = (authState as? AuthState.LoggedIn)?.user?.role != "EMPLOYEE"
+    val user = (authState as? AuthState.LoggedIn)?.user
+    // Editar y registrar/cancelar devoluciones: `loans.edit`; eliminar: `loans.delete`.
+    val canEdit = user?.canEditCustodyLetters == true
+    val canDelete = user?.canDeleteCustodyLetters == true
 
     LaunchedEffect(state.deleted) { if (state.deleted) navigator.pop() }
 
@@ -75,10 +78,12 @@ fun CustodyLetterDetailScreen(custodyLetterId: String) {
     val isReturned = c.returnDate != null
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = { navigator.push(Screen.CustodyLetterForm(c.id)) }, modifier = Modifier.weight(1f)) {
-                IconLabel(Icons.Filled.Edit)
-                Text("Editar")
+        if (canEdit || canDelete) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (canEdit) {
+                OutlinedButton(onClick = { navigator.push(Screen.CustodyLetterForm(c.id)) }, modifier = Modifier.weight(1f)) {
+                    IconLabel(Icons.Filled.Edit)
+                    Text("Editar")
+                }
             }
             if (canDelete) {
                 OutlinedButton(
@@ -100,13 +105,15 @@ fun CustodyLetterDetailScreen(custodyLetterId: String) {
                 Text("Fecha: ${formatShortDate(c.returnDate)}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
                 Text("Resguardó: ${c.returnedBy ?: "—"}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
                 Text("Condiciones: ${c.returnCondition ?: "—"}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
-                Spacer(Modifier.height(10.dp))
-                OutlinedButton(onClick = viewModel::requestUndoReturn) {
-                    IconLabel(Icons.Filled.Undo)
-                    Text("Cancelar devolución")
+                if (canEdit) {
+                    Spacer(Modifier.height(10.dp))
+                    OutlinedButton(onClick = viewModel::requestUndoReturn) {
+                        IconLabel(Icons.Filled.Undo)
+                        Text("Cancelar devolución")
+                    }
                 }
             }
-        } else {
+        } else if (canEdit) {
             Button(
                 onClick = viewModel::openReturnModal,
                 colors = ButtonDefaults.buttonColors(containerColor = AppColors.EmeraldPrimary),

@@ -33,6 +33,11 @@ actual class TokenStore actual constructor() {
         }
     }
 
+    actual fun getPermissions(): String? = defaults.stringForKey(KEY_PERMISSIONS)
+    actual fun savePermissions(json: String) {
+        defaults.setObject(json, KEY_PERMISSIONS)
+    }
+
     actual fun clear() {
         defaults.removeObjectForKey(KEY_TOKEN)
         defaults.removeObjectForKey(KEY_USER_ID)
@@ -40,6 +45,7 @@ actual class TokenStore actual constructor() {
         defaults.removeObjectForKey(KEY_USER_NAME)
         defaults.removeObjectForKey(KEY_USER_ROLE)
         defaults.removeObjectForKey(KEY_USER_DEPT)
+        defaults.removeObjectForKey(KEY_PERMISSIONS)
     }
 
     private companion object {
@@ -50,5 +56,6 @@ actual class TokenStore actual constructor() {
         const val KEY_USER_NAME = "user_name"
         const val KEY_USER_ROLE = "user_role"
         const val KEY_USER_DEPT = "user_dept"
+        const val KEY_PERMISSIONS = "permissions"
     }
 }

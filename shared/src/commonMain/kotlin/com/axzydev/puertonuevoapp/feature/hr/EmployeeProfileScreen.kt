@@ -76,7 +76,7 @@ fun EmployeeProfileScreen(personId: String) {
     val state by viewModel.uiState.collectAsState()
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
-    val isAdmin = (authState as? AuthState.LoggedIn)?.user?.canManageCatalogs == true
+    val canEdit = (authState as? AuthState.LoggedIn)?.user?.canEditUsers == true
 
     when {
         state.loading -> LoadingState(Modifier.fillMaxSize())
@@ -89,7 +89,7 @@ fun EmployeeProfileScreen(personId: String) {
             profile = state.profile!!,
             documents = state.documents,
             documentTypes = state.documentTypes,
-            isAdmin = isAdmin,
+            canEdit = canEdit,
             onEdit = { navigator.push(Screen.UserForm(personId)) },
         )
     }
@@ -100,7 +100,7 @@ private fun EmployeeProfileContent(
     profile: EmployeeProfileDto,
     documents: List<EmployeeDocumentDto>,
     documentTypes: List<com.axzydev.puertonuevoapp.core.network.hr.DocumentTypeDto>,
-    isAdmin: Boolean,
+    canEdit: Boolean,
     onEdit: () -> Unit,
 ) {
     Column(
@@ -110,7 +110,7 @@ private fun EmployeeProfileContent(
             .navigationBarsPadding()
             .padding(horizontal = 16.dp, vertical = 14.dp),
     ) {
-        EmployeeProfileHeader(profile, isAdmin, onEdit)
+        EmployeeProfileHeader(profile, canEdit, onEdit)
 
         DocumentsSection(
             documents = documents,
@@ -235,7 +235,7 @@ private fun EmployeeProfileContent(
 }
 
 @Composable
-private fun EmployeeProfileHeader(profile: EmployeeProfileDto, isAdmin: Boolean, onEdit: () -> Unit) {
+private fun EmployeeProfileHeader(profile: EmployeeProfileDto, canEdit: Boolean, onEdit: () -> Unit) {
     val accent = AppColors.roleAccent(profile.role)
     val gradient = Brush.verticalGradient(listOf(accent, lerp(accent, Color.Black, 0.35f)))
 
@@ -290,7 +290,7 @@ private fun EmployeeProfileHeader(profile: EmployeeProfileDto, isAdmin: Boolean,
             profile.subarea?.let { MiniTag(it.name, AppColors.Purple) }
             profile.employeeNumber?.let { MiniTag("N.${it}", AppColors.Slate) }
         }
-        if (isAdmin) {
+        if (canEdit) {
             Spacer(Modifier.height(14.dp))
             Button(
                 onClick = onEdit,

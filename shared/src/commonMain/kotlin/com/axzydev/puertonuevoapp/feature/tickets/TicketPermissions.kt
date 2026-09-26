@@ -2,11 +2,13 @@ package com.axzydev.puertonuevoapp.feature.tickets
 
 import com.axzydev.puertonuevoapp.core.network.tickets.KanbanAssignmentDto
 import com.axzydev.puertonuevoapp.core.network.tickets.TicketDto
+import com.axzydev.puertonuevoapp.core.session.PermissionKeys
 import com.axzydev.puertonuevoapp.core.session.SessionUser
 
 /**
- * Qué puede hacer el usuario con un ticket y sus tareas. Espejo de las reglas de
- * la API (`ticket.service.ts` y `ticket-attachment.service.ts`), que es la que
+ * Qué puede hacer el usuario con un ticket y sus tareas, según el **alcance**
+ * de sus permisos (`tickets.*`, `tasks.*`). Espejo de las reglas de la API
+ * (`ticket.service.ts` y `ticket-attachment.service.ts`), que es la que
  * decide: la app solo esconde lo que la API rechazaría.
  *
  * Trabaja con los campos mínimos del ticket para servir tanto al detalle
@@ -30,50 +32,43 @@ fun KanbanAssignmentDto.accessInfo(): TicketAccessInfo =
 object TicketPermissions {
     private const val ASSIGNMENT_COMPLETED = "COMPLETED"
 
+    private fun SessionUser.within(permission: String, t: TicketAccessInfo): Boolean =
+        withinScope(permission, t.createdById, t.assignedToId, t.departmentId, t.assignmentUserIds)
+
     /** Creador, asignado o con alguna tarea en el ticket. */
     fun isInvolved(user: SessionUser, t: TicketAccessInfo): Boolean =
         t.createdById == user.id || t.assignedToId == user.id || user.id in t.assignmentUserIds
 
-    private fun sameDepartment(user: SessionUser, t: TicketAccessInfo): Boolean =
-        user.departmentId != null && t.departmentId == user.departmentId
+    /** `canViewTicket` de la API (`tickets.view`). */
+    fun canView(user: SessionUser, t: TicketAccessInfo): Boolean =
+        user.within(PermissionKeys.TICKETS_VIEW, t)
 
-    /** `canManageTicket` de la API: ADMIN, MANAGER de su departamento o AREA_HEAD que lo creó. */
-    fun canManage(user: SessionUser, t: TicketAccessInfo): Boolean =
-        user.isAdmin ||
-            (user.isManager && sameDepartment(user, t)) ||
-            (user.isAreaHead && t.createdById == user.id)
-
-    /** `assertTicketAccess` / `canAccessTicket` de la API. */
-    fun canAccess(user: SessionUser, t: TicketAccessInfo): Boolean =
-        user.isAdmin ||
-            isInvolved(user, t) ||
-            ((user.isManager || user.isAreaHead) && sameDepartment(user, t)) ||
-            canManage(user, t)
-
-    /** Editar el ticket (título, descripción, prioridad, categoría, estado): igual que la web. */
+    /** Editar el ticket (título, descripción, prioridad, categoría, estado): `tickets.edit`. */
     fun canEdit(user: SessionUser, t: TicketAccessInfo): Boolean =
-        user.isAdmin || user.isManager || (user.isAreaHead && t.createdById == user.id)
+        user.within(PermissionKeys.TICKETS_EDIT, t)
 
-    /** Cerrar el ticket: ADMIN, MANAGER o AREA_HEAD de su departamento (web y API). */
+    /** Cerrar el ticket: `tickets.close`. */
     fun canClose(user: SessionUser, t: TicketAccessInfo): Boolean =
-        user.isAdmin || user.isManager || (user.isAreaHead && sameDepartment(user, t))
+        user.within(PermissionKeys.TICKETS_CLOSE, t)
 
-    /** Crear tareas en el ticket: ADMIN, quien lo creó o a quien está asignado (web). */
+    /** Mandar el ticket a la papelera: `tickets.delete` (sin alcance por registro). */
+    fun canDelete(user: SessionUser): Boolean = user.canDeleteTicket
+
+    /** Crear tareas en el ticket: `tasks.assign`. */
     fun canCreateTasks(user: SessionUser, t: TicketAccessInfo): Boolean =
-        user.isAdmin || t.createdById == user.id || t.assignedToId == user.id
+        user.within(PermissionKeys.TASKS_ASSIGN, t)
 
-    /** Adjuntar al ticket: con acceso y, si es EMPLOYEE, solo si lo creó o tiene una tarea. */
-    fun canUploadToTicket(user: SessionUser, t: TicketAccessInfo): Boolean =
-        canAccess(user, t) && (!user.isEmployee || t.createdById == user.id || user.id in t.assignmentUserIds)
+    /** Adjuntar al ticket: basta con poder verlo. */
+    fun canUploadToTicket(user: SessionUser, t: TicketAccessInfo): Boolean = canView(user, t)
 
-    /** Subir evidencia a una tarea: quien la tiene asignada o quien administra el ticket. */
+    /** Subir evidencia a una tarea: quien la tiene asignada o quien puede editar el ticket. */
     fun canUploadEvidence(user: SessionUser, t: TicketAccessInfo, assignmentUserId: String): Boolean =
-        canAccess(user, t) && (canManage(user, t) || assignmentUserId == user.id)
+        canView(user, t) && (canEdit(user, t) || assignmentUserId == user.id)
 
     /**
      * Estados a los que el usuario puede mover una tarea (sin contar el actual).
-     * ADMIN y MANAGER: todos. Quien la tiene asignada: solo avanzar hasta
-     * revisión. Quien creó el ticket o lo tiene asignado: todos menos completarla.
+     * Con `tasks.complete` sobre el ticket: todos. Quien la tiene asignada:
+     * solo avanzar hasta revisión. Con `tasks.assign`: todos menos completarla.
      */
     fun allowedAssignmentMoves(
         user: SessionUser,
@@ -82,11 +77,14 @@ object TicketPermissions {
         currentStatus: String,
     ): Set<String> {
         val all = assignmentStatusOrder.toSet() - currentStatus
+        val canManage = user.within(PermissionKeys.TASKS_ASSIGN, t)
+        val canComplete = user.within(PermissionKeys.TASKS_COMPLETE, t)
+        val isOwner = assignmentUserId == user.id
         return when {
-            user.isAdmin || user.isManager -> all
-            assignmentUserId == user.id -> ownerForwardMoves[currentStatus].orEmpty()
-            t.createdById == user.id || t.assignedToId == user.id -> all - ASSIGNMENT_COMPLETED
-            else -> emptySet()
+            !canManage && !isOwner -> emptySet()
+            canComplete -> all
+            isOwner -> ownerForwardMoves[currentStatus].orEmpty()
+            else -> all - ASSIGNMENT_COMPLETED
         }
     }
 

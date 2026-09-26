@@ -33,6 +33,8 @@ fun App() {
 
         LaunchedEffect(Unit) {
             authRepository.restoreSession()
+            // Permisos vigentes (`GET /auth/me`): un cambio de rol aplica sin relogin.
+            authRepository.refreshSession()
         }
 
         Surface(modifier = Modifier.fillMaxSize(), color = AppColors.Background) {
@@ -46,7 +48,7 @@ fun App() {
                         PermissionsScreen(onContinue = { permissionsAcknowledged = true })
                     } else {
                         // El guardia aterriza directo en la pantalla de escaneo.
-                        val start = if (state.user.role == "GUARD") Screen.AccessScan else Screen.Home
+                        val start = if (state.user.isGuard) Screen.AccessScan else Screen.Home
                         val navigator = remember(state.user.id) { Navigator(start) }
                         CompositionLocalProvider(LocalNavigator provides navigator) {
                             AppShell()

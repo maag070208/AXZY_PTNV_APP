@@ -19,5 +19,9 @@ expect class TokenStore() {
     fun getUserDepartmentId(): String?
     fun saveUser(id: String, username: String, name: String, role: String, departmentId: String?)
 
+    /** Permisos efectivos de la sesión serializados como JSON (clave → alcance). */
+    fun getPermissions(): String?
+    fun savePermissions(json: String)
+
     fun clear()
 }

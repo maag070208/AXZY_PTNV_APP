@@ -63,7 +63,7 @@ fun DepartmentDetailScreen(departmentId: String) {
     val state by viewModel.uiState.collectAsState()
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
-    val isAdmin = (authState as? AuthState.LoggedIn)?.user?.canManageCatalogs == true
+    val canManage = (authState as? AuthState.LoggedIn)?.user?.canManageDepartments == true
 
     LaunchedEffect(state.deleted) { if (state.deleted) navigator.pop() }
 
@@ -120,7 +120,7 @@ fun DepartmentDetailScreen(departmentId: String) {
                                         .padding(horizontal = 12.dp, vertical = 6.dp),
                                 ) {
                                     Text(s.name.uppercase(), style = MaterialTheme.typography.labelSmall, color = AppColors.TextPrimary)
-                                    if (isAdmin) {
+                                    if (canManage) {
                                         Spacer(Modifier.size(6.dp))
                                         Icon(
                                             Icons.Filled.Close,
@@ -133,7 +133,7 @@ fun DepartmentDetailScreen(departmentId: String) {
                             }
                         }
                     }
-                    if (isAdmin) {
+                    if (canManage) {
                         Spacer(Modifier.height(12.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             AppTextField(
@@ -198,7 +198,7 @@ fun DepartmentDetailScreen(departmentId: String) {
                     }
                 }
 
-                if (isAdmin) {
+                if (canManage) {
                     Spacer(Modifier.height(20.dp))
                     OutlinedButton(
                         onClick = viewModel::requestDeleteDepartment,

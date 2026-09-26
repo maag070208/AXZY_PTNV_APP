@@ -101,6 +101,7 @@ import com.axzydev.puertonuevoapp.feature.inventory.LocationsListScreen
 import com.axzydev.puertonuevoapp.feature.inventory.NewInventoryMovementScreen
 import com.axzydev.puertonuevoapp.feature.notifications.NotificationsScreen
 import com.axzydev.puertonuevoapp.feature.reports.ReportsScreen
+import com.axzydev.puertonuevoapp.feature.roles.RolesPermissionsScreen
 import com.axzydev.puertonuevoapp.feature.materialoutputs.MaterialOutputFormScreen
 import com.axzydev.puertonuevoapp.feature.materialoutputs.MaterialOutputsListScreen
 import com.axzydev.puertonuevoapp.feature.tickets.AdminTasksScreen
@@ -308,43 +309,49 @@ private fun drawerNodes(user: SessionUser?): List<DrawerNode> = buildList {
 
     add(DrawerNode("Notificaciones", Icons.Filled.Notifications, Screen.Notifications))
 
-    // Lo administrativo va debajo de lo operativo.
-    if (user?.canManageCatalogs == true) {
+    // Lo administrativo va debajo de lo operativo. El menú se arma por permisos
+    // efectivos (`GET /auth/me`), igual que la web.
+    if (user?.canViewInventory == true) {
         add(
             DrawerNode(
                 "Inventario", Icons.Filled.Inventory,
-                children = listOf(
-                    DrawerChild("Resumen", Screen.InventoryIndex),
-                    DrawerChild("Dispositivos", Screen.DevicesList),
-                    DrawerChild("Movimientos", Screen.InventoryMovements),
-                    DrawerChild("Cartas responsivas", Screen.CustodyLettersList),
-                    DrawerChild("Salidas de material", Screen.MaterialOutputsList),
-                ),
+                children = buildList {
+                    if (user?.canViewDevices == true) {
+                        add(DrawerChild("Resumen", Screen.InventoryIndex))
+                        add(DrawerChild("Dispositivos", Screen.DevicesList))
+                        add(DrawerChild("Movimientos", Screen.InventoryMovements))
+                    }
+                    if (user?.canViewCustodyLetters == true) add(DrawerChild("Cartas responsivas", Screen.CustodyLettersList))
+                    if (user?.canRegisterMaterialOutputs == true) add(DrawerChild("Salidas de material", Screen.MaterialOutputsList))
+                },
             )
         )
+    }
+    if (user?.canViewReports == true) {
         add(DrawerNode("Reportes", Icons.Filled.QueryStats, Screen.Reports))
     }
 
-    if (user?.canManageHR == true) {
+    if (user?.canViewHR == true || user?.canManageDepartments == true) {
         add(
             DrawerNode(
                 "Recursos Humanos", Icons.Filled.Groups,
-                children = listOf(
-                    DrawerChild("Personal", Screen.EmployeesList),
-                    DrawerChild("Departamentos", Screen.DepartmentsList),
-                ),
+                children = buildList {
+                    if (user?.canViewHR == true) add(DrawerChild("Personal", Screen.EmployeesList))
+                    add(DrawerChild("Departamentos", Screen.DepartmentsList))
+                },
             )
         )
     }
 
-    if (user?.canManageCatalogs == true) {
+    if (user?.canManageCatalogs == true || user?.canSeeAudit == true || user?.canManageRoles == true) {
         add(
             DrawerNode(
                 "Configuración", Icons.Filled.Settings,
-                children = listOf(
-                    DrawerChild("Tipos de dispositivo", Screen.DeviceTypesList),
-                    DrawerChild("Auditoría", Screen.AuditLogs),
-                ),
+                children = buildList {
+                    if (user?.canManageCatalogs == true) add(DrawerChild("Tipos de dispositivo", Screen.DeviceTypesList))
+                    if (user?.canSeeAudit == true) add(DrawerChild("Auditoría", Screen.AuditLogs))
+                    if (user?.canManageRoles == true) add(DrawerChild("Roles y permisos", Screen.RolesPermissions))
+                },
             )
         )
     }
@@ -561,5 +568,6 @@ private fun AppNavHost(screen: Screen) {
         Screen.Reports -> ReportsScreen()
         Screen.Notifications -> NotificationsScreen()
         Screen.AuditLogs -> AuditLogsScreen()
+        Screen.RolesPermissions -> RolesPermissionsScreen()
     }
 }

@@ -47,7 +47,7 @@ fun DeviceDetailScreen(deviceId: String) {
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
     val user = (authState as? AuthState.LoggedIn)?.user
-    val isAdmin = user?.canManageCatalogs == true
+    val canEditDevice = user?.canEditDevices == true
     val canRegisterMovement = user?.canRegisterMovement == true
 
     when {
@@ -76,10 +76,10 @@ fun DeviceDetailScreen(deviceId: String) {
                     StatusChip(deviceStatusLabel(d.status), AppColors.deviceStatusColor(d.status))
                 }
 
-                if (isAdmin || canRegisterMovement) {
+                if (canEditDevice || canRegisterMovement) {
                     Spacer(Modifier.height(10.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (isAdmin) {
+                        if (canEditDevice) {
                             Text(
                                 "Editar",
                                 style = MaterialTheme.typography.bodySmall,

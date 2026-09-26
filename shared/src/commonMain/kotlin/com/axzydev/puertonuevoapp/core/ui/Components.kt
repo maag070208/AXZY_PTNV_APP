@@ -70,6 +70,40 @@ fun StatusChip(label: String, color: Color, modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Chip seleccionable (filtros, opciones de un solo valor o multiselección).
+ * Estándar para las "pills" clicables: recorta el ripple a `AppShape.pill`.
+ */
+@Composable
+fun AppFilterChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    selectedColor: Color = AppColors.EmeraldPrimary,
+) {
+    val background = when {
+        selected && enabled -> selectedColor
+        selected -> selectedColor.copy(alpha = 0.45f)
+        else -> AppColors.SurfaceVariant
+    }
+    Text(
+        text = label,
+        style = MaterialTheme.typography.bodySmall,
+        color = when {
+            selected -> AppColors.Surface
+            enabled -> AppColors.TextMuted
+            else -> AppColors.TextFaint
+        },
+        modifier = modifier
+            .clip(AppShape.pill)
+            .background(background, AppShape.pill)
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+    )
+}
+
 @Composable
 fun SectionLabel(text: String, modifier: Modifier = Modifier) {
     Text(

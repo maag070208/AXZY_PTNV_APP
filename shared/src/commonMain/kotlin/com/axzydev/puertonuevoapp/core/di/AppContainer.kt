@@ -13,6 +13,7 @@ import com.axzydev.puertonuevoapp.core.network.http.ApiClient
 import com.axzydev.puertonuevoapp.core.network.inventory.InventoryApi
 import com.axzydev.puertonuevoapp.core.network.locations.LocationsApi
 import com.axzydev.puertonuevoapp.core.network.notifications.NotificationsApi
+import com.axzydev.puertonuevoapp.core.network.permissions.PermissionsApi
 import com.axzydev.puertonuevoapp.core.network.hr.HrApi
 import com.axzydev.puertonuevoapp.core.network.reports.ReportsApi
 import com.axzydev.puertonuevoapp.core.network.materialoutputs.MaterialOutputsApi
@@ -60,6 +61,7 @@ object AppContainer {
     val reportsApi: ReportsApi by lazy { ReportsApi(apiClient) }
     val notificationsApi: NotificationsApi by lazy { NotificationsApi(apiClient) }
     val auditApi: AuditApi by lazy { AuditApi(apiClient) }
+    val permissionsApi: PermissionsApi by lazy { PermissionsApi(apiClient) }
     val accessApi: AccessApi by lazy { AccessApiClient(apiClient) }
     val locationProvider: LocationProvider by lazy { platformLocationProvider() }
 }

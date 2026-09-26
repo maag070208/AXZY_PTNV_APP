@@ -17,6 +17,13 @@ data class AuthUserDto(
     val department: DepartmentRefDto? = null,
     /** Ruta de la foto (`/hr/:id/photo/raw`) o null si no tiene. */
     val photoUrl: String? = null,
+    /**
+     * Permisos efectivos (clave → alcance NONE/OWN/AREA/ALL), solo los
+     * distintos de NONE. Solo `GET /auth/me` los trae (el login no).
+     */
+    val permissions: Map<String, String>? = null,
+    /** Idioma del sistema (`sys_config.LANGUAGE`: es | en). */
+    val language: String? = null,
 )
 
 @Serializable
