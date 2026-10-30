@@ -73,6 +73,12 @@ fun CatalogsScreen() {
 
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 10.dp)) {
+            Text(
+                "Catálogos del sistema: estructura, personal, tickets y configuración de notificaciones.",
+                style = MaterialTheme.typography.bodySmall,
+                color = AppColors.TextMuted,
+            )
+            Spacer(Modifier.height(8.dp))
             BentoTabs(
                 items = tabs.map { BentoTabItem(it.label, it.icon) },
                 selectedIndex = selected.coerceIn(0, tabs.lastIndex),

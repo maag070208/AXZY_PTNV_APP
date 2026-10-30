@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
@@ -37,9 +38,11 @@ import com.axzydev.puertonuevoapp.core.theme.AppBento
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppCard
-import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
 import com.axzydev.puertonuevoapp.core.ui.AppModal
+import com.axzydev.puertonuevoapp.core.ui.BentoAvatar
 import com.axzydev.puertonuevoapp.core.ui.BentoState
+import com.axzydev.puertonuevoapp.core.ui.PillButton
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.ui.table.AppTableScreen
 import com.axzydev.puertonuevoapp.core.util.formatDateTime
@@ -142,13 +145,13 @@ fun InventoryReturnsScreen(
                     Spacer(Modifier.height(6.dp))
                 }
                 Spacer(Modifier.height(4.dp))
-                AppFilterChip(
-                    label = "Ver carta responsiva",
-                    selected = false,
+                PillButton(
+                    text = "Ver carta responsiva",
                     onClick = {
                         viewModel.closeDetail()
                         navigator.push(Screen.CustodyLetterDetail(returned.loanId))
                     },
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }
@@ -161,30 +164,47 @@ private fun ReturnCard(
     onClick: () -> Unit,
     onOpenLetter: () -> Unit,
 ) {
+    val assigned = returned.loan?.custodian?.name ?: returned.loan?.department?.name
     AppCard(modifier = Modifier.fillMaxWidth(), onClick = onClick) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                returned.number.ifBlank { "Devolución" },
-                style = MaterialTheme.typography.titleSmall,
-                color = AppColors.TextPrimary,
-                fontWeight = FontWeight.Bold,
+            BentoAvatar(
+                name = assigned ?: returned.number.ifBlank { "Devolución" },
+                color = AppColors.Purple,
+                size = 40.dp,
             )
-            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    returned.number.ifBlank { "Devolución" },
+                    style = MaterialTheme.typography.titleSmall,
+                    color = AppColors.TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    "Carta ${returned.loan?.number ?: "—"}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AppColors.TextMuted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (!assigned.isNullOrBlank()) {
+                    Text(
+                        assigned,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = AppColors.TextPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            Spacer(Modifier.width(8.dp))
             Text(
                 formatDateTime(returned.date),
                 style = MaterialTheme.typography.labelSmall,
                 color = AppColors.TextFaint,
             )
-        }
-        Spacer(Modifier.height(4.dp))
-        Text(
-            "Carta ${returned.loan?.number ?: "—"}",
-            style = MaterialTheme.typography.bodySmall,
-            color = AppColors.TextMuted,
-        )
-        val assigned = returned.loan?.custodian?.name ?: returned.loan?.department?.name
-        if (!assigned.isNullOrBlank()) {
-            Text(assigned, style = MaterialTheme.typography.bodySmall, color = AppColors.TextPrimary)
         }
         Spacer(Modifier.height(8.dp))
         returned.items.forEach { item ->
@@ -207,11 +227,12 @@ private fun ReturnCard(
                 )
             }
         }
-        Spacer(Modifier.height(6.dp))
-        AppFilterChip(
-            label = "Ver carta",
-            selected = false,
+        Spacer(Modifier.height(8.dp))
+        PillButton(
+            text = "Ver carta",
             onClick = onOpenLetter,
+            variant = PillButtonVariant.Ghost,
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

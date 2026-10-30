@@ -142,23 +142,13 @@ fun DisciplinaryReportsScreen(
 @Composable
 private fun DisciplinaryReportCard(report: DisciplinaryReportDto, onClick: () -> Unit) {
     AppCard(modifier = Modifier.fillMaxWidth(), onClick = onClick, contentPadding = PaddingValues(14.dp)) {
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            StatusChip(disciplinaryReasonLabel(report.reason), toneOf(reasonColor(report.reason)))
-            Spacer(Modifier.weight(1f))
-            Text(
-                formatShortDate(report.incidentDate),
-                style = MaterialTheme.typography.labelSmall,
-                color = AppColors.TextFaint,
-            )
-        }
-        Spacer(Modifier.height(6.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            BentoAvatar(name = report.user.name, color = AppColors.EmeraldPrimary, size = 32.dp)
-            Spacer(Modifier.width(8.dp))
+            BentoAvatar(name = report.user.name, color = AppColors.Danger, size = 40.dp)
+            Spacer(Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     report.user.name,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.titleSmall,
                     color = AppColors.TextPrimary,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
@@ -166,17 +156,28 @@ private fun DisciplinaryReportCard(report: DisciplinaryReportDto, onClick: () ->
                 )
                 Text(
                     listOfNotNull(
-                        report.user.employeeNumber?.let { "#$it" },
-                        report.user.department?.name,
-                    ).joinToString(" · ").ifBlank { "—" },
+                        report.user.employeeNumber?.takeIf { it.isNotBlank() }?.let { "#$it" },
+                        report.user.jobTitle?.takeIf { it.isNotBlank() },
+                        report.user.department?.name?.takeIf { it.isNotBlank() },
+                    ).joinToString(" · ").ifBlank { "Sin datos de puesto" },
                     style = MaterialTheme.typography.labelSmall,
                     color = AppColors.TextFaint,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
+            Spacer(Modifier.width(8.dp))
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    formatShortDate(report.incidentDate),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = AppColors.TextFaint,
+                )
+                Spacer(Modifier.height(4.dp))
+                StatusChip(disciplinaryReasonLabel(report.reason), reasonColor(report.reason))
+            }
         }
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(8.dp))
         Text(
             report.description,
             style = MaterialTheme.typography.bodySmall,
@@ -195,13 +196,17 @@ private fun DisciplinaryReportCard(report: DisciplinaryReportDto, onClick: () ->
             )
         }
         Spacer(Modifier.height(4.dp))
-        Text(
-            "Levantada por ${report.createdBy.name}",
-            style = MaterialTheme.typography.labelSmall,
-            color = AppColors.TextFaint,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "Levantada por ${report.createdBy.name}",
+                style = MaterialTheme.typography.labelSmall,
+                color = AppColors.TextFaint,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(Modifier.weight(1f))
+            Text("Ver acta", style = MaterialTheme.typography.labelMedium, color = AppColors.EmeraldPrimary)
+        }
     }
 }
 

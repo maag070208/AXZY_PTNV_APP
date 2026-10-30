@@ -12,11 +12,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,6 +26,8 @@ import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.ui.AppSearchField
 import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
+import com.axzydev.puertonuevoapp.core.ui.PillButton
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
@@ -72,7 +70,11 @@ fun CustodyLetterFormScreen(custodyLetterId: String? = null) {
             if (!state.changingDevice) {
                 Text(state.currentItemSummary ?: "Sin dispositivo asignado", style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
                 Spacer(Modifier.height(10.dp))
-                OutlinedButton(onClick = viewModel::startChangingDevice) { Text("Cambiar dispositivo") }
+                PillButton(
+                    text = "Cambiar dispositivo",
+                    onClick = viewModel::startChangingDevice,
+                    variant = PillButtonVariant.Secondary,
+                )
             } else {
                 SimpleDropdownField(
                     label = "Tipo de dispositivo",
@@ -95,7 +97,11 @@ fun CustodyLetterFormScreen(custodyLetterId: String? = null) {
                 )
                 if (isEdit) {
                     Spacer(Modifier.height(8.dp))
-                    OutlinedButton(onClick = viewModel::keepCurrentDevice) { Text("Conservar dispositivo actual") }
+                    PillButton(
+                        text = "Conservar dispositivo actual",
+                        onClick = viewModel::keepCurrentDevice,
+                        variant = PillButtonVariant.Ghost,
+                    )
                 }
             }
         }
@@ -170,15 +176,12 @@ fun CustodyLetterFormScreen(custodyLetterId: String? = null) {
         }
 
         Spacer(Modifier.height(20.dp))
-        Button(
+        PillButton(
+            text = if (isEdit) "Guardar cambios" else "Crear carta",
             onClick = viewModel::submit,
-            enabled = state.isValid && !state.saving,
-            shape = MaterialTheme.shapes.medium,
-            colors = ButtonDefaults.buttonColors(containerColor = AppColors.EmeraldPrimary),
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-        ) {
-            if (state.saving) CircularProgressIndicator(modifier = Modifier.height(20.dp), color = AppColors.Surface, strokeWidth = 2.dp)
-            else Text(if (isEdit) "Guardar cambios" else "Crear carta", style = MaterialTheme.typography.titleMedium)
-        }
+            enabled = state.isValid,
+            loading = state.saving,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }

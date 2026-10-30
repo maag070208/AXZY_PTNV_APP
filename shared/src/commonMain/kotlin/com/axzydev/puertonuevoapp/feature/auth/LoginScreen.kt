@@ -3,6 +3,7 @@ package com.axzydev.puertonuevoapp.feature.auth
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,7 +16,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
@@ -100,10 +101,21 @@ private fun LoginContent(
         // enfocado y el botón «Entrar» quedan por encima del teclado, nunca cortados.
         val density = LocalDensity.current
         val imeBottom = WindowInsets.ime.getBottom(density)
+        val statusBarTop = WindowInsets.statusBars.getTop(density)
+        val statusBarHeight = with(density) { statusBarTop.toDp() }
         LaunchedEffect(imeBottom) {
             if (imeBottom > 0) scrollState.animateScrollTo(scrollState.maxValue)
         }
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Franja fija con el degradado de marca detrás de la barra de estado: al hacer
+            // scroll el contenido no pasa por debajo de los iconos del sistema.
+            BrandGradientBackdrop(modifier = Modifier.fillMaxWidth().height(statusBarHeight)) {}
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = statusBarHeight)
+                    .verticalScroll(scrollState),
+            ) {
             LoginBrandHeader()
             LoginFormSheet(
                 state = state,
@@ -114,6 +126,7 @@ private fun LoginContent(
                 onToggleServer = onToggleServer,
                 onLogin = onLogin,
             )
+            }
         }
     }
 }
@@ -134,7 +147,6 @@ private fun LoginBrandHeader() {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .statusBarsPadding()
                 // 28dp extra: es lo que cubre la hoja del formulario al solaparse.
                 .padding(top = 24.dp, bottom = 28.dp + 28.dp),
         ) {

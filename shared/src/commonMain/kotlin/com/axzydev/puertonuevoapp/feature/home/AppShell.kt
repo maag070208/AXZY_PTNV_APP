@@ -126,8 +126,12 @@ fun AppShell() {
     val current = navigator.current
     val chrome = current.chrome()
     val isHome = current is Screen.Home
-    // Desde el menú la pila queda en una sola pantalla: sin a dónde regresar, va la hamburguesa.
-    val showBack = chrome.showBack && navigator.backStack.size > 1
+    // El drawer/hamburguesa es exclusivo del Inicio: el resto de pantallas lleva atrás.
+    // Si no hay historial (se abrió desde el drawer o la barra), atrás vuelve al Inicio.
+    val showBack = !isHome
+    val goBack: () -> Unit = {
+        if (navigator.backStack.size > 1) navigator.pop() else navigator.switchTab(Screen.Home)
+    }
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -176,8 +180,8 @@ fun AppShell() {
     PlatformBackHandler(enabled = langostinOpen) {
         langostinOpen = false
     }
-    PlatformBackHandler(enabled = !drawerState.isOpen && navigator.backStack.size > 1) {
-        navigator.pop()
+    PlatformBackHandler(enabled = !drawerState.isOpen && !isHome) {
+        goBack()
     }
 
     fun go(screen: Screen) {
@@ -185,8 +189,15 @@ fun AppShell() {
         scope.launch { drawerState.close() }
     }
 
+    // Si se navega fuera del Inicio con el menú abierto, se cierra.
+    LaunchedEffect(isHome) {
+        if (!isHome) drawerState.close()
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
+        // El gesto de abrir el menú solo existe en el Inicio.
+        gesturesEnabled = isHome,
         drawerContent = {
             BentoDrawer(
                 user = user,
@@ -207,7 +218,7 @@ fun AppShell() {
                             title = chrome.title,
                             subtitle = if (showBack) sectionLabel(chrome.section) else null,
                             showBack = showBack,
-                            onBack = { navigator.pop() },
+                            onBack = goBack,
                             onMenu = { scope.launch { drawerState.open() } },
                             unreadCount = unreadCount,
                             onNotifications = { navigator.push(Screen.Notifications) },

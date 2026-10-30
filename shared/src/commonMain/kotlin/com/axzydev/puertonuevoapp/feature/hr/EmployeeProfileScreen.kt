@@ -1,6 +1,7 @@
 package com.axzydev.puertonuevoapp.feature.hr
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -195,13 +197,16 @@ private fun EmployeeProfileHeader(
                 RemoteImage(
                     path = state.photoPath,
                     loadBytes = { AppContainer.apiClient.getBytes(it) },
-                    modifier = Modifier.size(64.dp).clip(CircleShape),
+                    modifier = Modifier
+                        .size(78.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, AppColors.EmeraldContainer, CircleShape),
                     contentDescription = profile.name,
                 )
                 if (state.photoUploading) {
                     Box(
                         modifier = Modifier
-                            .size(64.dp)
+                            .size(78.dp)
                             .clip(CircleShape)
                             .background(AppColors.TextPrimary.copy(alpha = 0.35f)),
                         contentAlignment = Alignment.Center,
@@ -218,9 +223,10 @@ private fun EmployeeProfileHeader(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     profile.name,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.headlineSmall,
                     color = AppColors.TextPrimary,
-                    maxLines = 1,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text("@${profile.username}", style = MaterialTheme.typography.labelMedium, color = AppColors.TextFaint)

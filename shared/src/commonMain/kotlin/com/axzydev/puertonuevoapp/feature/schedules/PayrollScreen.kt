@@ -107,7 +107,10 @@ fun PayrollScreen() {
         }
 
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            ) {
                 AppFilterChip(
                     label = "Asistencia semanal",
                     selected = state.isWeekly,
@@ -149,7 +152,10 @@ fun PayrollScreen() {
 
         if (!state.isWeekly) {
             item {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                ) {
                     REPORT_PERIODS.forEach { (value, label) ->
                         AppFilterChip(
                             label = label,
@@ -160,7 +166,10 @@ fun PayrollScreen() {
                 }
             }
             item {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                ) {
                     AppFilterChip(
                         label = "Reloj",
                         selected = state.source == ATTENDANCE_SOURCE_CLOCK,
@@ -198,7 +207,10 @@ fun PayrollScreen() {
 
         if (!state.isWeekly) {
             item {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                ) {
                     ATTENDANCE_VIEWS.forEach { (value, label) ->
                         AppFilterChip(
                             label = label,

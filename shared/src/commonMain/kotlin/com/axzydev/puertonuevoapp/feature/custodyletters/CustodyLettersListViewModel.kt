@@ -39,6 +39,9 @@ class CustodyLettersListViewModel(
 
     fun onQueryChange(value: String) = _uiState.update { it.copy(query = value) }
 
+    /** Filtro por estado de la carta ("" todas, ACTIVE vigentes, RETURNED devueltas). */
+    fun onStatusFilterChange(value: String) = _uiState.update { it.copy(statusFilter = value) }
+
     fun requestDelete(custodyLetter: CustodyLetterDto) = _uiState.update { it.copy(deleteTarget = custodyLetter) }
     fun dismissDelete() = _uiState.update { it.copy(deleteTarget = null) }
 

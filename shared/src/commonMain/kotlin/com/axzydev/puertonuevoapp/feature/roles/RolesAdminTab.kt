@@ -61,7 +61,9 @@ import com.axzydev.puertonuevoapp.core.ui.AppModalTone
 import com.axzydev.puertonuevoapp.core.ui.AppSearchField
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
 import com.axzydev.puertonuevoapp.core.ui.AppSnackbar
+import com.axzydev.puertonuevoapp.core.ui.BentoAvatar
 import com.axzydev.puertonuevoapp.core.ui.BentoErrorState
+import com.axzydev.puertonuevoapp.core.ui.BentoMiniStat
 import com.axzydev.puertonuevoapp.core.ui.BentoState
 import com.axzydev.puertonuevoapp.core.ui.PillButton
 import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
@@ -522,17 +524,54 @@ private fun RoleList(
     Column(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "${state.roles.size} rol(es) · ${state.members.size} persona(s)",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = AppColors.TextMuted,
-                    modifier = Modifier.weight(1f),
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        "Roles de acceso",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppColors.TextPrimary,
+                    )
+                    Text(
+                        "Cada rol agrupa permisos y personas; los detalles ajustan el alcance.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = AppColors.TextMuted,
+                    )
+                }
                 PillButton(
                     text = "Nuevo rol",
                     onClick = viewModel::openCreate,
                     variant = PillButtonVariant.Secondary,
                     leadingIcon = Icons.Filled.Add,
+                )
+            }
+            Spacer(Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                BentoMiniStat(
+                    label = "Roles",
+                    value = state.roles.size.toString(),
+                    tone = BentoTone.Sea,
+                    modifier = Modifier.weight(1f),
+                )
+                BentoMiniStat(
+                    label = "Activos",
+                    value = state.roles.count { it.active }.toString(),
+                    tone = BentoTone.Mint,
+                    modifier = Modifier.weight(1f),
+                )
+                BentoMiniStat(
+                    label = "Personas",
+                    value = state.members.size.toString(),
+                    tone = BentoTone.Lavender,
+                    modifier = Modifier.weight(1f),
+                )
+                BentoMiniStat(
+                    label = "Reglas",
+                    value = state.policies.size.toString(),
+                    tone = if (state.policies.isEmpty()) BentoTone.Plain else BentoTone.Sun,
+                    modifier = Modifier.weight(1f),
                 )
             }
             Spacer(Modifier.height(10.dp))
@@ -698,6 +737,37 @@ private fun RoleDetail(
                     }
                 }
             }
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    BentoMiniStat(
+                        label = "Personas",
+                        value = role.userCount.toString(),
+                        tone = BentoTone.Sea,
+                        modifier = Modifier.weight(1f),
+                    )
+                    BentoMiniStat(
+                        label = "Permisos",
+                        value = state.grantedPermissions.size.toString(),
+                        tone = BentoTone.Mint,
+                        modifier = Modifier.weight(1f),
+                    )
+                    BentoMiniStat(
+                        label = "Módulos",
+                        value = state.modules.count { (_, perms) -> moduleCoverage(perms) { state.scopeOf(it) }.first > 0 }.toString(),
+                        tone = BentoTone.Lavender,
+                        modifier = Modifier.weight(1f),
+                    )
+                    BentoMiniStat(
+                        label = "Reglas",
+                        value = state.rolePolicies.size.toString(),
+                        tone = if (state.rolePolicies.isEmpty()) BentoTone.Plain else BentoTone.Sun,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
             item { SectionLabel("Nivel por módulo") }
             item {
                 AppCard(modifier = Modifier.fillMaxWidth()) {
@@ -753,6 +823,12 @@ private fun RoleDetail(
                             modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
+                            BentoAvatar(
+                                name = member.name,
+                                color = AppColors.roleAccent(member.role),
+                                size = 36.dp,
+                            )
+                            Spacer(Modifier.width(10.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(member.name, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary, maxLines = 1)
                                 Text(

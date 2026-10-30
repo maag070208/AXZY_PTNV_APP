@@ -55,7 +55,6 @@ import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppCard
-import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
 import com.axzydev.puertonuevoapp.core.ui.AppModal
 import com.axzydev.puertonuevoapp.core.ui.AppModalTone
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
@@ -486,10 +485,10 @@ private fun UnlinkedPersonCard(
                 )
             }
             if (canLink) {
-                AppFilterChip(
-                    label = "Vincular",
-                    selected = false,
+                PillButton(
+                    text = "Vincular",
                     onClick = onLink,
+                    variant = PillButtonVariant.Secondary,
                 )
             }
         }
@@ -602,20 +601,21 @@ private fun PendingRemovalCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (canLink) {
-                    AppFilterChip(
-                        label = "Descartar",
-                        selected = false,
+                    PillButton(
+                        text = "Descartar",
                         onClick = onDismiss,
+                        variant = PillButtonVariant.Ghost,
                         enabled = !busy,
                     )
                 }
                 if (canRemove) {
-                    AppFilterChip(
-                        label = if (busy) "Aplicando…" else "Aplicar baja",
-                        selected = true,
+                    PillButton(
+                        text = if (busy) "Aplicando…" else "Aplicar baja",
                         onClick = onApply,
+                        variant = PillButtonVariant.Secondary,
                         enabled = draft.isValid && !busy,
-                        selectedColor = AppColors.Danger,
+                        loading = busy,
+                        leadingIcon = Icons.Filled.PersonOff,
                     )
                 }
             }

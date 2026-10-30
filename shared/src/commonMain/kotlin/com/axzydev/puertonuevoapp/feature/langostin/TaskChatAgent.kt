@@ -51,6 +51,16 @@ import com.axzydev.puertonuevoapp.core.util.localOffsetMillis
 import com.axzydev.puertonuevoapp.core.util.ticketStatusLabel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import com.axzydev.puertonuevoapp.core.theme.AppShape
+import com.axzydev.puertonuevoapp.core.theme.BentoTone
+import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
+import androidx.compose.foundation.layout.height
 
 /** El loader de envío se queda un mínimo en pantalla, como en el alta de ticket. */
 private const val MIN_TASK_LOADER_MS = 700L
@@ -224,6 +234,7 @@ fun TaskChatAgent(
     fun createTask() {
         if (step == TaskStep.Sending) return
         if (ticketId.isBlank() || userId.isBlank() || title.isBlank()) {
+            say("Me falta un dato para crearla (ticket, persona o tarea). Empecemos de nuevo.")
             step = TaskStep.Error
             return
         }
@@ -298,6 +309,7 @@ fun TaskChatAgent(
                             .take(40),
                         label = { it.title },
                         badge = { ticketStatusLabel(it.status) },
+                        badgeTone = { ticketStatusTone(it.status) },
                         onPick = ::pickTicket,
                     )
                 }
@@ -335,8 +347,8 @@ fun TaskChatAgent(
                         keyboardActions = KeyboardActions(onDone = { sendTitle() }),
                         modifier = Modifier.fillMaxWidth(),
                     )
-                    Spacer(Modifier.width(10.dp))
-                    Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.End) {
+                    Spacer(Modifier.height(10.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                         PillButton(
                             text = "Continuar",
                             onClick = { sendTitle() },
@@ -359,7 +371,7 @@ fun TaskChatAgent(
                         PillButton(
                             text = "Sin detalles",
                             onClick = { sendNotes("") },
-                            variant = com.axzydev.puertonuevoapp.core.ui.PillButtonVariant.Secondary,
+                            variant = PillButtonVariant.Secondary,
                         )
                         Spacer(Modifier.width(8.dp))
                         PillButton(
@@ -384,7 +396,17 @@ fun TaskChatAgent(
                 }
 
                 TaskStep.Confirm -> {
-                    TaskStepLabel("Confirma la tarea")
+                    TaskStepLabel("Revisa y confirma")
+                    TaskSummaryCard(
+                        rows = buildList {
+                            if (ticketName.isNotBlank()) add("Ticket" to ticketName)
+                            add("Se la encargo a" to personName)
+                            add("Tarea" to title)
+                            if (description.isNotBlank()) add("Detalles" to description)
+                            add("Para" to dueLabel)
+                        },
+                    )
+                    Spacer(Modifier.height(10.dp))
                     LangostinOptionChips(
                         listOf(
                             LangostinChip("Crear tarea") { createTask() },
@@ -393,7 +415,10 @@ fun TaskChatAgent(
                     )
                 }
 
-                TaskStep.Sending -> Row(verticalAlignment = Alignment.CenterVertically) {
+                TaskStep.Sending -> Row(
+                    modifier = Modifier.heightIn(min = 44.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(18.dp),
                         strokeWidth = 2.dp,
@@ -407,23 +432,35 @@ fun TaskChatAgent(
                     )
                 }
 
-                TaskStep.Done -> LangostinOptionChips(
-                    listOf(
-                        LangostinChip("Ver ticket") { onViewTicket(ticketId) },
-                        LangostinChip("Cerrar") { onBack() },
-                    ),
-                )
+                TaskStep.Done -> Column {
+                    StatusChip(label = "Tarea creada", tone = BentoTone.Mint)
+                    Spacer(Modifier.height(10.dp))
+                    LangostinOptionChips(
+                        listOf(
+                            LangostinChip("Ver ticket") { onViewTicket(ticketId) },
+                            LangostinChip("Cerrar") { onBack() },
+                        ),
+                    )
+                }
 
-                TaskStep.Cancelled -> LangostinOptionChips(
-                    listOf(LangostinChip("Cerrar") { onBack() }),
-                )
+                TaskStep.Cancelled -> Column {
+                    StatusChip(label = "Cancelado", tone = BentoTone.Plain)
+                    Spacer(Modifier.height(10.dp))
+                    LangostinOptionChips(
+                        listOf(LangostinChip("Cerrar") { onBack() }),
+                    )
+                }
 
-                TaskStep.Error -> LangostinOptionChips(
-                    listOf(
-                        LangostinChip("Reintentar") { createTask() },
-                        LangostinChip("Cancelar") { cancel() },
-                    ),
-                )
+                TaskStep.Error -> Column {
+                    StatusChip(label = "No se pudo crear la tarea", tone = BentoTone.Rose)
+                    Spacer(Modifier.height(10.dp))
+                    LangostinOptionChips(
+                        listOf(
+                            LangostinChip("Reintentar") { createTask() },
+                            LangostinChip("Cancelar") { cancel() },
+                        ),
+                    )
+                }
             }
         }
     }
@@ -442,6 +479,7 @@ private fun <T> ChoiceSearch(
     onPick: (T) -> Unit,
     detail: (T) -> String = { "" },
     badge: (T) -> String? = { null },
+    badgeTone: (T) -> BentoTone = { BentoTone.Plain },
 ) {
     AppTextField(
         value = value,
@@ -499,6 +537,7 @@ private fun <T> ChoiceSearch(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                             )
                             val meta = detail(option)
                             if (meta.isNotBlank()) {
@@ -507,11 +546,12 @@ private fun <T> ChoiceSearch(
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
                                 )
                             }
                         }
                         badge(option)?.let { text ->
-                            StatusChip(text, AppColors.ticketStatusColor(text))
+                            StatusChip(label = text, tone = badgeTone(option))
                         }
                     }
                 }
@@ -546,7 +586,12 @@ private fun TaskAgentHeader(
                 "Nueva tarea",
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
+            Spacer(Modifier.height(6.dp))
+            TaskProgress(current = current, total = steps.size)
+            Spacer(Modifier.height(3.dp))
             Text(
                 buildString {
                     if (current != null) append("Paso $current de ${steps.size}")
@@ -556,6 +601,7 @@ private fun TaskAgentHeader(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
@@ -565,10 +611,63 @@ private fun TaskAgentHeader(
 private fun TaskStepLabel(text: String) {
     Text(
         text = text,
-        style = MaterialTheme.typography.labelSmall,
+        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(bottom = 8.dp),
     )
+}
+
+/** Progreso del formulario de tarea (un segmento por paso, llenos los ya capturados). */
+@Composable
+private fun TaskProgress(current: Int?, total: Int) {
+    val done = current ?: total
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        repeat(total) { index ->
+            Box(
+                modifier = Modifier
+                    .width(24.dp)
+                    .height(4.dp)
+                    .clip(AppShape.pill)
+                    .background(
+                        if (index < done) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                    ),
+            )
+        }
+    }
+}
+
+/** Resumen de la tarea antes de crearla: ticket, persona, qué y para cuándo. */
+@Composable
+private fun TaskSummaryCard(rows: List<Pair<String, String>>) {
+    AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
+        rows.forEach { (label, value) ->
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+                Text(
+                    label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.width(104.dp),
+                )
+                Text(
+                    value,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
+
+/** Tono del estado del ticket en las opciones del buscador (mismo significado que en Tickets). */
+private fun ticketStatusTone(status: String): BentoTone = when (status) {
+    "CLOSED", "RESOLVED", "CANCELLED" -> BentoTone.Mint
+    "IN_PROGRESS" -> BentoTone.Sea
+    "OPEN" -> BentoTone.Sun
+    else -> BentoTone.Plain
 }
 
 private fun taskStepStateLabel(step: TaskStep): String = when (step) {

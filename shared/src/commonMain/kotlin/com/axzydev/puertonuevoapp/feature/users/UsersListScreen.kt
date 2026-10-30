@@ -1,6 +1,6 @@
 package com.axzydev.puertonuevoapp.feature.users
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.History
@@ -23,8 +24,6 @@ import androidx.compose.material.icons.filled.PersonOff
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,9 +32,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -52,10 +48,13 @@ import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppCard
+import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
 import com.axzydev.puertonuevoapp.core.ui.AppModal
 import com.axzydev.puertonuevoapp.core.ui.AppModalTone
 import com.axzydev.puertonuevoapp.core.ui.AppPasswordField
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
+import com.axzydev.puertonuevoapp.core.ui.BentoAvatar
+import com.axzydev.puertonuevoapp.core.ui.BentoIconButton
 import com.axzydev.puertonuevoapp.core.ui.BentoMiniStat
 import com.axzydev.puertonuevoapp.core.ui.BentoState
 import com.axzydev.puertonuevoapp.core.ui.PillButton
@@ -65,7 +64,6 @@ import com.axzydev.puertonuevoapp.core.ui.table.AppTableScreen
 import com.axzydev.puertonuevoapp.core.ui.table.FilterControl
 import com.axzydev.puertonuevoapp.core.ui.table.FilterOption
 import com.axzydev.puertonuevoapp.core.ui.table.TableFilterSpec
-import com.axzydev.puertonuevoapp.core.util.initials
 import com.axzydev.puertonuevoapp.core.util.roleLabel
 
 /**
@@ -117,7 +115,12 @@ fun UsersListScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         UsersHeader(
             screen = screen,
+            filters = table.filters,
             canCreate = canCreate,
+            onStatusFilter = { active ->
+                val base = table.filters.filterKeys { it != "active" }
+                viewModel.onFiltersChange(if (active == null) base else base + ("active" to active))
+            },
             onNew = { navigator.push(Screen.UserForm()) },
             onImport = { navigator.push(Screen.UserImport) },
         )
@@ -244,15 +247,23 @@ fun UsersListScreen(
     }
 }
 
-/** Tira de totales y accesos de alta/importación, sobre la tabla. */
+/** Encabezado de la pantalla: descripción, KPIs, alta/importación y filtro de estatus. */
 @Composable
 private fun UsersHeader(
     screen: UsersListUiState,
+    filters: Map<String, String>,
     canCreate: Boolean,
+    onStatusFilter: (String?) -> Unit,
     onNew: () -> Unit,
     onImport: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 14.dp)) {
+        Text(
+            "Administra las cuentas del sistema: persona, rol, estado y acceso.",
+            style = MaterialTheme.typography.bodySmall,
+            color = AppColors.TextMuted,
+        )
+        Spacer(Modifier.height(10.dp))
         screen.counts?.let { counts ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -280,8 +291,9 @@ private fun UsersHeader(
             Spacer(Modifier.height(10.dp))
         }
         if (canCreate) {
+            // Sin weight: así las dos píldoras caben en una fila y no parten el texto.
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 PillButton(
@@ -289,17 +301,36 @@ private fun UsersHeader(
                     onClick = onImport,
                     variant = PillButtonVariant.Secondary,
                     leadingIcon = Icons.Filled.UploadFile,
-                    modifier = Modifier.weight(1f),
                 )
                 PillButton(
                     text = "Nueva cuenta",
                     onClick = onNew,
                     leadingIcon = Icons.Filled.PersonAdd,
-                    modifier = Modifier.weight(1f),
                 )
             }
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(10.dp))
         }
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            AppFilterChip(
+                label = "Activas",
+                selected = filters["active"] == "true",
+                onClick = { onStatusFilter("true") },
+            )
+            AppFilterChip(
+                label = "Inactivas",
+                selected = filters["active"] == "false",
+                onClick = { onStatusFilter("false") },
+            )
+            AppFilterChip(
+                label = "Todas",
+                selected = filters["active"] == null,
+                onClick = { onStatusFilter(null) },
+            )
+        }
+        Spacer(Modifier.height(4.dp))
     }
 }
 
@@ -329,7 +360,7 @@ private fun userFilterSpecs(departments: List<DepartmentDto>): List<TableFilterS
     ),
 )
 
-/** Tarjeta de una cuenta: identidad, rol, estado y acciones por permiso. */
+/** Fila de una cuenta: avatar, identidad, chips de rol/estado y acciones de fila. */
 @Composable
 private fun UserAccountCard(
     account: UserDto,
@@ -340,9 +371,6 @@ private fun UserAccountCard(
     onToggleActive: () -> Unit,
 ) {
     val accent = AppColors.roleAccent(account.role)
-    val gradient = Brush.verticalGradient(listOf(accent, lerp(accent, Color.Black, 0.30f)))
-    val plain = AppBento.tone(BentoTone.Plain)
-
     AppCard(
         modifier = Modifier.fillMaxWidth(),
         onClick = onOpen,
@@ -352,16 +380,7 @@ private fun UserAccountCard(
         contentPadding = PaddingValues(14.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier.size(44.dp).background(gradient, AppShape.pill),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    initials(account.name),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = Color.White,
-                )
-            }
+            BentoAvatar(name = account.name, color = accent, size = 44.dp)
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -390,20 +409,22 @@ private fun UserAccountCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-            }
-            Spacer(Modifier.width(8.dp))
-            Column(horizontalAlignment = Alignment.End) {
-                StatusChip(label = roleLabel(account.role), tone = roleTone(account.role))
                 Spacer(Modifier.height(6.dp))
-                StatusChip(
-                    label = if (account.active) "Activa" else "Inactiva",
-                    tone = if (account.active) BentoTone.Mint else BentoTone.Rose,
-                )
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    StatusChip(label = roleLabel(account.role), tone = roleTone(account.role))
+                    StatusChip(
+                        label = if (account.active) "Activa" else "Inactiva",
+                        tone = if (account.active) BentoTone.Mint else BentoTone.Rose,
+                    )
+                }
             }
         }
 
         Spacer(Modifier.height(10.dp))
-        HorizontalDivider(color = plain.content.copy(alpha = 0.12f))
+        HorizontalDivider(color = AppColors.Outline.copy(alpha = 0.35f))
         Spacer(Modifier.height(4.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -411,27 +432,32 @@ private fun UserAccountCard(
                 account.employeeNumber?.takeIf { it.isNotBlank() }?.let { "No. empleado $it" } ?: "Sin número de empleado",
                 style = MaterialTheme.typography.bodySmall,
                 color = AppColors.TextFaint,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
-            IconButton(onClick = onOpen) {
-                Icon(Icons.Filled.History, contentDescription = "Historial de la cuenta", tint = AppColors.Info)
-            }
+            BentoIconButton(
+                icon = Icons.Filled.History,
+                contentDescription = "Historial de la cuenta",
+                onClick = onOpen,
+            )
             if (canEdit) {
-                IconButton(onClick = onEdit) {
-                    Icon(Icons.Filled.Edit, contentDescription = "Editar cuenta", tint = AppColors.EmeraldPrimary)
-                }
-                IconButton(onClick = onPassword) {
-                    Icon(Icons.Filled.Key, contentDescription = "Cambiar contraseña", tint = AppColors.EmeraldPrimary)
-                }
-                IconButton(onClick = onToggleActive) {
-                    Icon(
-                        imageVector = if (account.active) Icons.Filled.PersonOff else Icons.Filled.RestartAlt,
-                        contentDescription = if (account.active) "Dar de baja" else "Reactivar",
-                        tint = if (account.active) AppColors.Danger else AppColors.Success,
-                    )
-                }
+                BentoIconButton(
+                    icon = Icons.Filled.Edit,
+                    contentDescription = "Editar cuenta",
+                    onClick = onEdit,
+                )
+                BentoIconButton(
+                    icon = Icons.Filled.Key,
+                    contentDescription = "Cambiar contraseña",
+                    onClick = onPassword,
+                )
+                BentoIconButton(
+                    icon = if (account.active) Icons.Filled.PersonOff else Icons.Filled.RestartAlt,
+                    contentDescription = if (account.active) "Dar de baja la cuenta" else "Reactivar la cuenta",
+                    onClick = onToggleActive,
+                )
             }
         }
     }
 }
-

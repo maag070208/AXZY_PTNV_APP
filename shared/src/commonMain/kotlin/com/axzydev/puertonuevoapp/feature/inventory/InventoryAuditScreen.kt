@@ -1,6 +1,7 @@
 package com.axzydev.puertonuevoapp.feature.inventory
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -44,15 +45,16 @@ import com.axzydev.puertonuevoapp.core.theme.AppBento
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppCard
-import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
 import com.axzydev.puertonuevoapp.core.ui.AppModal
 import com.axzydev.puertonuevoapp.core.ui.AppModalTone
 import com.axzydev.puertonuevoapp.core.ui.BentoErrorState
+import com.axzydev.puertonuevoapp.core.ui.BentoMiniStat
 import com.axzydev.puertonuevoapp.core.ui.BentoState
 import com.axzydev.puertonuevoapp.core.ui.PillButton
 import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.formatDateTime
+import com.axzydev.puertonuevoapp.core.util.formatShortDate
 
 /** Nombre legible de cada una de las 8 reglas del auditor. */
 private val AuditCheckLabels: Map<String, String> = mapOf(
@@ -108,7 +110,7 @@ fun InventoryAuditScreen(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         "Consistencia del inventario",
-                        style = MaterialTheme.typography.titleSmall,
+                        style = MaterialTheme.typography.titleMedium,
                         color = AppColors.TextPrimary,
                     )
                     Text(
@@ -145,6 +147,31 @@ fun InventoryAuditScreen(
                 BentoErrorState(message = message, onRetry = null)
                 Spacer(Modifier.height(8.dp))
             }
+
+            state.audit?.let { audit ->
+                val failingCases = state.failing.sumOf { it.count }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    BentoMiniStat(
+                        label = "Reglas revisadas",
+                        value = audit.checks.size.toString(),
+                        tone = BentoTone.Sea,
+                        modifier = Modifier.weight(1f),
+                    )
+                    BentoMiniStat(
+                        label = "Con casos",
+                        value = state.failing.size.toString(),
+                        tone = if (state.failing.isNotEmpty()) BentoTone.Sun else BentoTone.Plain,
+                        modifier = Modifier.weight(1f),
+                    )
+                    BentoMiniStat(
+                        label = "Casos por corregir",
+                        value = failingCases.toString(),
+                        tone = if (failingCases > 0) BentoTone.Sun else BentoTone.Plain,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
+            }
         }
 
         when {
@@ -167,8 +194,8 @@ fun InventoryAuditScreen(
             ) {
                 AppCard(
                     modifier = Modifier.fillMaxWidth(),
-                    containerColor = AppColors.Success.copy(alpha = 0.10f),
-                    borderColor = AppColors.Success.copy(alpha = 0.35f),
+                    containerColor = AppBento.tone(BentoTone.Mint).container,
+                    borderColor = null,
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = AppColors.Success)
@@ -244,8 +271,8 @@ private fun AuditCheckCard(
     val fix = AuditFixHints[check.key].orEmpty()
     AppCard(
         modifier = Modifier.fillMaxWidth(),
-        borderColor = AppColors.Warning.copy(alpha = 0.45f),
-        containerColor = AppColors.Warning.copy(alpha = 0.06f),
+        borderColor = null,
+        containerColor = AppBento.tone(BentoTone.Sun).container,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Filled.Warning, contentDescription = null, tint = AppColors.Warning)
@@ -346,42 +373,44 @@ private fun AuditRowCard(
             )
         }
         if (movementItemId != null) {
-            Spacer(Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Spacer(Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 if (free > 0) {
-                    AppFilterChip(
-                        label = "Ligar $free",
-                        selected = false,
-                        enabled = !busy,
+                    PillButton(
+                        text = "Ligar $free",
                         onClick = { onResolve(row, "link") },
+                        enabled = !busy,
+                        variant = PillButtonVariant.Primary,
                     )
                 }
                 if (after != says) {
-                    AppFilterChip(
-                        label = "Cuadrar a $after",
-                        selected = false,
-                        enabled = !busy,
+                    PillButton(
+                        text = "Cuadrar a $after",
                         onClick = { onResolve(row, "quantity") },
+                        enabled = !busy,
+                        variant = PillButtonVariant.Secondary,
                     )
                 }
-                AppFilterChip(
-                    label = "Dar por revisado",
-                    selected = false,
-                    enabled = !busy,
+                PillButton(
+                    text = "Dar por revisado",
                     onClick = { onResolve(row, "review") },
+                    enabled = !busy,
+                    variant = PillButtonVariant.Ghost,
                 )
             }
         } else if (row.deviceId != null) {
-            Spacer(Modifier.height(8.dp))
-            AppFilterChip(
-                label = "Ver dispositivo",
-                selected = false,
+            Spacer(Modifier.height(10.dp))
+            PillButton(
+                text = "Ver dispositivo",
                 onClick = { onOpenDevice(row.deviceId) },
+                variant = PillButtonVariant.Secondary,
             )
         }
     }
 }
 
 /** `YYYY-MM-DD` → `DD/MM/AAAA` sin pasar por `Date` (la zona correría el día). */
-private fun formatAuditDay(day: String): String =
-    if (day.length >= 10) day.substring(0, 10).split("-").reversed().joinToString("/") else day
+private fun formatAuditDay(day: String): String = formatShortDate(day)

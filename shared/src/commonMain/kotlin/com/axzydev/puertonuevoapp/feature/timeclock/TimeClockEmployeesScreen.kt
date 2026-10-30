@@ -45,11 +45,11 @@ import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppCard
-import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
 import com.axzydev.puertonuevoapp.core.ui.AppModal
 import com.axzydev.puertonuevoapp.core.ui.BentoMiniStat
 import com.axzydev.puertonuevoapp.core.ui.BentoState
 import com.axzydev.puertonuevoapp.core.ui.PillButton
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.ui.table.AppTableScreen
@@ -252,7 +252,7 @@ private fun EmployeeLinkCard(
     val tone = when (status) {
         "LINKED" -> BentoTone.Mint
         "SUGGESTED" -> BentoTone.Sun
-        else -> BentoTone.Plain
+        else -> BentoTone.Rose
     }
     val colors = AppBento.tone(tone)
 
@@ -370,42 +370,45 @@ private fun EmployeeLinkCard(
 
         val showActions = canLink || (canSeeClockStatus && row.link != null)
         if (showActions) {
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             Row(
                 modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (canLink) {
-                    AppFilterChip(
-                        label = if (row.link != null) "Cambiar" else "Vincular",
-                        selected = false,
+                    PillButton(
+                        text = if (row.link != null) "Cambiar cuenta" else "Vincular",
                         onClick = onLink,
+                        variant = if (row.link != null) PillButtonVariant.Secondary else PillButtonVariant.Primary,
                         enabled = !saving,
+                        leadingIcon = Icons.Filled.Link,
                     )
                     if (row.suggestion != null) {
-                        AppFilterChip(
-                            label = "Aceptar sugerencia",
-                            selected = true,
+                        PillButton(
+                            text = "Aceptar sugerencia",
                             onClick = onAcceptSuggestion,
+                            variant = PillButtonVariant.Secondary,
                             enabled = !saving,
+                            leadingIcon = Icons.Filled.CheckCircle,
                         )
                     }
                     if (row.link != null) {
-                        AppFilterChip(
-                            label = "Desvincular",
-                            selected = false,
+                        PillButton(
+                            text = "Desvincular",
                             onClick = onUnlink,
+                            variant = PillButtonVariant.Ghost,
                             enabled = !saving,
                         )
                     }
                 }
                 if (canSeeClockStatus && row.link != null) {
-                    AppFilterChip(
-                        label = "Estado en relojes",
-                        selected = false,
+                    PillButton(
+                        text = "Estado en relojes",
                         onClick = onClockStatus,
+                        variant = PillButtonVariant.Ghost,
                         enabled = !saving,
+                        leadingIcon = Icons.Filled.Devices,
                     )
                 }
             }

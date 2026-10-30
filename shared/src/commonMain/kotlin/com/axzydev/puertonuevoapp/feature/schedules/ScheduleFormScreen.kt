@@ -123,64 +123,68 @@ fun ScheduleFormScreen(scheduleId: String?) {
                 }
             }
 
-            item { SectionLabel("Datos del horario") }
-
             item {
-                AppTextField(
-                    value = state.name,
-                    onValueChange = viewModel::onNameChange,
-                    label = { Text("Nombre del horario") },
-                    placeholder = { Text("Ej. RECEPCIÓN TURNO MAÑANA") },
-                    singleLine = true,
-                    isError = state.validationError != null && state.name.isBlank(),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                AppCard(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(16.dp)) {
+                    SectionLabel("Datos del horario")
                     AppTextField(
-                        value = state.entryToleranceText,
-                        onValueChange = viewModel::onEntryToleranceChange,
-                        label = { Text("Tolerancia entrada") },
-                        placeholder = { Text("min") },
+                        value = state.name,
+                        onValueChange = viewModel::onNameChange,
+                        label = { Text("Nombre del horario") },
+                        placeholder = { Text("Ej. RECEPCIÓN TURNO MAÑANA") },
                         singleLine = true,
+                        isError = state.validationError != null && state.name.isBlank(),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxWidth(),
                     )
-                    AppTextField(
-                        value = state.exitToleranceText,
-                        onValueChange = viewModel::onExitToleranceChange,
-                        label = { Text("Tolerancia salida") },
-                        placeholder = { Text("min") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        modifier = Modifier.weight(1f),
+                    Spacer(Modifier.height(14.dp))
+                    SectionLabel("Tolerancias y tiempos")
+                    Text(
+                        "Minutos de holgura para la entrada y la salida, la comida y el mínimo para contar tiempo extra.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = AppColors.TextFaint,
                     )
-                }
-            }
-
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                    AppTextField(
-                        value = state.mealBreakText,
-                        onValueChange = viewModel::onMealBreakChange,
-                        label = { Text("Comida") },
-                        placeholder = { Text("min") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        modifier = Modifier.weight(1f),
-                    )
-                    AppTextField(
-                        value = state.minOvertimeText,
-                        onValueChange = viewModel::onMinOvertimeChange,
-                        label = { Text("Mínimo tiempo extra") },
-                        placeholder = { Text("min") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        modifier = Modifier.weight(1f),
-                    )
+                    Spacer(Modifier.height(10.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                        AppTextField(
+                            value = state.entryToleranceText,
+                            onValueChange = viewModel::onEntryToleranceChange,
+                            label = { Text("Tolerancia entrada") },
+                            placeholder = { Text("min") },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            modifier = Modifier.weight(1f),
+                        )
+                        AppTextField(
+                            value = state.exitToleranceText,
+                            onValueChange = viewModel::onExitToleranceChange,
+                            label = { Text("Tolerancia salida") },
+                            placeholder = { Text("min") },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                    Spacer(Modifier.height(10.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                        AppTextField(
+                            value = state.mealBreakText,
+                            onValueChange = viewModel::onMealBreakChange,
+                            label = { Text("Comida") },
+                            placeholder = { Text("min") },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            modifier = Modifier.weight(1f),
+                        )
+                        AppTextField(
+                            value = state.minOvertimeText,
+                            onValueChange = viewModel::onMinOvertimeChange,
+                            label = { Text("Mínimo tiempo extra") },
+                            placeholder = { Text("min") },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
             }
 
@@ -199,6 +203,7 @@ fun ScheduleFormScreen(scheduleId: String?) {
             items(state.days, key = { it.weekday }) { day ->
                 ScheduleDayEditor(
                     day = day,
+                    mealBreakMin = state.mealBreakText.toIntOrNull() ?: 0,
                     onToggleRest = { viewModel.toggleRest(day.weekday) },
                     onToggleSplit = { viewModel.toggleSplit(day.weekday) },
                     onStartChange = { viewModel.onStartChange(day.weekday, it) },
@@ -270,6 +275,7 @@ fun ScheduleFormScreen(scheduleId: String?) {
 @Composable
 private fun ScheduleDayEditor(
     day: ScheduleDayForm,
+    mealBreakMin: Int,
     onToggleRest: () -> Unit,
     onToggleSplit: () -> Unit,
     onStartChange: (String) -> Unit,
@@ -290,12 +296,21 @@ private fun ScheduleDayEditor(
                 modifier = Modifier.size(18.dp),
             )
             Spacer(Modifier.size(8.dp))
-            Text(
-                WEEKDAY_NAMES[day.weekday - 1],
-                style = MaterialTheme.typography.titleSmall,
-                color = AppColors.TextPrimary,
-                modifier = Modifier.weight(1f),
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    WEEKDAY_NAMES[day.weekday - 1],
+                    style = MaterialTheme.typography.titleSmall,
+                    color = AppColors.TextPrimary,
+                )
+                Text(
+                    if (day.restDay) "Descanso" else {
+                        val minutes = dayMinutes(day.toDto(), mealBreakMin)
+                        "${hoursLabel(minutes)} de trabajo"
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = AppColors.TextFaint,
+                )
+            }
             AppFilterChip(
                 label = if (day.restDay) "Descanso" else "Laboral",
                 selected = !day.restDay,

@@ -59,6 +59,7 @@ import com.axzydev.puertonuevoapp.core.ui.AppModalTone
 import com.axzydev.puertonuevoapp.core.ui.AppSnackbar
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
 import com.axzydev.puertonuevoapp.core.ui.BentoErrorState
+import com.axzydev.puertonuevoapp.core.ui.BentoInsight
 import com.axzydev.puertonuevoapp.core.ui.BentoState
 import com.axzydev.puertonuevoapp.core.ui.PillButton
 import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
@@ -479,8 +480,15 @@ private fun PolicyActionCard(
                     fontWeight = FontWeight.SemiBold,
                     color = AppColors.TextPrimary,
                 )
+                val allows = rules.count { it.effect == "ALLOW" }
+                val denies = rules.count { it.effect == "DENY" }
                 Text(
-                    (action?.module ?: actionKey) + " · ${rules.size} regla(s)",
+                    listOfNotNull(
+                        action?.module ?: actionKey,
+                        "${rules.size} regla(s)",
+                        "$allows permiten",
+                        "$denies niegan",
+                    ).joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall,
                     color = AppColors.TextFaint,
                 )
@@ -730,11 +738,42 @@ private fun PolicyFormModal(state: PoliciesTabUiState, form: PolicyFormState, vi
                     Text("+ Agregar condición", color = AppColors.EmeraldPrimary)
                 }
             }
+            Spacer(Modifier.height(10.dp))
+            BentoInsight(
+                text = policyPreview(form, state),
+                contentColor = MaterialTheme.colorScheme.onSurface,
+            )
             state.actionError?.let { message ->
                 Spacer(Modifier.height(8.dp))
                 Text(message, style = MaterialTheme.typography.bodySmall, color = AppColors.Danger)
             }
         }
+    }
+}
+
+/** Lee la regla en voz alta mientras se edita (mismo lenguaje que la web). */
+private fun policyPreview(form: PolicyFormState, state: PoliciesTabUiState): String {
+    val action = state.actionOf(form.action)
+    val rolesLabel = if (form.allRoles) {
+        "todas las personas"
+    } else {
+        form.roles.joinToString(", ") { state.roleName(it) }.ifBlank { "los roles elegidos" }
+    }
+    val conditions = form.conditions.joinToString(" y ") { condition ->
+        val field = action?.fields?.firstOrNull { it.key == condition.field }?.label ?: condition.field
+        val operator = policyOperatorLabels.firstOrNull { it.first == condition.operator }?.second ?: condition.operator
+        if (condition.operator in operatorsWithoutValue) {
+            "$field $operator"
+        } else {
+            "$field $operator ${condition.value.ifBlank { "…" }}"
+        }
+    }
+    val verb = if (form.effect == "ALLOW") "Puede" else "No puede"
+    val actionLabel = action?.label ?: form.action
+    return if (conditions.isBlank()) {
+        "$verb $rolesLabel · $actionLabel"
+    } else {
+        "$verb si $conditions · $rolesLabel · $actionLabel"
     }
 }
 

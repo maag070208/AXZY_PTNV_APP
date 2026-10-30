@@ -1,7 +1,6 @@
 package com.axzydev.puertonuevoapp.feature.tickets
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,13 +17,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Sync
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,25 +30,43 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.nav.Screen
+import com.axzydev.puertonuevoapp.core.network.tickets.KanbanAssignmentDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
+import com.axzydev.puertonuevoapp.core.theme.AppBento
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.AppShape
+import com.axzydev.puertonuevoapp.core.theme.BentoTone
+import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
 import com.axzydev.puertonuevoapp.core.ui.AppModal
-import com.axzydev.puertonuevoapp.core.ui.EmptyRow
+import com.axzydev.puertonuevoapp.core.ui.AppSearchField
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
+import com.axzydev.puertonuevoapp.core.ui.BentoAvatar
+import com.axzydev.puertonuevoapp.core.ui.BentoErrorState
+import com.axzydev.puertonuevoapp.core.ui.BentoIconButton
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
+import com.axzydev.puertonuevoapp.core.ui.PillButton
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
+import com.axzydev.puertonuevoapp.core.ui.RegisterTopBarAction
+import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
+import com.axzydev.puertonuevoapp.core.util.AppEvents
 import com.axzydev.puertonuevoapp.core.util.assignmentStatusLabel
 import com.axzydev.puertonuevoapp.core.util.formatShortDate
-import com.axzydev.puertonuevoapp.core.ui.AppTextField
-import com.axzydev.puertonuevoapp.core.util.AppEvents
 
+/**
+ * Tablero kanban de tareas: columnas suaves por estado (con su contador),
+ * tarjetas con título, ticket de origen y responsable; tocar una tarjeta abre su
+ * detalle para moverla. La acción "Nueva tarea" vive en la barra superior y solo
+ * aparece con `tasks.assign`.
+ */
 @Composable
 fun TicketsKanbanScreen(ticketId: String? = null) {
     val viewModel: KanbanViewModel = viewModel(key = "kanban-${ticketId ?: "all"}") {
@@ -64,6 +78,10 @@ fun TicketsKanbanScreen(ticketId: String? = null) {
     val canCreate = user?.canCreateAssignments == true
     val navigator = LocalNavigator.current
 
+    if (canCreate) {
+        RegisterTopBarAction(Icons.Filled.Add, "Nueva tarea") { viewModel.openCreate() }
+    }
+
     // Una tarea creada desde el panel de Langostín avisa con `tickets:changed`:
     // se recarga solo entonces (no en cada recomposición; la API es la verdad).
     val ticketsVersion by AppEvents.version("tickets:changed").collectAsState()
@@ -72,43 +90,38 @@ fun TicketsKanbanScreen(ticketId: String? = null) {
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.Dashboard, contentDescription = null, tint = AppColors.TextFaint, modifier = Modifier.size(18.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (canCreate) {
-                        IconButton(onClick = viewModel::openCreate) {
-                            Icon(Icons.Filled.Add, contentDescription = "Nueva tarea", tint = AppColors.EmeraldPrimary)
-                        }
-                    }
-                    IconButton(onClick = viewModel::load) {
-                        Icon(Icons.Filled.Sync, contentDescription = "Actualizar")
-                    }
-                }
+        Column(modifier = Modifier.padding(horizontal = 16.dp).padding(top = 12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    if (ticketId == null) "Tareas del equipo por estado." else "Tareas de este ticket por estado.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AppColors.TextMuted,
+                    modifier = Modifier.weight(1f),
+                )
+                BentoIconButton(
+                    icon = Icons.Filled.Sync,
+                    contentDescription = "Actualizar tablero",
+                    onClick = viewModel::load,
+                )
             }
-            Spacer(Modifier.height(8.dp))
-            AppTextField(
+            Spacer(Modifier.height(10.dp))
+            AppSearchField(
                 value = state.search,
                 onValueChange = viewModel::onSearchChange,
-                placeholder = { Text("Buscar tarea o ticket…") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                placeholder = "Buscar tarea o ticket…",
             )
             if (state.departmentOptions.isNotEmpty()) {
-                Spacer(Modifier.height(8.dp))
-                Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     val chips = listOf("" to "Todos") + state.departmentOptions.map { it to it }
                     chips.forEach { (value, label) ->
-                        val isSelected = state.departmentFilter == value
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (isSelected) AppColors.Surface else AppColors.TextMuted,
-                            modifier = Modifier
-                                .clip(AppShape.pill)
-                                .background(if (isSelected) AppColors.EmeraldPrimary else AppColors.SurfaceVariant, AppShape.pill)
-                                .clickable { viewModel.onDepartmentFilterChange(value) }
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        AppFilterChip(
+                            label = label,
+                            selected = state.departmentFilter == value,
+                            onClick = { viewModel.onDepartmentFilterChange(value) },
                         )
                     }
                 }
@@ -117,38 +130,25 @@ fun TicketsKanbanScreen(ticketId: String? = null) {
 
         when {
             state.loading -> LoadingState(modifier = Modifier.weight(1f))
-            state.error != null -> ErrorState(message = state.error ?: "Error", modifier = Modifier.weight(1f), onRetry = viewModel::load)
+            state.error != null -> ErrorState(
+                message = state.error ?: "No se pudo cargar el tablero",
+                modifier = Modifier.weight(1f),
+                onRetry = viewModel::load,
+            )
             else -> Row(
-                modifier = Modifier.weight(1f).fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                kanbanColumns.forEach { col ->
-                    val colRows = state.filtered.filter { it.status == col.status }
-                    Column(
-                        modifier = Modifier
-                            .width(280.dp)
-                            .fillMaxHeight()
-                            .background(AppColors.SurfaceVariant, RoundedCornerShape(18.dp))
-                            .padding(10.dp),
-                    ) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text(col.label.uppercase(), style = MaterialTheme.typography.labelSmall, color = AppColors.TextMuted)
-                            Box(
-                                modifier = Modifier.size(20.dp).background(AppColors.Surface, RoundedCornerShape(10.dp)),
-                                contentAlignment = Alignment.Center,
-                            ) { Text("${colRows.size}", style = MaterialTheme.typography.labelSmall, color = AppColors.TextMuted) }
-                        }
-                        Spacer(Modifier.height(8.dp))
-                        if (colRows.isEmpty()) {
-                            EmptyRow("Sin tareas")
-                        } else {
-                            LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                items(colRows, key = { it.id }) { row ->
-                                    AssignmentRow(row, onClick = { viewModel.select(row.id) })
-                                }
-                            }
-                        }
-                    }
+                kanbanColumns.forEach { column ->
+                    KanbanColumnView(
+                        column = column,
+                        rows = state.filtered.filter { it.status == column.status },
+                        onSelect = viewModel::select,
+                    )
                 }
             }
         }
@@ -179,51 +179,157 @@ fun TicketsKanbanScreen(ticketId: String? = null) {
     }
 }
 
+/** Una columna del tablero: fondo pastel por estado, título y contador. */
+@Composable
+private fun KanbanColumnView(
+    column: KanbanColumn,
+    rows: List<KanbanAssignmentDto>,
+    onSelect: (String) -> Unit,
+) {
+    val tone = assignmentStatusTone(column.status)
+    val colors = AppBento.tone(tone)
+    val container = if (tone == BentoTone.Plain) AppColors.SurfaceVariant else colors.container
+    val content = if (tone == BentoTone.Plain) AppColors.TextMuted else colors.content
+
+    Column(
+        modifier = Modifier
+            .width(296.dp)
+            .fillMaxHeight()
+            .clip(AppShape.bento)
+            .background(container, AppShape.bento)
+            .padding(10.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                column.label.uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                color = content,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Box(
+                modifier = Modifier
+                    .size(22.dp)
+                    .clip(AppShape.pill)
+                    .background(AppColors.Surface, AppShape.pill),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("${rows.size}", style = MaterialTheme.typography.labelSmall, color = AppColors.TextMuted)
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        if (rows.isEmpty()) {
+            Text(
+                "Sin tareas",
+                style = MaterialTheme.typography.bodySmall,
+                color = AppColors.TextFaint,
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 14.dp),
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 8.dp),
+            ) {
+                items(rows, key = { it.id }) { row ->
+                    AssignmentRow(
+                        assignment = row,
+                        onClick = { onSelect(row.id) },
+                        showStatus = false,
+                    )
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun AssignmentDetailModal(
-    assignment: com.axzydev.puertonuevoapp.core.network.tickets.KanbanAssignmentDto,
+    assignment: KanbanAssignmentDto,
     allowedMoves: Set<String>,
     onDismiss: () -> Unit,
     onStatusChange: (String) -> Unit,
     onOpenTicket: (() -> Unit)?,
 ) {
     AppModal(title = assignment.title, onDismiss = onDismiss, icon = Icons.Filled.Dashboard) {
-        Text(assignment.ticket.title, style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
-        Spacer(Modifier.height(8.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            BentoAvatar(name = assignment.user.name, color = AppColors.EmeraldPrimary, size = 36.dp)
+            Spacer(Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    assignment.user.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = AppColors.TextPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    assignment.ticket.title,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = AppColors.TextFaint,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            StatusChip(assignmentStatusLabel(assignment.status), assignmentStatusTone(assignment.status))
+        }
+
         if (assignment.description.isNotBlank()) {
-            Text(assignment.description, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
-            Spacer(Modifier.height(8.dp))
-        }
-        Text("Asignada a: ${assignment.user.name}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
-        assignment.dueDate?.let {
-            Text("Fecha límite: ${formatShortDate(it)}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
-        }
-        if (onOpenTicket != null) {
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             Text(
-                "Ver ticket",
-                style = MaterialTheme.typography.bodySmall,
-                color = AppColors.EmeraldPrimary,
-                modifier = Modifier
-                    .clip(AppShape.pill)
-                    .background(AppColors.SurfaceVariant, AppShape.pill)
-                    .clickable(onClick = onOpenTicket)
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                assignment.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = AppColors.TextPrimary,
             )
         }
+
+        Spacer(Modifier.height(10.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            assignment.dueDate?.let { dueDate ->
+                Text(
+                    "Fecha límite: ${formatShortDate(dueDate)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AppColors.TextFaint,
+                )
+            }
+            Spacer(Modifier.weight(1f))
+            if (assignment.overdue()) {
+                StatusChip("Vencida", BentoTone.Rose)
+            }
+        }
+
+        if (onOpenTicket != null) {
+            Spacer(Modifier.height(12.dp))
+            PillButton(
+                text = "Ver ticket",
+                onClick = onOpenTicket,
+                variant = PillButtonVariant.Ghost,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
         Spacer(Modifier.height(16.dp))
-        Text("MOVER A", style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint)
-        Spacer(Modifier.height(8.dp))
+        SectionLabel("Mover a")
         if (allowedMoves.isEmpty()) {
-            Text("No puedes mover esta tarea.", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
+            Text(
+                "No puedes mover esta tarea.",
+                style = MaterialTheme.typography.bodySmall,
+                color = AppColors.TextMuted,
+            )
         } else {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                assignmentStatusOrder.forEach { status ->
-                    val enabled = status in allowedMoves
-                    StatusChip(
+            Row(
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                assignmentStatusOrder.filter { it in allowedMoves }.forEach { status ->
+                    AppFilterChip(
                         label = assignmentStatusLabel(status),
-                        color = if (enabled) assignmentStatusColor(status) else AppColors.TextFaint,
-                        modifier = Modifier.clip(AppShape.pill).clickable(enabled = enabled) { onStatusChange(status) },
+                        selected = false,
+                        onClick = { onStatusChange(status) },
                     )
                 }
             }
@@ -242,6 +348,7 @@ private fun CreateAssignmentModal(state: KanbanUiState, viewModel: KanbanViewMod
         confirmEnabled = state.createValid,
         saving = state.createSaving,
     ) {
+        SectionLabel("Datos de la tarea")
         if (state.createTickets.isNotEmpty()) {
             SimpleDropdownField(
                 label = "Ticket",
@@ -275,26 +382,27 @@ private fun CreateAssignmentModal(state: KanbanUiState, viewModel: KanbanViewMod
             minLines = 2,
             modifier = Modifier.fillMaxWidth(),
         )
+        // Fechas en una sola columna (en móvil dos campos de fecha lado a lado
+        // quedaban apretados y el teclado los tapaba).
         Spacer(Modifier.height(10.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            AppTextField(
-                value = state.createStartDate,
-                onValueChange = viewModel::onCreateStartDateChange,
-                label = { Text("Inicio (AAAA-MM-DD)") },
-                singleLine = true,
-                modifier = Modifier.weight(1f),
-            )
-            AppTextField(
-                value = state.createDueDate,
-                onValueChange = viewModel::onCreateDueDateChange,
-                label = { Text("Límite (AAAA-MM-DD)") },
-                singleLine = true,
-                modifier = Modifier.weight(1f),
-            )
-        }
-        if (state.createError != null) {
+        AppTextField(
+            value = state.createStartDate,
+            onValueChange = viewModel::onCreateStartDateChange,
+            label = { Text("Inicio (AAAA-MM-DD)") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(10.dp))
+        AppTextField(
+            value = state.createDueDate,
+            onValueChange = viewModel::onCreateDueDateChange,
+            label = { Text("Límite (AAAA-MM-DD)") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        state.createError?.let { message ->
             Spacer(Modifier.height(10.dp))
-            Text(state.createError, color = AppColors.Danger, style = MaterialTheme.typography.bodySmall)
+            BentoErrorState(message = message, onRetry = null)
         }
     }
 }

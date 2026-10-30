@@ -1,5 +1,6 @@
 package com.axzydev.puertonuevoapp.feature.users
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -88,6 +89,7 @@ fun UserImportScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         ImportFormatCard()
+        ImportSteps(state.step)
 
         when (state.step) {
             UserImportStep.Choose -> ImportChooseCard(onPick = pickFile)
@@ -102,6 +104,32 @@ fun UserImportScreen(
                 state = state,
                 onAnother = viewModel::pickAnother,
                 onBackToList = { navigator.pop() },
+            )
+        }
+    }
+}
+
+/** Indicador de pasos del asistente: elegir → revisar → resultado. */
+@Composable
+private fun ImportSteps(step: UserImportStep) {
+    val steps = listOf(
+        UserImportStep.Choose to "1. Elegir archivo",
+        UserImportStep.Review to "2. Revisar",
+        UserImportStep.Done to "3. Resultado",
+    )
+    val currentIndex = steps.indexOfFirst { it.first == step }
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        steps.forEachIndexed { index, (_, label) ->
+            StatusChip(
+                label = label,
+                tone = when {
+                    index == currentIndex -> BentoTone.Sea
+                    index < currentIndex -> BentoTone.Mint
+                    else -> BentoTone.Plain
+                },
             )
         }
     }
@@ -222,7 +250,7 @@ private fun ImportReviewCard(
         }
         Spacer(Modifier.height(14.dp))
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             PillButton(
@@ -230,14 +258,12 @@ private fun ImportReviewCard(
                 onClick = onChangeFile,
                 variant = PillButtonVariant.Secondary,
                 enabled = !state.uploading,
-                modifier = Modifier.weight(1f),
             )
             PillButton(
                 text = "Importar cuentas",
                 onClick = onConfirm,
                 enabled = state.canImport,
                 loading = state.uploading,
-                modifier = Modifier.weight(1f),
             )
         }
     }
@@ -331,19 +357,17 @@ private fun ImportResultCard(
 
         Spacer(Modifier.height(16.dp))
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             PillButton(
                 text = "Importar otro",
                 onClick = onAnother,
                 variant = PillButtonVariant.Secondary,
-                modifier = Modifier.weight(1f),
             )
             PillButton(
                 text = "Volver a la lista",
                 onClick = onBackToList,
-                modifier = Modifier.weight(1f),
             )
         }
     }

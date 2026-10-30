@@ -11,11 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -27,7 +23,10 @@ import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
+import com.axzydev.puertonuevoapp.core.ui.PillButton
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
@@ -59,16 +58,19 @@ fun GenerateCustodyLetterScreen(
             }
             Spacer(Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                OutlinedButton(onClick = { navigator.pop() }, modifier = Modifier.weight(1f)) { Text("Cancelar") }
-                Button(
-                    onClick = viewModel::generate,
-                    enabled = state.typeId.isNotBlank() && !state.generating,
-                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.EmeraldPrimary),
+                PillButton(
+                    text = "Cancelar",
+                    onClick = { navigator.pop() },
+                    variant = PillButtonVariant.Secondary,
                     modifier = Modifier.weight(1f),
-                ) {
-                    if (state.generating) CircularProgressIndicator(Modifier.size(18.dp), color = AppColors.Surface, strokeWidth = 2.dp)
-                    else Text("Generar")
-                }
+                )
+                PillButton(
+                    text = "Generar",
+                    onClick = viewModel::generate,
+                    enabled = state.typeId.isNotBlank(),
+                    loading = state.generating,
+                    modifier = Modifier.weight(1f),
+                )
             }
         }
 
@@ -77,13 +79,13 @@ fun GenerateCustodyLetterScreen(
             AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
                 Text("Carta generada para ${generated.type.name}", style = MaterialTheme.typography.titleSmall, color = AppColors.Success)
                 Spacer(Modifier.height(10.dp))
-                StatusChip(generated.custodyLetter.consecutive, AppColors.EmeraldPrimary)
+                StatusChip(label = generated.custodyLetter.consecutive, tone = BentoTone.Mint)
                 Spacer(Modifier.height(16.dp))
-                Button(
+                PillButton(
+                    text = "Ver carta generada",
                     onClick = { navigator.pop(); navigator.push(Screen.CustodyLetterDetail(generated.custodyLetter.id)) },
-                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.EmeraldPrimary),
                     modifier = Modifier.fillMaxWidth(),
-                ) { Text("Ver carta generada") }
+                )
             }
         }
     }

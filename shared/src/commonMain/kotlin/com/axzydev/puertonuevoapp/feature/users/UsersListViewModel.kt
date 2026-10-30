@@ -39,6 +39,9 @@ class UsersListViewModel(
     val screen: StateFlow<UsersListUiState> = _screen.asStateFlow()
 
     init {
+        // La lista arranca en las cuentas activas (lo más útil al entrar); el
+        // filtro de estatus permite ver las inactivas o todas.
+        onFiltersChange(mapOf("active" to "true"))
         loadDepartments()
         loadCounts()
     }

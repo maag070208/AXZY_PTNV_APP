@@ -1,21 +1,19 @@
 package com.axzydev.puertonuevoapp.feature.hr
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,11 +21,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -38,24 +31,28 @@ import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.departments.DepartmentDto
 import com.axzydev.puertonuevoapp.core.network.users.UserDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
+import com.axzydev.puertonuevoapp.core.theme.AppBento
 import com.axzydev.puertonuevoapp.core.theme.AppColors
-import com.axzydev.puertonuevoapp.core.theme.AppShape
+import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppCard
+import com.axzydev.puertonuevoapp.core.ui.BentoAvatar
+import com.axzydev.puertonuevoapp.core.ui.BentoMiniStat
+import com.axzydev.puertonuevoapp.core.ui.PillButton
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.ui.table.AppTableScreen
 import com.axzydev.puertonuevoapp.core.ui.table.FilterControl
 import com.axzydev.puertonuevoapp.core.ui.table.FilterOption
 import com.axzydev.puertonuevoapp.core.ui.table.TableFilterSpec
-import com.axzydev.puertonuevoapp.core.util.initials
-import androidx.compose.foundation.layout.defaultMinSize
-import com.axzydev.puertonuevoapp.core.theme.BentoTone
 
 /**
  * Directorio de personal sobre el componente genérico de tabla
- * (`AppTableScreen` + [PersonalListViewModel]): 10 por página, búsqueda por
- * nombre y filtros por nombre/departamento/estatus/rol. Cada persona es una
- * card elevada con acciones: "Perfil" (expediente de Personal) y "Editar"
- * (exclusivo de ADMIN, reutiliza el formulario de personal).
+ * (`AppTableScreen` + [EmployeesListViewModel]): 10 por página, búsqueda por
+ * nombre y filtros por nombre/departamento/estatus/rol.
+ *
+ * Presentación: franja de 3 indicadores compactos (plantilla, activos,
+ * inactivos) y una fila por persona con avatar, nombre, número de empleado,
+ * puesto/área, chip de estado y acciones «Perfil» / «Editar» como píldoras.
  */
 @Composable
 fun EmployeesListScreen(
@@ -65,30 +62,62 @@ fun EmployeesListScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val departments by viewModel.departments.collectAsState()
+    val stats by viewModel.stats.collectAsState()
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
     val canEdit = (authState as? AuthState.LoggedIn)?.user?.canEditUsers == true
 
-    AppTableScreen(
-        state = state,
-        heading = "Directorio de personal",
-        filterSpecs = employeeFilterSpecs(departments),
-        onSearchChange = viewModel::onSearchChange,
-        onFiltersChange = viewModel::onFiltersChange,
-        onRefresh = viewModel::refresh,
-        onLoadMore = viewModel::loadMore,
-        onRetry = viewModel::retry,
-        searchPlaceholder = "Buscar por nombre",
-        emptyMessage = "No hay personal con estos filtros",
-        searchKey = "name",
-        itemKey = { it.id },
-    ) { person ->
-        EmployeeCard(
-            person = person,
-            canEdit = canEdit,
-            onOpenProfile = { navigator.push(Screen.EmployeeProfile(person.id)) },
-            onEdit = { navigator.push(Screen.UserForm(person.id)) },
-        )
+    Column(modifier = Modifier.fillMaxSize().background(AppBento.canvas)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            BentoMiniStat(
+                label = "Personal",
+                value = (stats?.total ?: state.total).toString(),
+                tone = BentoTone.Sea,
+                modifier = Modifier.weight(1f),
+            )
+            BentoMiniStat(
+                label = "Activos",
+                value = stats?.active?.toString() ?: "—",
+                tone = if ((stats?.active ?: 0) == 0) BentoTone.Plain else BentoTone.Mint,
+                modifier = Modifier.weight(1f),
+            )
+            BentoMiniStat(
+                label = "Inactivos",
+                value = stats?.inactive?.toString() ?: "—",
+                tone = if ((stats?.inactive ?: 0) == 0) BentoTone.Plain else BentoTone.Rose,
+                modifier = Modifier.weight(1f),
+            )
+        }
+        Spacer(Modifier.height(4.dp))
+
+        AppTableScreen(
+            state = state,
+            heading = "Directorio de personal",
+            filterSpecs = employeeFilterSpecs(departments),
+            onSearchChange = viewModel::onSearchChange,
+            onFiltersChange = viewModel::onFiltersChange,
+            onRefresh = {
+                viewModel.refresh()
+                viewModel.reloadStats()
+            },
+            onLoadMore = viewModel::loadMore,
+            onRetry = viewModel::retry,
+            searchPlaceholder = "Buscar por nombre",
+            emptyMessage = "No hay personal con estos filtros",
+            searchKey = "name",
+            itemKey = { it.id },
+            modifier = Modifier.weight(1f),
+        ) { person ->
+            EmployeeCard(
+                person = person,
+                canEdit = canEdit,
+                onOpenProfile = { navigator.push(Screen.EmployeeProfile(person.id)) },
+                onEdit = { navigator.push(Screen.UserForm(person.id)) },
+            )
+        }
     }
 }
 
@@ -122,7 +151,10 @@ private fun employeeFilterSpecs(departments: List<DepartmentDto>): List<TableFil
     ),
 )
 
-/** Card elevada de personal: avatar con gradiente por rol, chips y acciones pill (Perfil / Editar). */
+/**
+ * Fila de personal: avatar por rol, nombre (título), número de empleado y
+ * puesto/área (meta), chip Activo/Inactivo y acciones como píldoras.
+ */
 @Composable
 private fun EmployeeCard(
     person: UserDto,
@@ -131,29 +163,13 @@ private fun EmployeeCard(
     onEdit: () -> Unit,
 ) {
     val accent = AppColors.roleAccent(person.role)
-    val gradient = Brush.verticalGradient(listOf(accent, lerp(accent, Color.Black, 0.30f)))
-
     AppCard(
         modifier = Modifier.fillMaxWidth(),
         onClick = onOpenProfile,
-        shape = AppShape.card,
-        elevation = 2.dp,
-        borderColor = AppColors.Outline.copy(alpha = 0.5f),
         contentPadding = PaddingValues(14.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .background(gradient, AppShape.pill),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    initials(person.name),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = Color.White,
-                )
-            }
+            BentoAvatar(name = person.name, color = accent, size = 44.dp)
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -165,19 +181,22 @@ private fun EmployeeCard(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    "@${person.username}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = AppColors.TextFaint,
+                    listOfNotNull(
+                        person.employeeNumber?.takeIf { it.isNotBlank() }?.let { "#$it" },
+                        person.jobTitle?.takeIf { it.isNotBlank() },
+                    ).joinToString(" · ").ifBlank { "Sin puesto registrado" },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AppColors.TextMuted,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     listOfNotNull(
-                        person.jobTitle?.takeIf { it.isNotBlank() },
-                        person.department?.name,
-                    ).joinToString(" · ").ifBlank { "Sin puesto registrado" },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = AppColors.TextMuted,
+                        person.department?.name?.takeIf { it.isNotBlank() },
+                        person.subarea?.name?.takeIf { it.isNotBlank() },
+                    ).joinToString(" · ").ifBlank { person.username },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = AppColors.TextFaint,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -189,49 +208,24 @@ private fun EmployeeCard(
             )
         }
 
-        Spacer(Modifier.size(12.dp))
-        HorizontalDivider(color = AppColors.Outline.copy(alpha = 0.35f))
-        Spacer(Modifier.size(10.dp))
-
-        Row {
-            CardActionPill(
-                label = "Perfil",
-                icon = Icons.Filled.Person,
-                color = AppColors.Info,
+        Spacer(Modifier.height(10.dp))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            PillButton(
+                text = "Perfil",
                 onClick = onOpenProfile,
+                variant = PillButtonVariant.Secondary,
+                leadingIcon = Icons.Filled.Person,
+                modifier = Modifier.weight(1f),
             )
             if (canEdit) {
-                Spacer(Modifier.width(8.dp))
-                CardActionPill(
-                    label = "Editar",
-                    icon = Icons.Filled.Edit,
-                    color = AppColors.EmeraldPrimary,
+                PillButton(
+                    text = "Editar",
                     onClick = onEdit,
+                    variant = PillButtonVariant.Ghost,
+                    leadingIcon = Icons.Filled.Edit,
+                    modifier = Modifier.weight(1f),
                 )
             }
         }
-    }
-}
-
-/** Botón pill pequeño de acciones dentro de una card. Recorta ripple al pill con [AppShape.pill]. */
-@Composable
-private fun CardActionPill(
-    label: String,
-    icon: ImageVector,
-    color: Color,
-    onClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .defaultMinSize(minHeight = 44.dp)
-            .clip(AppShape.pill)
-            .background(color.copy(alpha = 0.12f), AppShape.pill)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(16.dp))
-        Spacer(Modifier.width(5.dp))
-        Text(label, style = MaterialTheme.typography.labelMedium, color = color)
     }
 }

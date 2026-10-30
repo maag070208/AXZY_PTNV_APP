@@ -1,7 +1,6 @@
 package com.axzydev.puertonuevoapp.feature.departments
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,11 +12,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -25,11 +23,8 @@ import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,16 +32,21 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.AppShape
+import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppModal
 import com.axzydev.puertonuevoapp.core.ui.AppModalTone
 import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
+import com.axzydev.puertonuevoapp.core.ui.BentoIconButton
+import com.axzydev.puertonuevoapp.core.ui.PillButton
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
@@ -83,24 +83,43 @@ fun DepartmentDetailScreen(departmentId: String) {
                 AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
-                            modifier = Modifier.size(46.dp).background(AppColors.EmeraldPrimary, RoundedCornerShape(10.dp)),
+                            modifier = Modifier
+                                .size(52.dp)
+                                .background(AppColors.EmeraldContainer, AppShape.icon),
                             contentAlignment = Alignment.Center,
-                        ) { Icon(Icons.Filled.Business, contentDescription = null, tint = AppColors.Surface) }
-                        Spacer(Modifier.size(12.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(d.name, style = MaterialTheme.typography.titleLarge, color = AppColors.TextPrimary)
-                            Text(
-                                if (d.active) "Activo" else "Inactivo",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = if (d.active) AppColors.Success else AppColors.Danger,
+                        ) {
+                            Icon(
+                                Icons.Filled.Business,
+                                contentDescription = null,
+                                tint = AppColors.EmeraldPrimary,
+                                modifier = Modifier.size(26.dp),
                             )
                         }
-                    }
-                    Spacer(Modifier.height(14.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.Groups, contentDescription = null, tint = AppColors.TextMuted, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.size(6.dp))
-                        Text("${d.count?.users ?: 0} usuario(s)", style = MaterialTheme.typography.bodyMedium, color = AppColors.TextMuted)
+                        Spacer(Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                d.name,
+                                style = MaterialTheme.typography.headlineSmall,
+                                color = AppColors.TextPrimary,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Spacer(Modifier.height(6.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                StatusChip(
+                                    label = if (d.active) "Activo" else "Inactivo",
+                                    tone = if (d.active) BentoTone.Mint else BentoTone.Rose,
+                                )
+                                StatusChip(
+                                    label = "${d.count?.users ?: 0} persona(s)",
+                                    tone = if ((d.count?.users ?: 0) == 0) BentoTone.Plain else BentoTone.Sea,
+                                )
+                                StatusChip(
+                                    label = "${d.subareas.size} subárea(s)",
+                                    tone = if (d.subareas.isEmpty()) BentoTone.Plain else BentoTone.Lavender,
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -111,22 +130,16 @@ fun DepartmentDetailScreen(departmentId: String) {
                     if (d.subareas.isEmpty()) {
                         Text("Este departamento aún no tiene subáreas.", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
                     } else {
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(d.subareas, key = { it.id }) { s ->
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .background(AppColors.SurfaceVariant, RoundedCornerShape(20.dp))
-                                        .padding(horizontal = 12.dp, vertical = 6.dp),
-                                ) {
-                                    Text(s.name.uppercase(), style = MaterialTheme.typography.labelSmall, color = AppColors.TextPrimary)
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            items(d.subareas, key = { it.id }) { subarea ->
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    StatusChip(label = subarea.name.uppercase(), tone = BentoTone.Sea)
                                     if (canManage) {
-                                        Spacer(Modifier.size(6.dp))
-                                        Icon(
-                                            Icons.Filled.Close,
-                                            contentDescription = "Eliminar subárea",
-                                            tint = AppColors.TextFaint,
-                                            modifier = Modifier.size(14.dp).clip(CircleShape).clickable { viewModel.requestDeleteSubarea(s) },
+                                        Spacer(Modifier.width(2.dp))
+                                        BentoIconButton(
+                                            icon = Icons.Filled.Close,
+                                            contentDescription = "Eliminar subárea ${subarea.name}",
+                                            onClick = { viewModel.requestDeleteSubarea(subarea) },
                                         )
                                     }
                                 }
@@ -143,13 +156,12 @@ fun DepartmentDetailScreen(departmentId: String) {
                                 singleLine = true,
                                 modifier = Modifier.weight(1f),
                             )
-                            Spacer(Modifier.size(8.dp))
-                            Button(
-                                onClick = viewModel::addSubarea,
-                                enabled = state.newSubarea.isNotBlank(),
-                                shape = MaterialTheme.shapes.medium,
-                                colors = ButtonDefaults.buttonColors(containerColor = AppColors.EmeraldPrimary),
-                            ) { Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = AppColors.Surface) }
+                            Spacer(Modifier.width(8.dp))
+                            BentoIconButton(
+                                icon = Icons.Filled.Add,
+                                contentDescription = "Agregar subárea",
+                                onClick = { if (state.newSubarea.isNotBlank()) viewModel.addSubarea() },
+                            )
                         }
                     }
                 }
@@ -200,15 +212,13 @@ fun DepartmentDetailScreen(departmentId: String) {
 
                 if (canManage) {
                     Spacer(Modifier.height(20.dp))
-                    OutlinedButton(
+                    PillButton(
+                        text = if (d.active) "Eliminar departamento" else "Eliminar definitivamente",
                         onClick = viewModel::requestDeleteDepartment,
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.Danger),
+                        variant = PillButtonVariant.Ghost,
+                        leadingIcon = Icons.Filled.DeleteOutline,
                         modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Icon(Icons.Filled.DeleteOutline, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.size(6.dp))
-                        Text(if (d.active) "Eliminar departamento" else "Eliminar definitivamente")
-                    }
+                    )
                 }
             }
 

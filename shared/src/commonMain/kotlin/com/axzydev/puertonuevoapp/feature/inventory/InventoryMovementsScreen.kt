@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CircularProgressIndicator
@@ -33,10 +34,13 @@ import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppCard
-import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
+import com.axzydev.puertonuevoapp.core.ui.BentoIconButton
 import com.axzydev.puertonuevoapp.core.ui.AppModal
 import com.axzydev.puertonuevoapp.core.ui.AppModalTone
+import com.axzydev.puertonuevoapp.core.ui.PillButton
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.RegisterTopBarAction
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.ui.table.AppTableScreen
@@ -191,13 +195,13 @@ private val movementFilterSpecs: List<TableFilterSpec> = listOf(
 private fun movementTypeLabelOf(type: String): String =
     movementTypeOptions.firstOrNull { it.first == type }?.second ?: movementTypeLabel(type)
 
-/** Color por tipo; `AppColors.movementTypeColor` no cubre ajustes/mantenimiento/reversión. */
-private fun movementTypeColorOf(type: String): Color = when (type) {
-    "STOCK_IN", "ADJUSTMENT_IN", "RETURN" -> AppColors.Success
-    "STOCK_OUT", "ADJUSTMENT_OUT", "LOAN", "MAINTENANCE_OUT" -> AppColors.Warning
-    "RETIREMENT", "REVERSAL" -> AppColors.Danger
-    "TRANSFER", "MAINTENANCE_IN" -> AppColors.Info
-    else -> AppColors.TextFaint
+/** Tono por tipo de movimiento (entrada = bien, salida = atención, baja = problema). */
+private fun movementTypeToneOf(type: String): BentoTone = when (type) {
+    "STOCK_IN", "ADJUSTMENT_IN", "RETURN" -> BentoTone.Mint
+    "STOCK_OUT", "ADJUSTMENT_OUT", "LOAN", "MAINTENANCE_OUT" -> BentoTone.Sun
+    "RETIREMENT", "REVERSAL" -> BentoTone.Rose
+    "TRANSFER", "MAINTENANCE_IN" -> BentoTone.Sea
+    else -> BentoTone.Plain
 }
 
 @Composable
@@ -215,10 +219,10 @@ private fun MovementCard(
         contentPadding = PaddingValues(14.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            StatusChip(movementTypeLabelOf(row.type), movementTypeColorOf(row.type))
+            StatusChip(label = movementTypeLabelOf(row.type), tone = movementTypeToneOf(row.type))
             if (row.status == "CANCELLED") {
                 Spacer(Modifier.width(6.dp))
-                StatusChip("Cancelado", AppColors.Danger)
+                StatusChip(label = "Cancelado", tone = BentoTone.Rose)
             }
             Spacer(Modifier.weight(1f))
             Text(
@@ -265,11 +269,10 @@ private fun MovementCard(
                 modifier = Modifier.weight(1f),
             )
             if (onOpenDevice != null) {
-                Text(
-                    text = "Ver dispositivo",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = AppColors.EmeraldPrimary,
-                    modifier = Modifier.padding(start = 8.dp),
+                BentoIconButton(
+                    icon = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = "Ver el dispositivo de este movimiento",
+                    onClick = onOpenDevice,
                 )
             }
         }
@@ -289,11 +292,11 @@ private fun MovementCard(
                     Spacer(Modifier.width(8.dp))
                     Text("Revirtiendo…", style = MaterialTheme.typography.labelSmall, color = AppColors.Danger)
                 } else {
-                    AppFilterChip(
-                        label = "Revertir",
-                        selected = true,
-                        selectedColor = AppColors.Danger,
+                    PillButton(
+                        text = "Revertir",
                         onClick = onRevert,
+                        variant = PillButtonVariant.Secondary,
+                        leadingIcon = Icons.AutoMirrored.Filled.Undo,
                     )
                 }
             }

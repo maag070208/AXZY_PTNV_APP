@@ -7,19 +7,26 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.axzydev.puertonuevoapp.core.theme.AppBento
@@ -42,9 +49,13 @@ fun BentoTabs(
     trailing: (@Composable () -> Unit)? = null,
 ) {
     Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        val scrollState = rememberScrollState()
+        // Si hay pestañas fuera de pantalla, el borde derecho se desvanece como pista de scroll.
+        val moreToTheRight by remember { derivedStateOf { scrollState.canScrollForward } }
+        Box(modifier = Modifier.weight(1f)) {
         Row(
             // Ocupa el ancho disponible (weight) y se desplaza en horizontal; las píldoras no se comprimen.
-            modifier = Modifier.weight(1f).horizontalScroll(rememberScrollState()),
+            modifier = Modifier.fillMaxWidth().horizontalScroll(scrollState),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items.forEachIndexed { index, item ->
@@ -66,6 +77,22 @@ fun BentoTabs(
                     // Una línea sin recorte: si no caben todas, la fila se desplaza.
                     Text(item.label, color = content, style = MaterialTheme.typography.titleSmall, maxLines = 1, softWrap = false)
                 }
+            }
+            // Aire final: la última píldora no queda pegada al borde.
+            Spacer(Modifier.width(20.dp))
+        }
+            if (moreToTheRight) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .fillMaxHeight()
+                        .width(28.dp)
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color.Transparent, MaterialTheme.colorScheme.background),
+                            ),
+                        ),
+                )
             }
         }
         if (trailing != null) {

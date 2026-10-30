@@ -48,6 +48,8 @@ import com.axzydev.puertonuevoapp.core.ui.AppTextField
 import com.axzydev.puertonuevoapp.core.ui.BentoErrorState
 import com.axzydev.puertonuevoapp.core.ui.BentoIconButton
 import com.axzydev.puertonuevoapp.core.ui.BentoState
+import com.axzydev.puertonuevoapp.core.ui.PillButton
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 
 /**
@@ -74,16 +76,25 @@ internal fun DepartmentsCatalogTab(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    "${state.departments.size} departamento(s)",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = AppColors.TextMuted,
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        "Departamentos y subáreas",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppColors.TextPrimary,
+                    )
+                    Text(
+                        "${state.departments.size} departamento(s) · las subáreas se administran en cada uno",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = AppColors.TextMuted,
+                    )
+                }
                 if (canManage) {
-                    BentoIconButton(
-                        icon = Icons.Filled.Add,
-                        contentDescription = "Nuevo departamento",
+                    PillButton(
+                        text = "Nuevo",
                         onClick = viewModel::openCreate,
+                        variant = PillButtonVariant.Secondary,
+                        leadingIcon = Icons.Filled.Add,
                     )
                 }
             }
@@ -115,6 +126,8 @@ internal fun DepartmentsCatalogTab(
             state.departments.isEmpty() -> BentoState(
                 message = "Aún no hay departamentos.",
                 modifier = Modifier.padding(16.dp),
+                actionLabel = if (canManage) "Nuevo departamento" else "Reintentar",
+                onAction = if (canManage) viewModel::openCreate else viewModel::load,
             )
             else -> LazyColumn(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -324,16 +337,22 @@ private fun DepartmentCatalogRow(
                 label = if (department.active) "Activo" else "Inactivo",
                 tone = if (department.active) BentoTone.Mint else BentoTone.Rose,
             )
-            IconButton(onClick = onSubareas) {
-                Icon(Icons.Filled.AccountTree, contentDescription = "Subáreas", tint = AppColors.Info)
-            }
+            BentoIconButton(
+                icon = Icons.Filled.AccountTree,
+                contentDescription = "Subáreas de ${department.name}",
+                onClick = onSubareas,
+            )
             if (canManage) {
-                IconButton(onClick = onEdit) {
-                    Icon(Icons.Filled.Edit, contentDescription = "Editar departamento", tint = AppColors.EmeraldPrimary)
-                }
-                IconButton(onClick = onDelete) {
-                    Icon(Icons.Filled.DeleteOutline, contentDescription = "Dar de baja departamento", tint = AppColors.Danger)
-                }
+                BentoIconButton(
+                    icon = Icons.Filled.Edit,
+                    contentDescription = "Editar departamento",
+                    onClick = onEdit,
+                )
+                BentoIconButton(
+                    icon = Icons.Filled.DeleteOutline,
+                    contentDescription = "Dar de baja el departamento",
+                    onClick = onDelete,
+                )
             }
         }
     }

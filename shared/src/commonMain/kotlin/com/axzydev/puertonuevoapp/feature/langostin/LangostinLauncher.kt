@@ -29,6 +29,7 @@ import com.axzydev.puertonuevoapp.core.ui.langostin.LangostinMascot
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import androidx.compose.ui.text.style.TextOverflow
 
 /** Formulario del panel que se quiere abrir desde fuera del shell. */
 enum class LangostinAgentKind { TICKET, TASK }
@@ -127,23 +128,27 @@ internal fun LangostinTicketsHint(
         borderColor = AppColors.Outline.copy(alpha = 0.6f),
         contentPadding = PaddingValues(14.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            LangostinMascot(size = 34.dp, animated = true, showBadge = false)
+        Row(verticalAlignment = Alignment.Top) {
+            LangostinMascot(size = 38.dp, animated = true, showBadge = false)
             Spacer(Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     "¿Un ticket nuevo?",
                     style = MaterialTheme.typography.titleSmall,
                     color = AppColors.TextPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     "Te lo levanto yo aquí mismo.",
                     style = MaterialTheme.typography.bodySmall,
                     color = AppColors.TextMuted,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }
-        Column(modifier = Modifier.padding(top = 10.dp)) {
+        Column(modifier = Modifier.padding(top = 12.dp)) {
             LangostinOptionChips(
                 listOf(
                     LangostinChip("Nuevo ticket", Icons.Filled.ConfirmationNumber) {

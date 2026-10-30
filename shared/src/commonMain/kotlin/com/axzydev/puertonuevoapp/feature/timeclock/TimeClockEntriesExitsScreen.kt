@@ -12,18 +12,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -47,17 +45,18 @@ import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.session.PermissionKeys
 import com.axzydev.puertonuevoapp.core.theme.AppBento
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
 import com.axzydev.puertonuevoapp.core.ui.AppSearchField
 import com.axzydev.puertonuevoapp.core.ui.BentoAvatar
 import com.axzydev.puertonuevoapp.core.ui.BentoErrorState
+import com.axzydev.puertonuevoapp.core.ui.BentoMiniStat
 import com.axzydev.puertonuevoapp.core.ui.BentoState
 import com.axzydev.puertonuevoapp.core.ui.PillButton
 import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.RegisterTopBarAction
-import com.axzydev.puertonuevoapp.core.ui.StatCard
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.formatMinutesAsHours
 
@@ -188,7 +187,7 @@ fun TimeClockEntriesExitsScreen() {
     }
 }
 
-/** KPIs del resumen del reporte (personas, registros, en sitio, horas e incidencias). */
+/** Franja de indicadores: compacta, con tono por significado y neutra cuando está en cero. */
 @Composable
 private fun AttendanceKpis(state: TimeClockEntriesExitsUiState) {
     val summary = state.summary ?: return
@@ -197,48 +196,42 @@ private fun AttendanceKpis(state: TimeClockEntriesExitsUiState) {
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        StatCard(
-            value = summary.people.toString(),
+        BentoMiniStat(
             label = "Personas",
-            color = AppColors.EmeraldPrimary,
-            icon = { Icon(Icons.Filled.Groups, contentDescription = null, tint = AppColors.EmeraldPrimary) },
-            modifier = Modifier.width(160.dp),
+            value = summary.people.toString(),
+            tone = BentoTone.Sea,
+            labelMaxLines = 1,
+            modifier = Modifier.width(106.dp),
         )
-        StatCard(
-            value = summary.withRecords.toString(),
+        BentoMiniStat(
             label = "Con registro",
-            color = AppColors.Info,
-            icon = { Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = AppColors.Info) },
-            modifier = Modifier.width(160.dp),
+            value = summary.withRecords.toString(),
+            tone = if (summary.withRecords == 0) BentoTone.Plain else BentoTone.Mint,
+            labelMaxLines = 1,
+            modifier = Modifier.width(106.dp),
         )
-        StatCard(
-            value = summary.onSite.toString(),
+        BentoMiniStat(
             label = "En sitio",
-            color = AppColors.Success,
-            icon = { Icon(Icons.Filled.Person, contentDescription = null, tint = AppColors.Success) },
-            modifier = Modifier.width(160.dp),
+            value = summary.onSite.toString(),
+            tone = if (summary.onSite == 0) BentoTone.Plain else BentoTone.Lavender,
+            labelMaxLines = 1,
+            modifier = Modifier.width(106.dp),
         )
-        StatCard(
+        BentoMiniStat(
+            label = "Horas",
             value = formatMinutesAsHours(summary.workedMinutes),
-            label = "Horas trabajadas",
-            color = AppColors.Purple,
-            icon = { Icon(Icons.Filled.AccessTime, contentDescription = null, tint = AppColors.Purple) },
-            modifier = Modifier.width(160.dp),
+            tone = if (summary.workedMinutes == 0) BentoTone.Plain else BentoTone.Sun,
+            labelMaxLines = 1,
+            modifier = Modifier.width(106.dp),
         )
-        StatCard(
-            value = state.incidents.toString(),
+        BentoMiniStat(
             label = "Incidencias",
-            color = if (state.incidents == 0) AppColors.Success else AppColors.Danger,
-            icon = {
-                Icon(
-                    Icons.Filled.WarningAmber,
-                    contentDescription = null,
-                    tint = if (state.incidents == 0) AppColors.Success else AppColors.Danger,
-                )
-            },
-            modifier = Modifier.width(160.dp),
+            value = state.incidents.toString(),
+            tone = if (state.incidents == 0) BentoTone.Plain else BentoTone.Rose,
+            labelMaxLines = 1,
+            modifier = Modifier.width(106.dp),
         )
     }
 }
@@ -347,16 +340,25 @@ private fun ReportFiltersCard(
     }
 }
 
-/** Leyenda de colores de la tira de días. */
+/** Leyenda discreta de la tira de días: punto de color + etiqueta. */
 @Composable
 private fun AttendanceLegend() {
     Row(
         modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         listOf("ATTENDED", "LATE", "ABSENCE", "REST", "NO_INFO").forEach { status ->
-            StatusChip(label = attendanceDayLabel(status), tone = attendanceDayTone(status))
+            val colors = AppBento.tone(attendanceDayTone(status))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(modifier = Modifier.size(8.dp).background(colors.content, CircleShape))
+                Spacer(Modifier.width(5.dp))
+                Text(
+                    attendanceDayLabel(status),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = AppColors.TextFaint,
+                )
+            }
         }
     }
 }
@@ -432,25 +434,40 @@ private fun PersonAttendanceCard(
             DayStrip(days = days.ifEmpty { row.days.map { it.date } }, row = row)
             focus?.let { day ->
                 Spacer(Modifier.height(6.dp))
-                Text(
-                    text = buildString {
-                        append(if (day.date == today) "Hoy" else shortDayLabel(day.date))
-                        append(" · ")
-                        append(attendanceDayLabel(day.status))
-                        if (day.entryAt != null || day.exitAt != null) {
-                            append(" · ")
-                            append(row.timesLabel(day))
-                            append(" · ")
-                            append(workedTimeLabel(day.workedMinutes))
-                        }
-                        if (day.lateMinutes > 0) append(" · retardo ${day.lateMinutes} min")
-                        day.incident?.let { append(" · ${incidentLabel(it)}") }
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = AppColors.TextMuted,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        if (day.date == today) "Hoy" else shortDayLabel(day.date),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = AppColors.TextMuted,
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    StatusChip(label = attendanceDayLabel(day.status), tone = attendanceDayTone(day.status))
+                    if (day.entryAt != null || day.exitAt != null) {
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "${row.timesLabel(day)} · ${workedTimeLabel(day.workedMinutes)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = AppColors.TextPrimary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
+                val extra = buildList {
+                    if (day.lateMinutes > 0) add("retardo ${day.lateMinutes} min")
+                    day.incident?.let { add(incidentLabel(it)) }
+                }
+                if (extra.isNotEmpty()) {
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        extra.joinToString(" · "),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = AppColors.TextFaint,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
 
@@ -479,7 +496,7 @@ private fun PersonAttendanceCard(
     }
 }
 
-/** Tira de días del periodo: una letra por día, teñida por su estado. */
+/** Tira de días del periodo: letra y día del mes, teñidos por el estado del día. */
 @Composable
 private fun DayStrip(days: List<String>, row: PeopleAttendanceRowDto) {
     val byDate = remember(row.days) { row.days.associateBy { it.date } }
@@ -489,13 +506,33 @@ private fun DayStrip(days: List<String>, row: PeopleAttendanceRowDto) {
     ) {
         days.take(MAX_STRIP_DAYS).forEach { day ->
             val state = byDate[day]
-            StatusChip(
-                label = weekdayLetter(day),
-                tone = attendanceDayTone(state?.status ?: "NO_INFO"),
-            )
+            val colors = AppBento.tone(attendanceDayTone(state?.status ?: "NO_INFO"))
+            Column(
+                modifier = Modifier
+                    .width(38.dp)
+                    .clip(AppShape.row)
+                    .background(colors.container, AppShape.row)
+                    .padding(vertical = 5.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    weekdayLetter(day),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colors.content.copy(alpha = 0.7f),
+                )
+                Text(
+                    dayKeyDayNumber(day),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.content,
+                )
+            }
         }
     }
 }
+
+/** Día del mes de una clave `YYYY-MM-DD` ("03"). */
+private fun dayKeyDayNumber(dayKey: String): String =
+    if (dayKey.length >= 10) dayKey.substring(8, 10) else dayKey
 
 /** Día que se detalla en el pie de la tarjeta: hoy si está en el periodo; si no, el último con datos. */
 private fun focusDay(

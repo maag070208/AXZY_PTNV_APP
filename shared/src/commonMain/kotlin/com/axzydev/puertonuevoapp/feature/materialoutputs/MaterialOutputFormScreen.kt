@@ -1,8 +1,6 @@
 package com.axzydev.puertonuevoapp.feature.materialoutputs
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,9 +10,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,13 +24,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.network.materialoutputs.materialOutputReasonOptions
-import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
+import com.axzydev.puertonuevoapp.core.ui.BentoState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
+import com.axzydev.puertonuevoapp.core.ui.PillButton
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
-import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
+/**
+ * Alta/edición de una salida de material. Formulario en bloques de una columna
+ * (qué sale → destino → detalle) y un único botón primario al final.
+ */
 @Composable
 fun MaterialOutputFormScreen(materialOutputId: String? = null) {
     val navigator = LocalNavigator.current
@@ -54,12 +58,18 @@ fun MaterialOutputFormScreen(materialOutputId: String? = null) {
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).imePadding().navigationBarsPadding().padding(16.dp),
     ) {
         state.error?.let {
-            Text(it, color = AppColors.Danger, style = MaterialTheme.typography.bodySmall)
+            BentoState(
+                message = it,
+                tone = BentoTone.Rose,
+                icon = Icons.Filled.ErrorOutline,
+                modifier = Modifier.fillMaxWidth(),
+            )
             Spacer(Modifier.height(10.dp))
         }
 
+        // Bloque 1: qué sale.
         AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
-            SectionLabel("Datos de la salida")
+            SectionLabel("Qué sale")
             AppTextField(
                 value = state.description,
                 onValueChange = viewModel::onDescriptionChange,
@@ -67,40 +77,28 @@ fun MaterialOutputFormScreen(materialOutputId: String? = null) {
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AppTextField(
-                    value = state.brand,
-                    onValueChange = viewModel::onBrandChange,
-                    label = { Text("Marca") },
-                    singleLine = true,
-                    modifier = Modifier.weight(1f),
-                )
-                AppTextField(
-                    value = state.model,
-                    onValueChange = viewModel::onModelChange,
-                    label = { Text("Modelo") },
-                    singleLine = true,
-                    modifier = Modifier.weight(1f),
-                )
-            }
+            AppTextField(
+                value = state.brand,
+                onValueChange = viewModel::onBrandChange,
+                label = { Text("Marca") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
             Spacer(Modifier.height(10.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AppTextField(
-                    value = state.project,
-                    onValueChange = viewModel::onProjectChange,
-                    label = { Text("Proyecto") },
-                    singleLine = true,
-                    modifier = Modifier.weight(2f),
-                )
-                AppTextField(
-                    value = state.quantity,
-                    onValueChange = viewModel::onQuantityChange,
-                    label = { Text("Cantidad") },
-                    singleLine = true,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-            Spacer(Modifier.height(10.dp))
+            AppTextField(
+                value = state.model,
+                onValueChange = viewModel::onModelChange,
+                label = { Text("Modelo") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        // Bloque 2: a dónde va.
+        AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
+            SectionLabel("Destino")
             AppTextField(
                 value = state.departmentName,
                 onValueChange = viewModel::onDepartmentNameChange,
@@ -125,6 +123,28 @@ fun MaterialOutputFormScreen(materialOutputId: String? = null) {
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
+            AppTextField(
+                value = state.project,
+                onValueChange = viewModel::onProjectChange,
+                label = { Text("Proyecto") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        // Bloque 3: detalle de la salida.
+        AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
+            SectionLabel("Detalle")
+            AppTextField(
+                value = state.quantity,
+                onValueChange = viewModel::onQuantityChange,
+                label = { Text("Cantidad") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(10.dp))
             SimpleDropdownField(
                 label = "Motivo (si aplica)",
                 value = state.reason,
@@ -143,15 +163,14 @@ fun MaterialOutputFormScreen(materialOutputId: String? = null) {
         }
 
         Spacer(Modifier.height(20.dp))
-        Button(
+        PillButton(
+            text = if (isEdit) "Guardar cambios" else "Registrar salida",
             onClick = viewModel::submit,
-            enabled = state.isValid && !state.saving,
-            shape = MaterialTheme.shapes.medium,
-            colors = ButtonDefaults.buttonColors(containerColor = AppColors.EmeraldPrimary),
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-        ) {
-            if (state.saving) CircularProgressIndicator(modifier = Modifier.height(20.dp), color = AppColors.Surface, strokeWidth = 2.dp)
-            else Text(if (isEdit) "Guardar cambios" else "Registrar salida", style = MaterialTheme.typography.titleMedium)
-        }
+            enabled = state.isValid,
+            loading = state.saving,
+            variant = PillButtonVariant.Primary,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(24.dp))
     }
 }

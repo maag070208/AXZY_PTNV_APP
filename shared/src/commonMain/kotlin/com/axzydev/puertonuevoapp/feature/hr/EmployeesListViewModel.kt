@@ -6,6 +6,7 @@ import com.axzydev.puertonuevoapp.core.network.departments.DepartmentDto
 import com.axzydev.puertonuevoapp.core.network.http.TableRequest
 import com.axzydev.puertonuevoapp.core.network.http.TableResponse
 import com.axzydev.puertonuevoapp.core.network.hr.HrApi
+import com.axzydev.puertonuevoapp.core.network.hr.PersonalStatsDto
 import com.axzydev.puertonuevoapp.core.network.users.UserDto
 import com.axzydev.puertonuevoapp.core.ui.table.PaginatedTableViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,12 +30,31 @@ class EmployeesListViewModel(
     private val _departments = MutableStateFlow<List<DepartmentDto>>(emptyList())
     val departments: StateFlow<List<DepartmentDto>> = _departments.asStateFlow()
 
+    /** KPIs de la plantilla (`GET /hr/stats`): total, activos e inactivos. */
+    private val _stats = MutableStateFlow<PersonalStatsDto?>(null)
+    val stats: StateFlow<PersonalStatsDto?> = _stats.asStateFlow()
+
     init {
+        loadDepartments()
+        loadStats()
+    }
+
+    private fun loadDepartments() {
         viewModelScope.launch {
             runCatching { departmentsApi.list() }
                 .onSuccess { list -> _departments.value = list.filter { it.active }.sortedBy { it.name } }
         }
     }
+
+    /** Se reintenta al refrescar la tabla (por si el fallo fue de red). */
+    private fun loadStats() {
+        viewModelScope.launch {
+            runCatching { hrApi.stats() }.onSuccess { _stats.value = it }
+        }
+    }
+
+    /** El pull-to-refresh de la tabla no toca los KPIs: la pantalla llama a esto. */
+    fun reloadStats() = loadStats()
 
     override suspend fun fetch(page: Int, limit: Int, filters: Map<String, String>): TableResponse<UserDto> =
         hrApi.query(TableRequest(page = page, limit = limit, filters = filters))

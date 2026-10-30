@@ -51,6 +51,7 @@ import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
 import com.axzydev.puertonuevoapp.core.ui.AppModal
 import com.axzydev.puertonuevoapp.core.ui.AppModalTone
 import com.axzydev.puertonuevoapp.core.ui.AppSearchField
+import com.axzydev.puertonuevoapp.core.ui.BentoIconButton
 import com.axzydev.puertonuevoapp.core.ui.BentoMiniStat
 import com.axzydev.puertonuevoapp.core.ui.BentoState
 import com.axzydev.puertonuevoapp.core.ui.BentoWeekBars
@@ -58,6 +59,8 @@ import com.axzydev.puertonuevoapp.core.ui.BentoWeekDay
 import com.axzydev.puertonuevoapp.core.ui.RegisterTopBarAction
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import androidx.compose.ui.text.style.TextOverflow
+import com.axzydev.puertonuevoapp.core.ui.PillButton
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 
 /**
@@ -321,7 +324,7 @@ private fun ScheduleCard(
                     Spacer(Modifier.size(8.dp))
                     StatusChip(
                         label = if (active) "Activo" else "Inactivo",
-                        tone = if (active) BentoTone.Mint else BentoTone.Rose,
+                        tone = if (active) BentoTone.Mint else BentoTone.Plain,
                     )
                 }
                 Text(
@@ -338,22 +341,17 @@ private fun ScheduleCard(
                 )
             }
             if (canManage) {
-                IconButton(onClick = onEdit) {
-                    Icon(
-                        Icons.Filled.Edit,
-                        contentDescription = "Editar horario",
-                        tint = AppColors.TextFaint,
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-                IconButton(onClick = onDelete) {
-                    Icon(
-                        Icons.Filled.DeleteOutline,
-                        contentDescription = "Eliminar horario",
-                        tint = AppColors.Danger,
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
+                BentoIconButton(
+                    icon = Icons.Filled.Edit,
+                    contentDescription = "Editar horario",
+                    onClick = onEdit,
+                )
+                Spacer(Modifier.size(6.dp))
+                BentoIconButton(
+                    icon = Icons.Filled.DeleteOutline,
+                    contentDescription = "Eliminar horario",
+                    onClick = onDelete,
+                )
             }
         }
 
@@ -375,18 +373,13 @@ private fun ScheduleCard(
 
         if (canManage) {
             Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                TextButton(onClick = onToggleActive, enabled = !busy) {
-                    Icon(
-                        if (active) Icons.Filled.Schedule else Icons.Filled.CheckCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                    )
-                    Spacer(Modifier.size(6.dp))
-                    Text(
-                        if (active) "Desactivar" else "Activar",
-                        style = MaterialTheme.typography.labelMedium,
-                    )
-                }
+                PillButton(
+                    text = if (active) "Desactivar" else "Activar",
+                    onClick = onToggleActive,
+                    variant = PillButtonVariant.Ghost,
+                    enabled = !busy,
+                    leadingIcon = if (active) Icons.Filled.Schedule else Icons.Filled.CheckCircle,
+                )
             }
         }
     }

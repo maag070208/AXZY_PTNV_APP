@@ -138,14 +138,14 @@ fun EmployeeProfileViewSections(
     }
 }
 
-/** Descuentos de nómina en solo lectura (chips con tipo y nota). */
+/** Descuentos de nómina en solo lectura: tipo, estado y detalle legible. */
 @Composable
 fun EmployeeDiscountsView(discounts: List<EmployeeDiscountDto>) {
     Spacer(Modifier.height(16.dp))
     Row(verticalAlignment = Alignment.CenterVertically) {
         IconBadge(icon = Icons.Filled.Percent, color = AppColors.Info)
         Spacer(Modifier.width(8.dp))
-        Text("DESCUENTOS", style = MaterialTheme.typography.titleSmall, color = AppColors.TextMuted)
+        Text("Descuentos de nómina", style = MaterialTheme.typography.titleSmall, color = AppColors.TextMuted)
     }
     Spacer(Modifier.height(8.dp))
     AppSurfaceCard(Modifier.fillMaxWidth()) {
@@ -157,21 +157,30 @@ fun EmployeeDiscountsView(discounts: List<EmployeeDiscountDto>) {
                 modifier = Modifier.padding(vertical = 2.dp),
             )
         } else {
-            discounts.forEach { discount ->
+            discounts.forEachIndexed { index, discount ->
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.Top,
                 ) {
-                    StatusChip(discountTypeLabel(discount.type), AppColors.Info)
-                    discount.note?.takeIf { it.isNotBlank() }?.let { note ->
-                        Spacer(Modifier.width(8.dp))
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            note,
+                            discountTypeLabel(discount.type),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = AppColors.TextPrimary,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            discount.note?.takeIf { it.isNotBlank() } ?: "Sin detalle registrado",
                             style = MaterialTheme.typography.bodySmall,
                             color = AppColors.TextMuted,
-                            modifier = Modifier.weight(1f),
                         )
                     }
+                    Spacer(Modifier.width(8.dp))
+                    StatusChip("Aplica", BentoTone.Sun)
+                }
+                if (index < discounts.lastIndex) {
+                    HorizontalDivider(color = AppColors.Outline.copy(alpha = 0.35f))
                 }
             }
         }

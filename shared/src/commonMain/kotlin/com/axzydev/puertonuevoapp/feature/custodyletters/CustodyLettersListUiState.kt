@@ -7,16 +7,25 @@ data class CustodyLettersListUiState(
     val error: String? = null,
     val custodyLetters: List<CustodyLetterDto> = emptyList(),
     val query: String = "",
+    /** Filtro por estado: "" = todas, "ACTIVE" = vigentes, "RETURNED" = devueltas. */
+    val statusFilter: String = "",
     val deleteTarget: CustodyLetterDto? = null,
     val actionSaving: Boolean = false,
     val actionError: String? = null,
 ) {
     val filtered: List<CustodyLetterDto>
         get() = custodyLetters.filter { c ->
-            query.isBlank() ||
+            val matchesStatus = when (statusFilter) {
+                "ACTIVE" -> c.returnDate == null
+                "RETURNED" -> c.returnDate != null
+                else -> true
+            }
+            val matchesQuery = query.isBlank() ||
                 c.consecutive.contains(query, ignoreCase = true) ||
                 c.employeeNumber.contains(query, ignoreCase = true) ||
                 c.department.contains(query, ignoreCase = true) ||
+                (c.custodian?.name ?: "").contains(query, ignoreCase = true) ||
                 (c.items.firstOrNull()?.description ?: "").contains(query, ignoreCase = true)
+            matchesStatus && matchesQuery
         }
 }

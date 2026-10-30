@@ -41,6 +41,17 @@ import com.axzydev.puertonuevoapp.core.util.currentTimeMillis
 import com.axzydev.puertonuevoapp.feature.tickets.ticketPriorityOptions
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import com.axzydev.puertonuevoapp.core.theme.AppShape
+import com.axzydev.puertonuevoapp.core.theme.BentoTone
+import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
+import com.axzydev.puertonuevoapp.core.ui.StatusChip
 
 /** El loader de envío se queda un mínimo en pantalla, como en la web. */
 private const val MIN_LOADER_MS = 700L
@@ -246,7 +257,15 @@ fun TicketChatAgent(
                 }
 
                 TicketStep.Confirm -> {
-                    StepLabel("Confirma el alta")
+                    StepLabel("Revisa y confirma")
+                    TicketSummaryCard(
+                        title = title,
+                        rows = listOf(
+                            "Categoría" to categoryName,
+                            "Urgencia" to priorityLabel,
+                        ),
+                    )
+                    Spacer(Modifier.height(10.dp))
                     LangostinOptionChips(
                         listOf(
                             LangostinChip("Crear ticket", onClick = { createTicket() }),
@@ -255,7 +274,10 @@ fun TicketChatAgent(
                     )
                 }
 
-                TicketStep.Sending -> Row(verticalAlignment = Alignment.CenterVertically) {
+                TicketStep.Sending -> Row(
+                    modifier = Modifier.heightIn(min = 44.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(18.dp),
                         strokeWidth = 2.dp,
@@ -269,25 +291,37 @@ fun TicketChatAgent(
                     )
                 }
 
-                TicketStep.Done -> LangostinOptionChips(
-                    buildList {
-                        ticketId?.let { id ->
-                            add(LangostinChip("Ver ticket") { onViewTicket(id) })
-                        }
-                        add(LangostinChip("Cerrar", onClick = onBack))
-                    },
-                )
+                TicketStep.Done -> Column {
+                    StatusChip(label = "Ticket creado", tone = BentoTone.Mint)
+                    Spacer(Modifier.height(10.dp))
+                    LangostinOptionChips(
+                        buildList {
+                            ticketId?.let { id ->
+                                add(LangostinChip("Ver ticket") { onViewTicket(id) })
+                            }
+                            add(LangostinChip("Cerrar", onClick = onBack))
+                        },
+                    )
+                }
 
-                TicketStep.Cancelled -> LangostinOptionChips(
-                    listOf(LangostinChip("Cerrar", onClick = onBack)),
-                )
+                TicketStep.Cancelled -> Column {
+                    StatusChip(label = "Cancelado", tone = BentoTone.Plain)
+                    Spacer(Modifier.height(10.dp))
+                    LangostinOptionChips(
+                        listOf(LangostinChip("Cerrar", onClick = onBack)),
+                    )
+                }
 
-                TicketStep.Error -> LangostinOptionChips(
-                    listOf(
-                        LangostinChip("Reintentar", onClick = { createTicket() }),
-                        LangostinChip("Cancelar", onClick = { cancel() }),
-                    ),
-                )
+                TicketStep.Error -> Column {
+                    StatusChip(label = "No se pudo crear el ticket", tone = BentoTone.Rose)
+                    Spacer(Modifier.height(10.dp))
+                    LangostinOptionChips(
+                        listOf(
+                            LangostinChip("Reintentar", onClick = { createTicket() }),
+                            LangostinChip("Cancelar", onClick = { cancel() }),
+                        ),
+                    )
+                }
             }
         }
     }
@@ -313,11 +347,18 @@ private fun AgentHeader(step: TicketStep, onBack: () -> Unit) {
                 "Nuevo ticket",
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
+            Spacer(Modifier.height(6.dp))
+            StepProgress(step = step)
+            Spacer(Modifier.height(3.dp))
             Text(
                 stepLabel(step),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
@@ -327,10 +368,72 @@ private fun AgentHeader(step: TicketStep, onBack: () -> Unit) {
 private fun StepLabel(text: String) {
     Text(
         text = text,
-        style = MaterialTheme.typography.labelSmall,
+        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(bottom = 8.dp),
     )
+}
+
+/**
+ * Progreso del alta (4 segmentos): llenos los pasos ya capturados. Ayuda a leer
+ * "dónde voy" sin depender solo del texto del encabezado.
+ */
+@Composable
+private fun StepProgress(step: TicketStep) {
+    val done = when (step) {
+        TicketStep.Title -> 1
+        TicketStep.Description -> 2
+        TicketStep.Category -> 3
+        TicketStep.Priority, TicketStep.Confirm -> 4
+        else -> 4
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        repeat(TOTAL_STEPS) { index ->
+            Box(
+                modifier = Modifier
+                    .width(24.dp)
+                    .height(4.dp)
+                    .clip(AppShape.pill)
+                    .background(
+                        if (index < done) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                    ),
+            )
+        }
+    }
+}
+
+/** Resumen de lo capturado: da jerarquía a la confirmación antes de crear. */
+@Composable
+private fun TicketSummaryCard(title: String, rows: List<Pair<String, String>>) {
+    AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            title,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Spacer(Modifier.height(10.dp))
+        rows.forEach { (label, value) ->
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+                Text(
+                    label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.width(86.dp),
+                )
+                Text(
+                    value,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
 }
 
 private fun stepLabel(step: TicketStep): String = when (step) {

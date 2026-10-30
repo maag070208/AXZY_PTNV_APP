@@ -27,8 +27,8 @@ enum class RolesConsoleTab(val label: String, val icon: ImageVector) {
 /** Nivel de acceso de un rol (o persona) en un módulo, como en `access-levels.ts`. */
 enum class ModuleLevel(val label: String, val tone: BentoTone) {
     Full("Completo", BentoTone.Mint),
-    Partial("Parcial", BentoTone.Sea),
-    Read("Solo lectura", BentoTone.Sun),
+    Partial("Parcial", BentoTone.Sun),
+    Read("Solo lectura", BentoTone.Sea),
     None("Sin acceso", BentoTone.Plain),
 }
 

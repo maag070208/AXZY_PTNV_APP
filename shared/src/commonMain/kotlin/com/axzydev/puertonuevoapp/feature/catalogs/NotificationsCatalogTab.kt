@@ -1,5 +1,6 @@
 package com.axzydev.puertonuevoapp.feature.catalogs
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -83,6 +84,8 @@ internal fun NotificationsCatalogTab(
                 )
             }
 
+            NotificationsSummary(state)
+
             state.actionError?.let { message ->
                 Text(message, style = MaterialTheme.typography.bodySmall, color = AppColors.Danger)
             }
@@ -111,6 +114,27 @@ internal fun NotificationsCatalogTab(
                 onSave = viewModel::saveWeekStart,
             )
         }
+    }
+}
+
+/** Resumen compacto del estado actual de la configuración. */
+@Composable
+private fun NotificationsSummary(state: NotificationsCatalogUiState) {
+    val recipients = state.recipients.split(",").count { it.isNotBlank() }
+    val week = weekStartDayOptions.firstOrNull { it.first == state.weekStartDay }?.second ?: state.weekStartDay
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        StatusChip(
+            label = if (state.sendEmail) "Correo activado" else "Correo desactivado",
+            tone = if (state.sendEmail) BentoTone.Mint else BentoTone.Rose,
+        )
+        StatusChip(
+            label = if (recipients == 1) "1 destinatario" else "$recipients destinatarios",
+            tone = if (recipients > 0) BentoTone.Sea else BentoTone.Plain,
+        )
+        StatusChip(label = "Semana: $week", tone = BentoTone.Lavender)
     }
 }
 

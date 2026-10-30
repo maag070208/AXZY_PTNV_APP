@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -37,6 +38,7 @@ import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.inventory.LoanItemDto
 import com.axzydev.puertonuevoapp.core.network.inventory.LoanReturnDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
+import com.axzydev.puertonuevoapp.core.theme.AppBento
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppCard
@@ -45,6 +47,7 @@ import com.axzydev.puertonuevoapp.core.ui.AppModal
 import com.axzydev.puertonuevoapp.core.ui.AppModalTone
 import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
+import com.axzydev.puertonuevoapp.core.ui.BentoAvatar
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.PillButton
@@ -90,23 +93,83 @@ fun CustodyLetterDetailScreen(custodyLetterId: String) {
     }
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
-        if (canEdit || canDelete) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (canEdit) {
-                    PillButton(
-                        text = "Editar",
-                        onClick = { navigator.push(Screen.CustodyLetterForm(c.id)) },
-                        variant = PillButtonVariant.Secondary,
-                        modifier = Modifier.weight(1f),
+        val returned = c.returnDate != null
+        val partial = !returned && state.hasPending && state.returns.isNotEmpty()
+        val statusLabel = when {
+            returned -> "Devuelta"
+            partial -> "Devolución parcial"
+            else -> "Vigente"
+        }
+        val statusTone = when {
+            returned -> BentoTone.Mint
+            partial -> BentoTone.Sun
+            else -> BentoTone.Sea
+        }
+
+        // Hero: folio, responsable, estado y acciones.
+        AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
+            Row(verticalAlignment = Alignment.Top) {
+                BentoAvatar(
+                    name = c.custodian?.name ?: c.employeeNumber.ifBlank { c.consecutive },
+                    color = AppColors.Info,
+                    size = 48.dp,
+                )
+                Spacer(Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        c.consecutive,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Black,
+                        color = AppColors.TextPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        c.custodian?.name ?: "No. empleado ${c.employeeNumber.ifBlank { "—" }}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = AppColors.TextPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        listOfNotNull(
+                            c.department.takeIf { it.isNotBlank() },
+                            c.custodian?.jobTitle?.takeIf { it.isNotBlank() },
+                        ).joinToString(" · ").ifBlank { "Sin departamento" },
+                        style = MaterialTheme.typography.labelSmall,
+                        color = AppColors.TextFaint,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
-                if (canDelete) {
-                    PillButton(
-                        text = "Eliminar",
-                        onClick = viewModel::requestDelete,
-                        variant = PillButtonVariant.Ghost,
-                        modifier = Modifier.weight(1f),
-                    )
+                Spacer(Modifier.width(8.dp))
+                StatusChip(label = statusLabel, tone = statusTone)
+            }
+            Spacer(Modifier.height(10.dp))
+            Text(
+                "Fecha: ${formatShortDate(c.date)} · No. empleado: ${c.employeeNumber.ifBlank { "—" }}",
+                style = MaterialTheme.typography.bodySmall,
+                color = AppColors.TextMuted,
+            )
+            if (canEdit || canDelete) {
+                Spacer(Modifier.height(12.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (canEdit) {
+                        PillButton(
+                            text = "Editar",
+                            onClick = { navigator.push(Screen.CustodyLetterForm(c.id)) },
+                            variant = PillButtonVariant.Secondary,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                    if (canDelete) {
+                        PillButton(
+                            text = "Eliminar",
+                            onClick = viewModel::requestDelete,
+                            variant = PillButtonVariant.Ghost,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
             }
         }
@@ -115,8 +178,8 @@ fun CustodyLetterDetailScreen(custodyLetterId: String) {
             Spacer(Modifier.height(10.dp))
             AppCard(
                 modifier = Modifier.fillMaxWidth(),
-                containerColor = AppColors.Success.copy(alpha = 0.10f),
-                borderColor = AppColors.Success.copy(alpha = 0.35f),
+                containerColor = AppBento.tone(BentoTone.Mint).container,
+                borderColor = null,
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     androidx.compose.material3.Icon(
@@ -194,26 +257,6 @@ fun CustodyLetterDetailScreen(custodyLetterId: String) {
         }
 
         AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(
-                    c.consecutive,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Black,
-                    color = AppColors.TextPrimary,
-                )
-                Column(horizontalAlignment = Alignment.End) {
-                    Text("Fecha: ${formatShortDate(c.date)}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
-                    Text("No. empleado: ${c.employeeNumber.ifBlank { "—" }}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
-                }
-            }
-            Spacer(Modifier.height(10.dp))
-            Text(
-                "Recibí autorización de uso y/o acceso al siguiente Recurso de TIC (Tecnología de la Información y la Comunicación) propiedad de ${c.company ?: "Puerto Nuevo Hotel y Villas"}, siendo éste para uso exclusivo de las actividades laborales de la empresa, por lo que tomo responsabilidad sobre el mismo y me comprometo a no divulgarlo, no facilitar su acceso, no utilizarlo en perjuicio de la empresa, devolverlo cuando sea solicitado y prevenir su robo o daño.",
-                style = MaterialTheme.typography.bodySmall,
-                color = AppColors.TextMuted,
-            )
-
-            Spacer(Modifier.height(14.dp))
             SectionLabel("Recurso TIC")
             val items = state.loan?.items.orEmpty().ifEmpty { null }
             if (items != null) {
@@ -230,6 +273,14 @@ fun CustodyLetterDetailScreen(custodyLetterId: String) {
                 InfoRow("Control de activos", item?.assetTag ?: "—")
             }
 
+            Spacer(Modifier.height(14.dp))
+            Text(
+                "Recibí autorización de uso y/o acceso al Recurso de TIC descrito, propiedad de ${c.company ?: "Puerto Nuevo Hotel y Villas"}, " +
+                    "para uso exclusivo de las actividades laborales de la empresa; me comprometo a no divulgarlo, no facilitar su acceso, " +
+                    "no utilizarlo en perjuicio de la empresa, devolverlo cuando sea solicitado y prevenir su robo o daño.",
+                style = MaterialTheme.typography.labelSmall,
+                color = AppColors.TextFaint,
+            )
             Spacer(Modifier.height(16.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -413,16 +464,82 @@ private fun PendingItemRow(item: LoanItemDto) {
 @Composable
 private fun EquipmentBlock(item: LoanItemDto) {
     val device = item.device
-    InfoRow("Descripción", device?.name ?: "—")
-    InfoRow("Marca", device?.brand ?: "—")
-    InfoRow("Modelo", device?.model ?: "—")
-    device?.code?.takeIf { it.isNotBlank() }?.let { code -> InfoRow("Código", code) }
-    item.units.forEach { link ->
-        val unit = link.deviceUnit ?: return@forEach
-        InfoRow(
-            if (link.returned) "Pieza (devuelta)" else "Pieza",
-            unit.assetTag + (unit.serialNumber?.takeIf { it.isNotBlank() }?.let { " · $it" } ?: ""),
+    val title = device?.name?.takeIf { it.isNotBlank() } ?: "Equipo"
+    val meta = listOfNotNull(
+        device?.brand?.takeIf { it.isNotBlank() },
+        device?.model?.takeIf { it.isNotBlank() },
+    ).joinToString(" ")
+    val code = device?.code?.takeIf { it.isNotBlank() }
+
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        containerColor = AppColors.SurfaceVariant,
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp),
+    ) {
+        Text(
+            title,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = AppColors.TextPrimary,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
         )
+        if (meta.isNotBlank() || code != null) {
+            Text(
+                listOfNotNull(meta.takeIf { it.isNotBlank() }, code?.let { "Código $it" }).joinToString(" · "),
+                style = MaterialTheme.typography.bodySmall,
+                color = AppColors.TextMuted,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+
+        if (item.units.isEmpty()) {
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "${item.quantity} pieza(s) · ${item.pending} pendiente(s) de devolver",
+                style = MaterialTheme.typography.labelSmall,
+                color = AppColors.TextFaint,
+            )
+        } else {
+            item.units.forEach { link ->
+                val unit = link.deviceUnit ?: return@forEach
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        // Activo fijo como protagonista de la pieza.
+                        Text(
+                            unit.assetTag.ifBlank { "Sin activo fijo" },
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = AppColors.TextPrimary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        val identity = listOfNotNull(
+                            unit.serialNumber?.takeIf { it.isNotBlank() }?.let { "Serie: $it" },
+                            unit.hostname?.takeIf { it.isNotBlank() }?.let { "Equipo: $it" },
+                        ).joinToString(" · ")
+                        if (identity.isNotBlank()) {
+                            Text(
+                                identity,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = AppColors.TextFaint,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    StatusChip(
+                        label = if (link.returned) "Devuelta" else "Asignada",
+                        tone = if (link.returned) BentoTone.Mint else BentoTone.Sea,
+                    )
+                }
+            }
+        }
     }
 }
 

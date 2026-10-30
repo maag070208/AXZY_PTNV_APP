@@ -96,6 +96,12 @@ fun RolesPermissionsScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 10.dp)) {
+            Text(
+                "Control de acceso: roles, matriz de permisos, personas, reglas ABAC y actividad.",
+                style = MaterialTheme.typography.bodySmall,
+                color = AppColors.TextMuted,
+            )
+            Spacer(Modifier.height(8.dp))
             BentoTabs(
                 items = tabs.map { BentoTabItem(it.label, it.icon) },
                 selectedIndex = selected.coerceIn(0, tabs.lastIndex),

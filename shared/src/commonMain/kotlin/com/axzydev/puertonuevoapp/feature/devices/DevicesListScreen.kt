@@ -11,10 +11,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,11 +36,14 @@ import com.axzydev.puertonuevoapp.core.network.devices.DeviceDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.ui.AppCard
+import com.axzydev.puertonuevoapp.core.ui.BentoIconButton
 import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
 import com.axzydev.puertonuevoapp.core.ui.AppSearchField
 import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
+import com.axzydev.puertonuevoapp.core.ui.PillButton
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.deviceStatusLabel
 
@@ -52,12 +59,31 @@ fun DevicesListScreen(viewModel: DevicesListViewModel = viewModel { DevicesListV
 
     Column(modifier = Modifier.fillMaxSize().imePadding()) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                "Inventario y disponibilidad",
-                style = MaterialTheme.typography.bodySmall,
-                color = AppColors.TextMuted,
-                modifier = Modifier.padding(top = 3.dp),
-            )
+            // Encabezado: descripción + acción primaria (cargar Excel) a la derecha.
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "Inventario y disponibilidad",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = AppColors.TextMuted,
+                    modifier = Modifier.weight(1f),
+                )
+                if (canManageTypes) {
+                    BentoIconButton(
+                        icon = Icons.Filled.Settings,
+                        contentDescription = "Administrar los tipos de equipo",
+                        onClick = { navigator.push(Screen.DeviceTypesList) },
+                    )
+                }
+                if (canImportDevices) {
+                    Spacer(Modifier.width(10.dp))
+                    PillButton(
+                        text = "Cargar Excel",
+                        onClick = { navigator.push(Screen.DeviceImport) },
+                        variant = PillButtonVariant.Secondary,
+                        leadingIcon = Icons.Filled.UploadFile,
+                    )
+                }
+            }
             Spacer(Modifier.height(10.dp))
             AppSearchField(
                 value = state.query,
@@ -71,20 +97,6 @@ fun DevicesListScreen(viewModel: DevicesListViewModel = viewModel { DevicesListV
                         label = label,
                         selected = state.statusFilter == value,
                         onClick = { viewModel.onStatusFilterChange(value) },
-                    )
-                }
-                if (canImportDevices) {
-                    AppFilterChip(
-                        label = "Cargar Excel",
-                        selected = false,
-                        onClick = { navigator.push(Screen.DeviceImport) },
-                    )
-                }
-                if (canManageTypes) {
-                    AppFilterChip(
-                        label = "Tipos de equipo",
-                        selected = false,
-                        onClick = { navigator.push(Screen.DeviceTypesList) },
                     )
                 }
             }

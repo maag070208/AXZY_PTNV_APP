@@ -17,6 +17,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,10 +42,12 @@ import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.ui.AppCard
-import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
+import com.axzydev.puertonuevoapp.core.ui.BentoIconButton
 import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
+import com.axzydev.puertonuevoapp.core.ui.PillButton
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
 import com.axzydev.puertonuevoapp.core.util.conditionLabel
@@ -296,11 +301,12 @@ fun NewInventoryMovementScreen(deviceId: String? = null) {
                     Spacer(Modifier.height(10.dp))
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    AppFilterChip(
-                        label = "Agregar identidad",
-                        selected = false,
-                        enabled = state.canAddIdentity,
+                    PillButton(
+                        text = "Agregar identidad",
                         onClick = viewModel::addIdentityRow,
+                        enabled = state.canAddIdentity,
+                        variant = PillButtonVariant.Secondary,
+                        leadingIcon = Icons.Filled.Add,
                     )
                 }
                 if (!state.canAddIdentity) {
@@ -369,10 +375,9 @@ private fun EntryIdentityCard(
                 color = AppColors.TextPrimary,
                 modifier = Modifier.weight(1f),
             )
-            AppFilterChip(
-                label = "Quitar",
-                selected = true,
-                selectedColor = AppColors.Danger,
+            BentoIconButton(
+                icon = Icons.Filled.Close,
+                contentDescription = "Quitar identidad de la pieza",
                 onClick = onRemove,
             )
         }

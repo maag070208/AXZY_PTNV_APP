@@ -30,15 +30,11 @@ fun simpleCatalogSources(hrApi: HrApi, ticketsApi: TicketsApi): Map<CatalogsTab,
         list = { includeInactive ->
             hrApi.documentTypes(includeInactive).map { SimpleCatalogEntry(it.id, it.name, it.active) }
         },
-        create = { name ->
-            hrApi.createDocumentType(DocumentTypeCreateInput(name = name))
-            Unit
-        },
+        create = { name -> hrApi.createDocumentType(DocumentTypeCreateInput(name = name)) },
         update = { id, name, active ->
             hrApi.updateDocumentType(id, DocumentTypeUpdateInput(name = name, active = active))
-            Unit
         },
-        remove = { id -> hrApi.removeDocumentType(id); Unit },
+        remove = { id -> hrApi.removeDocumentType(id) },
     )
 
     val genders = SimpleCatalogSource(
@@ -50,12 +46,11 @@ fun simpleCatalogSources(hrApi: HrApi, ticketsApi: TicketsApi): Map<CatalogsTab,
         list = { includeInactive ->
             hrApi.genders(includeInactive).map { SimpleCatalogEntry(it.id, it.name, it.active) }
         },
-        create = { name -> hrApi.createGender(name); Unit },
+        create = { name -> hrApi.createGender(name) },
         update = { id, name, active ->
             hrApi.updateGender(id, HrCatalogUpdateInput(name = name, active = active))
-            Unit
         },
-        remove = { id -> hrApi.removeGender(id); Unit },
+        remove = { id -> hrApi.removeGender(id) },
     )
 
     val bloodTypes = SimpleCatalogSource(
@@ -67,12 +62,11 @@ fun simpleCatalogSources(hrApi: HrApi, ticketsApi: TicketsApi): Map<CatalogsTab,
         list = { includeInactive ->
             hrApi.bloodTypes(includeInactive).map { SimpleCatalogEntry(it.id, it.name, it.active) }
         },
-        create = { name -> hrApi.createBloodType(name); Unit },
+        create = { name -> hrApi.createBloodType(name) },
         update = { id, name, active ->
             hrApi.updateBloodType(id, HrCatalogUpdateInput(name = name, active = active))
-            Unit
         },
-        remove = { id -> hrApi.removeBloodType(id); Unit },
+        remove = { id -> hrApi.removeBloodType(id) },
     )
 
     val ticketCategories = SimpleCatalogSource(
@@ -83,12 +77,11 @@ fun simpleCatalogSources(hrApi: HrApi, ticketsApi: TicketsApi): Map<CatalogsTab,
         list = { includeInactive ->
             ticketsApi.categories(includeInactive).map { SimpleCatalogEntry(it.id, it.name, it.active) }
         },
-        create = { name -> ticketsApi.createCategory(name); Unit },
+        create = { name -> ticketsApi.createCategory(name) },
         update = { id, name, active ->
             ticketsApi.updateCategory(id, TicketCategoryUpdateInput(name = name, active = active))
-            Unit
         },
-        remove = { id -> ticketsApi.removeCategory(id); Unit },
+        remove = { id -> ticketsApi.removeCategory(id) },
     )
 
     return mapOf(

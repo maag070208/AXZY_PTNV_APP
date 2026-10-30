@@ -126,9 +126,8 @@ fun DisciplinaryReportDetailScreen(reportId: String) {
         Spacer(Modifier.height(12.dp))
 
         AppCard(modifier = Modifier.fillMaxWidth()) {
-            SectionLabel("Incidente")
+            SectionLabel("Hechos del incidente")
             DetailLine("Fecha del incidente", formatShortDate(report.incidentDate))
-            DetailLine("Motivo", disciplinaryReasonLabel(report.reason))
             Spacer(Modifier.height(8.dp))
             Text(
                 "Descripción del hecho",

@@ -39,6 +39,8 @@ class DepartmentsListViewModel(
 
     fun onQueryChange(value: String) = _uiState.update { it.copy(query = value) }
 
+    fun setStatus(status: DepartmentStatusFilter) = _uiState.update { it.copy(status = status) }
+
     fun openCreate() = _uiState.update { it.copy(showCreate = true, newName = "") }
     fun dismissCreate() = _uiState.update { it.copy(showCreate = false) }
     fun onNewNameChange(value: String) = _uiState.update { it.copy(newName = value) }

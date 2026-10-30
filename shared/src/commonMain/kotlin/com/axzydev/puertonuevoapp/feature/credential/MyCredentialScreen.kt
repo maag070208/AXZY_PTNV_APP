@@ -33,8 +33,11 @@ import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.AppShape
+import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppCard
+import com.axzydev.puertonuevoapp.core.ui.BentoAvatar
 import com.axzydev.puertonuevoapp.core.ui.RemoteImage
+import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.roleLabel
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 
@@ -60,12 +63,21 @@ fun MyCredentialScreen() {
             contentPadding = PaddingValues(20.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                RemoteImage(
-                    path = state.photoUrl,
-                    loadBytes = { AppContainer.apiClient.getBytes(it) },
-                    modifier = Modifier.size(72.dp).clip(CircleShape),
-                    contentDescription = state.name,
-                )
+                // Foto del expediente si existe; si no, avatar con iniciales (nunca un ícono vacío).
+                if (state.photoUrl != null) {
+                    RemoteImage(
+                        path = state.photoUrl,
+                        loadBytes = { AppContainer.apiClient.getBytes(it) },
+                        modifier = Modifier.size(72.dp).clip(CircleShape),
+                        contentDescription = state.name,
+                    )
+                } else {
+                    BentoAvatar(
+                        name = state.name,
+                        color = MaterialTheme.colorScheme.primary,
+                        size = 72.dp,
+                    )
+                }
                 Spacer(Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(state.name, style = MaterialTheme.typography.titleLarge, color = AppColors.TextPrimary)
@@ -77,6 +89,11 @@ fun MyCredentialScreen() {
                     state.employeeNumber?.let {
                         Text("No. de empleado: $it", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
                     }
+                    Spacer(Modifier.height(6.dp))
+                    StatusChip(
+                        label = "Credencial activa",
+                        tone = BentoTone.Mint,
+                    )
                 }
             }
 

@@ -137,21 +137,21 @@ fun ScheduleAssignScreen() {
             }
 
             item {
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                Column {
                     AppTextField(
                         value = state.fromDate,
                         onValueChange = viewModel::onFromDateChange,
-                        label = { Text("Desde") },
+                        label = { Text("Vigencia desde") },
                         placeholder = { Text("AAAA-MM-DD") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxWidth(),
                     )
+                    Spacer(Modifier.height(4.dp))
                     Text(
                         "Cierra la vigencia anterior de cada persona y arranca la nueva ese día.",
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.labelSmall,
                         color = AppColors.TextFaint,
-                        modifier = Modifier.weight(1f).padding(top = 22.dp),
                     )
                 }
             }

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Devices
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material.icons.filled.Groups
@@ -46,6 +47,7 @@ import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -206,7 +208,7 @@ private fun HomeContent(
             .fillMaxSize()
             .background(AppBento.canvas)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(SECTION_GAP),
     ) {
         GreetingHeader(user = user)
@@ -259,17 +261,20 @@ private fun HomeUiState.hasAnyData(): Boolean =
  */
 @Composable
 private fun GreetingHeader(user: SessionUser) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Column(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
+    val firstName = user.name.trim().substringBefore(' ')
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 "${greetingForNow()},",
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Black,
                 color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Text(
-                user.name.trim().substringBefore(' '),
-                style = MaterialTheme.typography.headlineLarge,
+                firstName,
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Black,
                 color = MaterialTheme.colorScheme.onBackground,
                 maxLines = 1,
@@ -279,7 +284,7 @@ private fun GreetingHeader(user: SessionUser) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 "${shortDateEs()} · Puerto Nuevo",
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -322,50 +327,72 @@ private fun SummaryTiles(
     val custody = summary.custodyLetters
     val metrics = summary.ticketMetrics
     val brand = AppBento.tone(BentoTone.Brand)
-    val availablePct = if (devices.total > 0) (devices.available * 100f / devices.total).roundToInt() else 0
+    val plain = AppBento.tone(BentoTone.Plain)
+    val hasDevices = devices.total > 0
+    val availablePct = if (hasDevices) (devices.available * 100f / devices.total).roundToInt() else 0
+    // Igual criterio que la web: verde si casi todo está disponible, ámbar si baja y rojo si es crítico.
+    val gaugeColor = when {
+        availablePct >= 80 -> AppColors.Success
+        availablePct >= 50 -> AppColors.Warning
+        else -> AppColors.Danger
+    }
 
     // Dispositivos: tarjeta principal con medidor de disponibilidad.
     BentoTile(
         label = "Dispositivos",
-        tone = BentoTone.Brand,
+        tone = if (hasDevices) BentoTone.Brand else BentoTone.Plain,
         icon = Icons.Filled.Devices,
-        bigValue = true,
-        value = rememberCountUp(devices.total).toString(),
-        aside = "${devices.available} disponibles",
+        bigValue = hasDevices,
+        value = if (hasDevices) rememberCountUp(devices.total).toString() else "0",
+        aside = if (hasDevices) "${devices.available} disponibles" else "Sin datos",
         onClick = if (user.canViewDevices) ({ onNavigate(Screen.DevicesList) }) else null,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        if (devices.total > 0) {
+        if (hasDevices) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 BentoGauge(
                     fraction = devices.available.toFloat() / devices.total,
-                    color = AppColors.Warning,
+                    color = gaugeColor,
                     trackColor = brand.content.copy(alpha = 0.18f),
+                    height = 84.dp,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OnBrandChip("Disponibles $availablePct%")
+                    // El disponible ya va en el aside; aquí solo el préstamo activo.
                     OnBrandChip("En préstamo ${devices.assigned}")
                 }
             }
+        } else {
+            Text(
+                "Sin dispositivos registrados",
+                style = MaterialTheme.typography.bodySmall,
+                color = plain.content.copy(alpha = 0.65f),
+            )
         }
     }
 
-    // Cartas activas: olas.
+    // Cartas activas: olas (en cero, tono neutro y sin la ola vacía).
+    val hasLetters = custody.total > 0
     BentoTile(
         label = "Cartas activas",
-        tone = BentoTone.Lavender,
+        tone = if (hasLetters) BentoTone.Lavender else BentoTone.Plain,
         icon = Icons.Filled.Description,
-        bigValue = true,
-        value = rememberCountUp(custody.active).toString(),
-        aside = "de ${custody.total} cartas",
+        bigValue = hasLetters,
+        value = if (hasLetters) rememberCountUp(custody.active).toString() else "0",
+        aside = if (hasLetters) "de ${custody.total} cartas" else "Sin datos",
         onClick = if (user.canViewCustodyLetters) ({ onNavigate(Screen.CustodyLettersList) }) else null,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        if (custody.total > 0) {
+        if (hasLetters) {
             BentoWave(
                 level = custody.active.toFloat() / custody.total,
                 color = AppBento.tone(BentoTone.Lavender).content,
                 height = 40.dp,
+            )
+        } else {
+            Text(
+                "Sin cartas registradas",
+                style = MaterialTheme.typography.bodySmall,
+                color = plain.content.copy(alpha = 0.65f),
             )
         }
     }
@@ -376,50 +403,66 @@ private fun SummaryTiles(
     TileRow {
         BentoTile(
             label = "Salidas dañadas",
+            tone = if (damaged > 0) BentoTone.Rose else BentoTone.Plain,
             icon = Icons.Filled.Delete,
-            bigValue = true,
-            value = rememberCountUp(damaged).toString(),
-            valueColor = if (damaged > 0) AppColors.Danger else AppColors.Success,
+            bigValue = damaged > 0,
+            value = damaged.toString(),
+            valueColor = if (damaged > 0) AppColors.Danger else plain.content,
             onClick = if (user.canViewDevices) ({ onNavigate(Screen.InventoryMovements) }) else null,
             modifier = Modifier.weight(1f).fillMaxHeight(),
         ) {
             Text(
-                if (damaged == 0) "✓ Sin daños" else "de ${summary.materialOutputs.total} salidas",
+                if (damaged == 0) "Todo en orden" else "de ${summary.materialOutputs.total} salidas",
                 style = MaterialTheme.typography.labelSmall,
-                color = if (damaged == 0) AppColors.Success else MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
             )
         }
         BentoTile(
             label = "Resolución promedio",
-            tone = BentoTone.Sun,
+            tone = if (avg != null) BentoTone.Sea else BentoTone.Plain,
             icon = Icons.Filled.Schedule,
-            bigValue = true,
+            bigValue = avg != null,
             value = if (avg != null) "${oneDecimal(rememberCountUp(avg.toFloat()))} d" else "—",
             modifier = Modifier.weight(1f).fillMaxHeight(),
         ) {
-            Text("por tarea", style = MaterialTheme.typography.labelSmall)
+            Text(
+                if (avg != null) "por tarea" else "Sin datos",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+            )
         }
     }
 
-    // Tareas resueltas: segmentos.
+    // Tareas resueltas: segmentos (sin datos = nada que dibujar).
     val resolved = metrics.resolvedTasks
     val totalTasks = resolved + metrics.pendingTasks
+    val hasTasks = totalTasks > 0
     BentoTile(
         label = "Tareas resueltas",
-        tone = BentoTone.Mint,
+        tone = if (hasTasks) BentoTone.Mint else BentoTone.Plain,
         icon = Icons.Filled.TaskAlt,
-        bigValue = true,
-        value = rememberCountUp(resolved).toString(),
-        aside = "/ $totalTasks · ${metrics.pendingTasks} pendientes",
+        bigValue = hasTasks,
+        value = if (hasTasks) rememberCountUp(resolved).toString() else "0",
+        aside = if (hasTasks) "/ $totalTasks · ${metrics.pendingTasks} pendientes" else "Sin datos",
         onClick = if (user.canSeeAdminTasks) ({ onNavigate(Screen.AdminTasks) }) else null,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        BentoSegments(
-            total = totalTasks,
-            done = resolved,
-            color = AppColors.Success,
-            trackColor = AppBento.tone(BentoTone.Mint).content.copy(alpha = 0.15f),
-        )
+        if (hasTasks) {
+            BentoSegments(
+                total = totalTasks,
+                done = resolved,
+                color = AppColors.Success,
+                trackColor = AppBento.tone(BentoTone.Mint).content.copy(alpha = 0.15f),
+            )
+        } else {
+            Text(
+                "Sin tareas registradas",
+                style = MaterialTheme.typography.bodySmall,
+                color = plain.content.copy(alpha = 0.65f),
+            )
+        }
     }
 
     WeekActivityCard(summary.recentActivity)
@@ -438,15 +481,28 @@ private fun WeekActivityCard(activity: List<DashboardActivityDto>) {
     }
     val todayIdx = localWeekdayIndex(formatIsoUtc(currentTimeMillis())) ?: 0
     val plain = AppBento.tone(BentoTone.Plain)
-    BentoTile(label = "Actividad de la semana", icon = Icons.Filled.Timeline, modifier = Modifier.fillMaxWidth()) {
-        BentoWeekBars(
-            days = counts.mapIndexed { i, n ->
-                BentoWeekDay(WEEK_LABELS[((todayIdx - (6 - i)) % 7 + 7) % 7], n, today = i == 6)
-            },
-            color = MaterialTheme.colorScheme.primary,
-            todayColor = AppColors.Warning,
-            contentColor = plain.content,
-        )
+    val total = counts.sum()
+    BentoTile(
+        label = "Actividad de la semana",
+        icon = Icons.Filled.Timeline,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        if (total > 0) {
+            BentoWeekBars(
+                days = counts.mapIndexed { i, n ->
+                    BentoWeekDay(WEEK_LABELS[((todayIdx - (6 - i)) % 7 + 7) % 7], n, today = i == 6)
+                },
+                color = MaterialTheme.colorScheme.primary,
+                todayColor = AppColors.Warning,
+                contentColor = plain.content,
+            )
+        } else {
+            Text(
+                "Sin actividad esta semana",
+                style = MaterialTheme.typography.bodySmall,
+                color = plain.content.copy(alpha = 0.65f),
+            )
+        }
     }
 }
 
@@ -462,8 +518,12 @@ private fun TeamEfficiencyCard(summary: DashboardSummaryDto, user: SessionUser, 
         onClick = if (user.canViewTickets) ({ onNavigate(Screen.TicketsList) }) else null,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        if (rows.isEmpty()) {
-            Text("Sin datos de resolución", style = MaterialTheme.typography.bodySmall, color = plain.content.copy(alpha = 0.6f))
+        if (rows.isEmpty() || total == 0) {
+            Text(
+                "Sin tareas resueltas todavía",
+                style = MaterialTheme.typography.bodySmall,
+                color = plain.content.copy(alpha = 0.65f),
+            )
         } else {
             val series = AppBento.series
             Column(verticalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.fillMaxWidth()) {
@@ -619,14 +679,14 @@ private fun TicketsWidgetCard(data: TicketsWidgetDto, user: SessionUser, onNavig
             )
             SubLabel("Más de ${data.staleDays} días abiertos")
             if (data.stale.isEmpty()) {
-                Text("Sin pendientes", style = MaterialTheme.typography.bodySmall, color = plain.content.copy(alpha = 0.6f))
+                Text("Todo en orden", style = MaterialTheme.typography.bodySmall, color = plain.content.copy(alpha = 0.6f))
             } else {
                 data.stale.forEach { t ->
                     PersonRow(
                         name = t.assignedTo,
                         title = t.title,
-                        subtitle = t.assignedTo ?: "Sin asignar",
-                        right = "${ticketPriorityLabel(t.priority)} · ${daysAgoLocal(t.createdAt) ?: 0} d",
+                        subtitle = t.assignedTo?.let { "Asignado a $it" } ?: "Sin asignar",
+                        right = "${ticketPriorityLabel(t.priority)} · ${agoLabel(daysAgoLocal(t.createdAt))}",
                         onClick = { onNavigate(Screen.TicketDetail(t.id)) },
                     )
                 }
@@ -634,9 +694,11 @@ private fun TicketsWidgetCard(data: TicketsWidgetDto, user: SessionUser, onNavig
             if (data.scope != "OWN") {
                 SubLabel("Abiertos por responsable")
                 if (data.openByAssignee.isEmpty()) {
-                    Text("Sin pendientes", style = MaterialTheme.typography.bodySmall, color = plain.content.copy(alpha = 0.6f))
+                    Text("Todo en orden", style = MaterialTheme.typography.bodySmall, color = plain.content.copy(alpha = 0.6f))
                 } else {
-                    data.openByAssignee.forEach { p -> PersonRow(p.name, p.name, null, p.open.toString()) }
+                    data.openByAssignee.forEach { p ->
+                        PersonRow(name = p.name, title = p.name, subtitle = null, right = "${p.open} abiertos")
+                    }
                 }
             }
         }
@@ -675,7 +737,7 @@ private fun TasksWidgetCard(data: TasksWidgetDto, user: SessionUser, onNavigate:
             )
             SubLabel(if (data.overdue.isEmpty()) "Atrasadas" else "Atrasadas (${data.overdue.size})")
             if (data.overdue.isEmpty()) {
-                Text("Sin pendientes", style = MaterialTheme.typography.bodySmall, color = plain.content.copy(alpha = 0.6f))
+                Text("Todo en orden", style = MaterialTheme.typography.bodySmall, color = plain.content.copy(alpha = 0.6f))
             } else {
                 data.overdue.forEach { t ->
                     PersonRow(
@@ -690,9 +752,11 @@ private fun TasksWidgetCard(data: TasksWidgetDto, user: SessionUser, onNavigate:
             if (data.scope != "OWN") {
                 SubLabel("Pendientes por persona")
                 if (data.pendingByUser.isEmpty()) {
-                    Text("Sin pendientes", style = MaterialTheme.typography.bodySmall, color = plain.content.copy(alpha = 0.6f))
+                    Text("Todo en orden", style = MaterialTheme.typography.bodySmall, color = plain.content.copy(alpha = 0.6f))
                 } else {
-                    data.pendingByUser.forEach { p -> PersonRow(p.name, p.name, null, p.pending.toString()) }
+                    data.pendingByUser.forEach { p ->
+                        PersonRow(name = p.name, title = p.name, subtitle = null, right = "${p.pending} pendientes")
+                    }
                 }
             }
         }
@@ -726,30 +790,40 @@ private fun PersonalPanel(state: HomeUiState, user: SessionUser, onNavigate: (Sc
     val brand = AppBento.tone(BentoTone.Brand)
     val plain = AppBento.tone(BentoTone.Plain)
 
-    // Expedientes: tarjeta principal con medidor y chips.
+    // Expedientes: tarjeta principal con medidor y chips (en cero, tono neutro).
+    val hasPeople = total > 0
     BentoTile(
         label = "Plantilla activa",
-        tone = BentoTone.Brand,
+        tone = if (hasPeople) BentoTone.Brand else BentoTone.Plain,
         icon = Icons.Filled.Groups,
-        bigValue = true,
-        value = rememberCountUp(total).toString(),
-        aside = "${total - complete} sin expediente completo",
+        bigValue = hasPeople,
+        value = if (hasPeople) rememberCountUp(total).toString() else "0",
+        aside = if (hasPeople) "${total - complete} sin expediente completo" else "Sin datos",
         onClick = { onNavigate(Screen.EmployeesList) },
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (total > 0) {
+        if (hasPeople) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 BentoGauge(
                     fraction = complete.toFloat() / total,
-                    color = AppColors.Warning,
+                    color = if (complete == total) AppColors.Success else AppColors.Warning,
                     trackColor = brand.content.copy(alpha = 0.18f),
+                    height = 84.dp,
                 )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OnBrandChip(
+                        if (required > 0) "Faltan obligatorios $required" else "Sin obligatorios pendientes",
+                    )
+                    OnBrandChip("Completos $complete")
+                }
+                OnBrandChip("Incompletos $incomplete")
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OnBrandChip("Faltan obligatorios $required")
-                OnBrandChip("Completos $complete")
-            }
-            OnBrandChip("Incompletos $incomplete")
+        } else {
+            Text(
+                "Sin expedientes registrados",
+                style = MaterialTheme.typography.bodySmall,
+                color = plain.content.copy(alpha = 0.65f),
+            )
         }
     }
 
@@ -757,29 +831,34 @@ private fun PersonalPanel(state: HomeUiState, user: SessionUser, onNavigate: (Sc
     val c = state.attendance?.counts ?: AttendanceCountsDto()
     BentoTile(label = "Asistencia de hoy", icon = Icons.Filled.HowToReg, modifier = Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            StatusChip("${c.present + c.late} han llegado", BentoTone.Mint)
+            val arrived = c.present + c.late
+            StatusChip(
+                if (arrived > 0) "$arrived han llegado" else "Nadie ha llegado aún",
+                if (arrived > 0) BentoTone.Mint else BentoTone.Plain,
+            )
             MiniGrid(attendanceSpecs(c), columns = 2)
         }
     }
 
     // Horas extra de la semana.
     val o = state.overtime ?: OvertimeWeekWidgetDto()
+    val hasExtra = o.extraMin > 0
     BentoTile(
         label = "Horas extra de la semana",
-        tone = BentoTone.Sun,
+        tone = if (hasExtra) BentoTone.Sun else BentoTone.Plain,
         icon = Icons.Filled.Timer,
-        bigValue = true,
+        bigValue = hasExtra,
         value = formatMinutesAsHours(o.extraMin),
-        aside = "Calculadas",
+        aside = if (hasExtra) "Calculadas" else "Sin datos",
         modifier = Modifier.fillMaxWidth(),
     ) {
         MiniGrid(
             listOf(
-                MiniSpec("Aprobadas", formatMinutesAsHours(o.approvedExtraMin), BentoTone.Mint),
-                MiniSpec("No aprobadas", formatMinutesAsHours(o.pendingExtraMin), BentoTone.Plain),
-                MiniSpec("Rechazadas", formatMinutesAsHours(o.rejectedExtraMin), BentoTone.Rose),
+                MiniSpec("Aprobadas", formatMinutesAsHours(o.approvedExtraMin), alarm(o.approvedExtraMin, BentoTone.Mint)),
+                MiniSpec("No aprobadas", formatMinutesAsHours(o.pendingExtraMin), alarm(o.pendingExtraMin, BentoTone.Sun)),
+                MiniSpec("Rechazadas", formatMinutesAsHours(o.rejectedExtraMin), alarm(o.rejectedExtraMin, BentoTone.Rose)),
             ),
-            columns = 3,
+            columns = 2,
             labelLines = 2,
         )
     }
@@ -816,12 +895,12 @@ private fun PersonalPanel(state: HomeUiState, user: SessionUser, onNavigate: (Sc
 }
 
 private fun attendanceSpecs(c: AttendanceCountsDto): List<MiniSpec> = listOf(
-    MiniSpec("A tiempo", c.present, BentoTone.Mint),
-    MiniSpec("Retardo", c.late, BentoTone.Sun),
-    MiniSpec("No ha llegado", c.notArrived, BentoTone.Rose),
-    MiniSpec("Aún no es su hora", c.notYet, BentoTone.Sea),
-    MiniSpec("En sitio", c.onSite, BentoTone.Lavender),
-    MiniSpec("Sin vínculo al reloj", c.unlinked, BentoTone.Plain),
+    MiniSpec("A tiempo", c.present, alarm(c.present, BentoTone.Mint)),
+    MiniSpec("Retardo", c.late, alarm(c.late, BentoTone.Sun)),
+    MiniSpec("No ha llegado", c.notArrived, alarm(c.notArrived, BentoTone.Rose)),
+    MiniSpec("Aún no es su hora", c.notYet, alarm(c.notYet, BentoTone.Sea)),
+    MiniSpec("En sitio", c.onSite, alarm(c.onSite, BentoTone.Lavender)),
+    MiniSpec("Sin vínculo al reloj", c.unlinked, alarm(c.unlinked, BentoTone.Sun)),
 )
 
 /** Asistencia de hoy con el alcance de `attendance.view` (RH/gerencia: todos; jefe de área: su departamento; empleado: su día). */
@@ -850,6 +929,7 @@ private fun AttendanceWidgetCard(data: AttendanceTodayWidgetDto, user: SessionUs
             }
         } else {
             val c = data.counts
+            val dayTotal = c.present + c.late + c.notArrived + c.notYet
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 MiniGrid(attendanceSpecs(c).filterNot { it.label == "Sin vínculo al reloj" && c.unlinked == 0 }, columns = 2)
                 SubLabel("Cómo va el día")
@@ -859,7 +939,14 @@ private fun AttendanceWidgetCard(data: AttendanceTodayWidgetDto, user: SessionUs
                     BentoSegment("No ha llegado", c.notArrived, AppColors.Danger),
                     BentoSegment("Aún no es su hora", c.notYet, AppColors.Info),
                 )
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                if (dayTotal == 0) {
+                    Text(
+                        "Sin datos de asistencia hoy",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = plain.content.copy(alpha = 0.65f),
+                    )
+                }
+                if (dayTotal > 0) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                     BentoDonut(
                         segments = segments,
                         trackColor = plain.content.copy(alpha = 0.08f),
@@ -880,17 +967,32 @@ private fun AttendanceWidgetCard(data: AttendanceTodayWidgetDto, user: SessionUs
                 SubLabel("No han llegado")
                 val notArrived = data.rows.filter { it.status == "NOT_ARRIVED" }
                 if (notArrived.isEmpty()) {
-                    Text("Sin pendientes", style = MaterialTheme.typography.bodySmall, color = plain.content.copy(alpha = 0.6f))
+                    Text("Todo en orden", style = MaterialTheme.typography.bodySmall, color = plain.content.copy(alpha = 0.6f))
                 } else {
-                    notArrived.forEach { PersonRow(it.name, it.name, it.departmentName ?: "—", "Horario ${it.shift ?: "—"}") }
+                    notArrived.forEach {
+                        PersonRow(
+                            name = it.name,
+                            title = it.name,
+                            subtitle = it.departmentName ?: "Sin departamento",
+                            right = "Turno ${it.shift ?: "—"}",
+                        )
+                    }
                 }
                 SubLabel("Llegaron tarde")
                 val late = data.rows.filter { it.status == "LATE" }.sortedByDescending { it.lateMin }
                 if (late.isEmpty()) {
-                    Text("Sin pendientes", style = MaterialTheme.typography.bodySmall, color = plain.content.copy(alpha = 0.6f))
+                    Text("Todo en orden", style = MaterialTheme.typography.bodySmall, color = plain.content.copy(alpha = 0.6f))
                 } else {
                     late.forEach {
-                        PersonRow(it.name, it.name, it.departmentName ?: "—", "Entrada ${formatLocalTime(it.entryAt)} · ${it.lateMin} min tarde")
+                        PersonRow(
+                            name = it.name,
+                            title = it.name,
+                            subtitle = listOfNotNull(
+                                it.departmentName,
+                                it.entryAt?.let { e -> "Entrada ${formatLocalTime(e)}" },
+                            ).joinToString(" · ").ifBlank { "Sin departamento" },
+                            right = "${it.lateMin} min",
+                        )
                     }
                 }
             }
@@ -973,9 +1075,9 @@ private fun ClockTab(state: HomeUiState, user: SessionUser, onNavigate: (Screen)
     BentoTile(label = "Pendientes de configuración", icon = Icons.Filled.Build, modifier = Modifier.fillMaxWidth()) {
         MiniGrid(
             listOf(
-                MiniSpec("Números del reloj sin vincular", setup.unlinkedClockNumbers, BentoTone.Sun),
-                MiniSpec("Personal sin vínculo al reloj", setup.personalWithoutClock, BentoTone.Sun),
-                MiniSpec("Personal sin horario", setup.personalWithoutSchedule, BentoTone.Sun),
+                MiniSpec("Números del reloj sin vincular", setup.unlinkedClockNumbers, alarm(setup.unlinkedClockNumbers, BentoTone.Sun)),
+                MiniSpec("Personal sin vínculo al reloj", setup.personalWithoutClock, alarm(setup.personalWithoutClock, BentoTone.Sun)),
+                MiniSpec("Personal sin horario", setup.personalWithoutSchedule, alarm(setup.personalWithoutSchedule, BentoTone.Sun)),
             ),
             columns = 3,
             labelLines = 4,
@@ -984,22 +1086,24 @@ private fun ClockTab(state: HomeUiState, user: SessionUser, onNavigate: (Screen)
 
     // Accesos de hoy: tarjeta principal con medidor de quién sigue dentro.
     val inside = access.onSite.size
+    val hasAccess = access.entries > 0
     BentoTile(
         label = "Accesos de hoy",
-        tone = BentoTone.Brand,
+        tone = if (hasAccess) BentoTone.Brand else BentoTone.Plain,
         icon = Icons.Filled.MeetingRoom,
-        bigValue = true,
+        bigValue = hasAccess,
         value = rememberCountUp(inside).toString(),
-        aside = "de ${access.entries} entradas",
+        aside = if (hasAccess) "de ${access.entries} entradas" else "Sin datos",
         onClick = if (user.canQueryAccessLog) ({ onNavigate(Screen.AccessLog) }) else null,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (access.entries > 0) {
+            if (hasAccess) {
                 BentoGauge(
                     fraction = inside.toFloat() / access.entries,
-                    color = AppColors.Warning,
+                    color = AppColors.Info,
                     trackColor = brand.content.copy(alpha = 0.18f),
+                    height = 84.dp,
                 )
             } else {
                 Text(
@@ -1026,7 +1130,12 @@ private fun ClockTab(state: HomeUiState, user: SessionUser, onNavigate: (Screen)
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 access.onSite.forEach { p ->
-                    PersonRow(p.name ?: "—", p.name ?: "—", p.site ?: "—", "Desde ${formatLocalTime(p.since)}")
+                    PersonRow(
+                        name = p.name,
+                        title = p.name ?: "—",
+                        subtitle = p.site ?: "Sin sitio",
+                        right = formatLocalTime(p.since),
+                    )
                 }
             }
         }
@@ -1080,19 +1189,20 @@ private fun SystemTab(state: HomeUiState, onNavigate: (Screen) -> Unit) {
     // Salud general: relojes sincronizados en las últimas 2 h.
     BentoTile(
         label = "Salud del sistema",
-        tone = BentoTone.Brand,
+        tone = if (total > 0) BentoTone.Brand else BentoTone.Plain,
         icon = Icons.Filled.Speed,
-        bigValue = true,
+        bigValue = total > 0,
         value = rememberCountUp(fresh).toString(),
-        aside = "de $total relojes",
+        aside = if (total > 0) "de $total relojes" else "Sin datos",
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (total > 0) {
                 BentoGauge(
                     fraction = fresh.toFloat() / total,
-                    color = AppColors.Success,
+                    color = if (stale > 0) AppColors.Warning else AppColors.Success,
                     trackColor = brand.content.copy(alpha = 0.18f),
+                    height = 84.dp,
                 )
             } else {
                 Text("Sin relojes registrados", style = MaterialTheme.typography.bodySmall, color = brand.content.copy(alpha = 0.7f))
@@ -1168,7 +1278,10 @@ private fun SystemTab(state: HomeUiState, onNavigate: (Screen) -> Unit) {
                             )
                         }
                         Spacer(Modifier.width(8.dp))
-                        Text(if (late) "atrasado" else "al día", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = color)
+                        StatusChip(
+                            if (late) "Atrasado" else "Al día",
+                            if (late) BentoTone.Sun else BentoTone.Mint,
+                        )
                     }
                 }
             }
@@ -1198,7 +1311,12 @@ private fun ShortcutRow(label: String, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(label, style = MaterialTheme.typography.titleSmall, color = content, modifier = Modifier.weight(1f))
-        Text("›", style = MaterialTheme.typography.titleMedium, color = content.copy(alpha = 0.5f))
+        Icon(
+            Icons.Filled.ChevronRight,
+            contentDescription = null,
+            tint = content.copy(alpha = 0.5f),
+            modifier = Modifier.size(20.dp),
+        )
     }
 }
 
@@ -1284,9 +1402,9 @@ private fun TileRow(content: @Composable RowScope.() -> Unit) {
 /** Cuadrícula de mini mosaicos de [columns] columnas (rellena la última fila). */
 @Composable
 private fun MiniGrid(items: List<MiniSpec>, columns: Int, labelLines: Int = 2) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         items.chunked(columns).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
                 row.forEach {
                     BentoMiniStat(
                         it.label, it.value, tone = it.tone, labelMaxLines = labelLines,
@@ -1334,9 +1452,23 @@ private fun PersonRow(name: String?, title: String, subtitle: String?, right: St
         }
         if (right != null) {
             Spacer(Modifier.width(8.dp))
-            Text(right, style = MaterialTheme.typography.labelSmall, color = content.copy(alpha = 0.7f), maxLines = 1)
+            Text(
+                right,
+                style = MaterialTheme.typography.labelSmall,
+                color = content.copy(alpha = 0.7f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
 
 private fun oneDecimal(x: Float): String = ((x * 10f).roundToInt() / 10f).toString()
+
+/** "hoy" / "ayer" / "hace 3 d": fechas humanas, nunca un ISO ni un número suelto. */
+private fun agoLabel(days: Int?): String = when {
+    days == null -> "—"
+    days <= 0 -> "hoy"
+    days == 1 -> "ayer"
+    else -> "hace $days d"
+}

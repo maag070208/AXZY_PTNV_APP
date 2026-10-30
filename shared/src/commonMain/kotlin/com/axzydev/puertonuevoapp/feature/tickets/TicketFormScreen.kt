@@ -1,10 +1,7 @@
 package com.axzydev.puertonuevoapp.feature.tickets
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,12 +18,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,16 +38,20 @@ import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.session.SessionUser
 import com.axzydev.puertonuevoapp.core.theme.AppBento
 import com.axzydev.puertonuevoapp.core.theme.AppColors
-import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
 import com.axzydev.puertonuevoapp.core.ui.AppModal
+import com.axzydev.puertonuevoapp.core.ui.AppSearchField
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
+import com.axzydev.puertonuevoapp.core.ui.BentoAvatar
+import com.axzydev.puertonuevoapp.core.ui.BentoInsight
+import com.axzydev.puertonuevoapp.core.ui.BentoErrorState
 import com.axzydev.puertonuevoapp.core.ui.BentoState
+import com.axzydev.puertonuevoapp.core.ui.LoadingState
+import com.axzydev.puertonuevoapp.core.ui.PillButton
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
-import com.axzydev.puertonuevoapp.core.util.initials
 
 /**
  * Alta de ticket. Para ADMIN muestra además **"A nombre de"**: el ticket puede
@@ -90,7 +85,12 @@ fun NewTicketScreen(
         }
     }
 
-    TicketFormContent(state = state, viewModel = viewModel, submitLabel = "Crear ticket")
+    TicketFormContent(
+        state = state,
+        viewModel = viewModel,
+        description = "Cuéntanos qué pasó para poder atenderlo.",
+        submitLabel = "Crear ticket",
+    )
 }
 
 @Composable
@@ -106,19 +106,26 @@ fun EditTicketScreen(ticketId: String) {
     }
 
     if (state.loading) {
-        com.axzydev.puertonuevoapp.core.ui.LoadingState(modifier = Modifier.fillMaxSize())
+        LoadingState(modifier = Modifier.fillMaxSize())
     } else {
-        TicketFormContent(state = state, viewModel = viewModel, submitLabel = "Guardar cambios")
+        TicketFormContent(
+            state = state,
+            viewModel = viewModel,
+            description = "Actualiza la información del ticket.",
+            submitLabel = "Guardar cambios",
+        )
     }
 }
 
 /** ADMIN según los roles efectivos (el API decide con el rol, no con un permiso). */
 private fun SessionUser.isAdmin(): Boolean = role == "ADMIN" || "ADMIN" in roles
 
+/** Formulario por bloques, campos a una columna y botón primario al final. */
 @Composable
 private fun TicketFormContent(
     state: TicketFormUiState,
     viewModel: TicketFormViewModel,
+    description: String,
     submitLabel: String,
 ) {
     Column(
@@ -129,62 +136,68 @@ private fun TicketFormContent(
             .navigationBarsPadding()
             .padding(16.dp),
     ) {
-        AppTextField(
-            value = state.title,
-            onValueChange = viewModel::onTitleChange,
-            label = { Text("Título") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
+        Text(
+            description,
+            style = MaterialTheme.typography.bodySmall,
+            color = AppColors.TextMuted,
         )
+
         Spacer(Modifier.height(12.dp))
-        AppTextField(
-            value = state.description,
-            onValueChange = viewModel::onDescriptionChange,
-            label = { Text("Descripción") },
-            minLines = 4,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Spacer(Modifier.height(12.dp))
-        SimpleDropdownField(
-            label = "Prioridad",
-            value = state.priority,
-            options = ticketPriorityOptions,
-            onSelect = viewModel::onPriorityChange,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Spacer(Modifier.height(12.dp))
-        SimpleDropdownField(
-            label = "Categoría",
-            value = state.categoryId,
-            options = state.categoryOptions,
-            onSelect = viewModel::onCategoryChange,
-            modifier = Modifier.fillMaxWidth(),
-        )
+        TicketSection("Datos del ticket") {
+            AppTextField(
+                value = state.title,
+                onValueChange = viewModel::onTitleChange,
+                label = { Text("Título") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(12.dp))
+            AppTextField(
+                value = state.description,
+                onValueChange = viewModel::onDescriptionChange,
+                label = { Text("Descripción") },
+                minLines = 4,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(12.dp))
+            SimpleDropdownField(
+                label = "Prioridad",
+                value = state.priority,
+                options = ticketPriorityOptions,
+                onSelect = viewModel::onPriorityChange,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(12.dp))
+            SimpleDropdownField(
+                label = "Categoría",
+                value = state.categoryId,
+                options = state.categoryOptions,
+                onSelect = viewModel::onCategoryChange,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
 
         if (state.canCaptureForOthers) {
             Spacer(Modifier.height(12.dp))
-            RequesterField(state = state, onOpen = viewModel::openRequesterPicker)
+            TicketSection("A nombre de quién") {
+                RequesterContent(state = state, onOpen = viewModel::openRequesterPicker)
+            }
         }
 
-        if (state.error != null) {
+        state.error?.let { message ->
             Spacer(Modifier.height(12.dp))
-            Text(state.error, color = AppColors.Danger, style = MaterialTheme.typography.bodySmall)
+            BentoErrorState(message = message, onRetry = null)
         }
 
         Spacer(Modifier.height(20.dp))
-        Button(
+        PillButton(
+            text = submitLabel,
             onClick = viewModel::submit,
-            enabled = state.isValid && !state.saving,
-            shape = MaterialTheme.shapes.medium,
-            colors = ButtonDefaults.buttonColors(containerColor = AppColors.EmeraldPrimary),
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-        ) {
-            if (state.saving) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp), color = AppColors.Surface, strokeWidth = 2.dp)
-            } else {
-                Text(submitLabel, style = MaterialTheme.typography.titleMedium)
-            }
-        }
+            enabled = state.isValid,
+            loading = state.saving,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(20.dp))
     }
 
     if (state.canCaptureForOthers && state.showRequesterPicker) {
@@ -202,86 +215,53 @@ private fun TicketFormContent(
 // ── "A nombre de" (solo ADMIN) ───────────────────────────────────────────────
 
 @Composable
-private fun RequesterField(
+private fun RequesterContent(
     state: TicketFormUiState,
     onOpen: () -> Unit,
 ) {
-    AppCard(
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(14.dp),
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .background(AppColors.EmeraldPrimary.copy(alpha = 0.12f), AppShape.pill),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Group,
-                    contentDescription = null,
-                    tint = AppColors.EmeraldPrimary,
-                    modifier = Modifier.size(18.dp),
-                )
-            }
-            Spacer(Modifier.width(10.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    "A nombre de",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = AppColors.TextFaint,
-                )
-                Text(
-                    state.requesterLabel,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = AppColors.TextPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            Spacer(Modifier.width(8.dp))
-            AppFilterChip(
-                label = if (state.isOnBehalf) "Cambiar" else "Elegir",
-                selected = false,
-                onClick = onOpen,
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        BentoAvatar(name = state.requesterLabel, color = AppColors.EmeraldPrimary, size = 34.dp)
+        Spacer(Modifier.width(10.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                state.requesterLabel,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = AppColors.TextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                if (state.isOnBehalf) "El ticket quedará a su nombre" else "A tu nombre",
+                style = MaterialTheme.typography.labelSmall,
+                color = AppColors.TextFaint,
+                maxLines = 1,
             )
         }
-
-        if (state.isOnBehalf) {
-            val warning = AppBento.tone(BentoTone.Sun)
-            Spacer(Modifier.height(10.dp))
-            AppCard(
-                modifier = Modifier.fillMaxWidth(),
-                containerColor = warning.container,
-                borderColor = null,
-                contentPadding = PaddingValues(10.dp),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Filled.Info,
-                        contentDescription = null,
-                        tint = warning.content,
-                        modifier = Modifier.size(16.dp),
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        "Lo estás capturando a nombre de ${state.requesterName.ifBlank { "otra persona" }}. " +
-                            "El ticket quedará a su nombre y le llegará la notificación.",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = warning.content,
-                    )
-                }
-            }
-        }
-
-        Spacer(Modifier.height(6.dp))
-        Text(
-            "El historial del ticket deja constancia de que lo registraste tú.",
-            style = MaterialTheme.typography.labelSmall,
-            color = AppColors.TextFaint,
+        Spacer(Modifier.width(8.dp))
+        AppFilterChip(
+            label = if (state.isOnBehalf) "Cambiar" else "Elegir",
+            selected = false,
+            onClick = onOpen,
         )
     }
+
+    if (state.isOnBehalf) {
+        Spacer(Modifier.height(10.dp))
+        val warning = AppBento.tone(BentoTone.Sun)
+        BentoInsight(
+            text = "Lo estás capturando a nombre de ${state.requesterName.ifBlank { "otra persona" }}. " +
+                "El ticket quedará a su nombre y le llegará la notificación.",
+            contentColor = warning.content,
+        )
+    }
+
+    Spacer(Modifier.height(6.dp))
+    Text(
+        "El historial del ticket deja constancia de que lo registraste tú.",
+        style = MaterialTheme.typography.labelSmall,
+        color = AppColors.TextFaint,
+    )
 }
 
 @Composable
@@ -310,15 +290,10 @@ private fun RequesterPickerModal(
             onClick = onClear,
         )
         Spacer(Modifier.height(10.dp))
-        AppTextField(
+        AppSearchField(
             value = state.employeeQuery,
             onValueChange = onQueryChange,
-            placeholder = { Text("Buscar por nombre o número") },
-            leadingIcon = {
-                Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(18.dp))
-            },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
+            placeholder = "Buscar por nombre o número",
         )
         Spacer(Modifier.height(10.dp))
 
@@ -352,21 +327,14 @@ private fun RequesterPickerModal(
                     AppCard(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = { onSelect(user) },
-                        contentPadding = PaddingValues(10.dp),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(10.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .background(AppColors.EmeraldPrimary.copy(alpha = 0.12f), AppShape.pill),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    initials(user.name),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = AppColors.EmeraldPrimary,
-                                )
-                            }
+                            BentoAvatar(
+                                name = user.name,
+                                color = AppColors.EmeraldPrimary,
+                                size = 30.dp,
+                            )
                             Spacer(Modifier.width(10.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(

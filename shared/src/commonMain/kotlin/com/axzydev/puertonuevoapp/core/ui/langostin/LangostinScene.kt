@@ -123,6 +123,8 @@ fun LangostinScene(
     scene: LangostinSceneSpec,
     modifier: Modifier = Modifier,
     animated: Boolean = true,
+    /** `null` = decorativa (el panel ya nombra a Langostín en su píldora). */
+    contentDescription: String? = null,
 ) {
     var frame by remember(animated) { mutableIntStateOf(0) }
 
@@ -136,7 +138,7 @@ fun LangostinScene(
 
     Image(
         painter = painterResource(sceneFrame(scene, frame)),
-        contentDescription = "Escena de Langostín: ${scene.label}",
+        contentDescription = contentDescription,
         modifier = modifier,
         contentScale = ContentScale.Crop,
     )

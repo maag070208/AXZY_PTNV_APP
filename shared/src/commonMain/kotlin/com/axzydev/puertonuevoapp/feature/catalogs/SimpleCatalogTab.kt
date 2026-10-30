@@ -18,8 +18,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +40,8 @@ import com.axzydev.puertonuevoapp.core.ui.AppTextField
 import com.axzydev.puertonuevoapp.core.ui.BentoErrorState
 import com.axzydev.puertonuevoapp.core.ui.BentoIconButton
 import com.axzydev.puertonuevoapp.core.ui.BentoState
+import com.axzydev.puertonuevoapp.core.ui.PillButton
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 
 /**
@@ -83,16 +83,25 @@ internal fun SimpleCatalogTab(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    "${state.items.size} en el catálogo",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = AppColors.TextMuted,
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        source.label,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppColors.TextPrimary,
+                    )
+                    Text(
+                        "${state.items.size} registro(s) entre activos e inactivos",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = AppColors.TextMuted,
+                    )
+                }
                 if (canManage) {
-                    BentoIconButton(
-                        icon = Icons.Filled.Add,
-                        contentDescription = "Nuevo ${source.singular}",
+                    PillButton(
+                        text = "Nuevo",
                         onClick = viewModel::openCreate,
+                        variant = PillButtonVariant.Secondary,
+                        leadingIcon = Icons.Filled.Add,
                     )
                 }
             }
@@ -116,6 +125,8 @@ internal fun SimpleCatalogTab(
             state.items.isEmpty() -> BentoState(
                 message = source.emptyMessage,
                 modifier = Modifier.padding(16.dp),
+                actionLabel = if (canManage) "Nuevo ${source.singular}" else "Reintentar",
+                onAction = if (canManage) viewModel::openCreate else viewModel::load,
             )
             else -> LazyColumn(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -210,20 +221,22 @@ private fun SimpleCatalogRow(
                 tone = if (item.active) BentoTone.Mint else BentoTone.Rose,
             )
             if (canManage) {
-                IconButton(onClick = onEdit) {
-                    Icon(Icons.Filled.Edit, contentDescription = "Editar", tint = AppColors.EmeraldPrimary)
-                }
-                IconButton(onClick = onToggleActive) {
-                    Icon(
-                        imageVector = if (item.active) Icons.Filled.VisibilityOff else Icons.Filled.RestartAlt,
-                        contentDescription = if (item.active) "Desactivar" else "Activar",
-                        tint = if (item.active) AppColors.Warning else AppColors.Success,
-                    )
-                }
+                BentoIconButton(
+                    icon = Icons.Filled.Edit,
+                    contentDescription = "Editar",
+                    onClick = onEdit,
+                )
+                BentoIconButton(
+                    icon = if (item.active) Icons.Filled.VisibilityOff else Icons.Filled.RestartAlt,
+                    contentDescription = if (item.active) "Desactivar" else "Activar",
+                    onClick = onToggleActive,
+                )
                 if (!item.active) {
-                    IconButton(onClick = onDelete) {
-                        Icon(Icons.Filled.DeleteOutline, contentDescription = "Eliminar", tint = AppColors.Danger)
-                    }
+                    BentoIconButton(
+                        icon = Icons.Filled.DeleteOutline,
+                        contentDescription = "Eliminar",
+                        onClick = onDelete,
+                    )
                 }
             }
         }

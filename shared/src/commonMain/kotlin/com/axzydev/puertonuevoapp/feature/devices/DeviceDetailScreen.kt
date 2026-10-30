@@ -9,13 +9,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,6 +47,7 @@ import com.axzydev.puertonuevoapp.core.ui.AppSnackbar
 import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
 import com.axzydev.puertonuevoapp.core.ui.BentoErrorState
+import com.axzydev.puertonuevoapp.core.ui.BentoMiniStat
 import com.axzydev.puertonuevoapp.core.ui.BentoState
 import com.axzydev.puertonuevoapp.core.ui.BentoTabItem
 import com.axzydev.puertonuevoapp.core.ui.BentoTabs
@@ -269,7 +273,7 @@ private fun DeviceHeaderCard(
                     color = AppColors.TextFaint,
                 )
             }
-            StatusChip(deviceStatusLabel(device.status), AppColors.deviceStatusColor(device.status))
+            StatusChip(label = deviceStatusLabel(device.status), tone = deviceStatusTone(device.status))
         }
 
         if (canEditDevice || canRegisterMovement) {
@@ -321,24 +325,52 @@ private fun DeviceHeaderCard(
     }
 }
 
-/** Existencias por estado (`GET /inventory/devices/:id/stock`). */
+/** Existencias por estado (`GET /inventory/devices/:id/stock`) como KPIs compactos. */
 @Composable
 private fun StockCard(state: DeviceDetailUiState) {
     AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
         SectionLabel("Existencias")
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            StockCell("Disponibles", state.available, AppColors.Success, Modifier.weight(1f))
-            StockCell("En uso", state.onLoan, AppColors.Warning, Modifier.weight(1f))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            BentoMiniStat(
+                label = "Disponibles",
+                value = state.available.toString(),
+                tone = if (state.available > 0) BentoTone.Mint else BentoTone.Plain,
+                modifier = Modifier.weight(1f),
+            )
+            BentoMiniStat(
+                label = "En uso",
+                value = state.onLoan.toString(),
+                tone = if (state.onLoan > 0) BentoTone.Sun else BentoTone.Plain,
+                modifier = Modifier.weight(1f),
+            )
+            BentoMiniStat(
+                label = "Dañadas",
+                value = state.damaged.toString(),
+                tone = if (state.damaged > 0) BentoTone.Rose else BentoTone.Plain,
+                modifier = Modifier.weight(1f),
+            )
         }
         Spacer(Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            StockCell("Dañadas", state.damaged, AppColors.Danger, Modifier.weight(1f))
-            StockCell("Mantenimiento", state.inMaintenance, AppColors.Info, Modifier.weight(1f))
-        }
-        Spacer(Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            StockCell("Bajas", state.retired, AppColors.TextFaint, Modifier.weight(1f))
-            StockCell("Históricas", state.historicalUnits, AppColors.TextMuted, Modifier.weight(1f))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            BentoMiniStat(
+                label = "Mantenimiento",
+                value = state.inMaintenance.toString(),
+                tone = if (state.inMaintenance > 0) BentoTone.Sea else BentoTone.Plain,
+                labelMaxLines = 2,
+                modifier = Modifier.weight(1f),
+            )
+            BentoMiniStat(
+                label = "Bajas",
+                value = state.retired.toString(),
+                tone = if (state.retired > 0) BentoTone.Plain else BentoTone.Plain,
+                modifier = Modifier.weight(1f),
+            )
+            BentoMiniStat(
+                label = "Históricas",
+                value = state.historicalUnits.toString(),
+                tone = BentoTone.Plain,
+                modifier = Modifier.weight(1f),
+            )
         }
         Spacer(Modifier.height(8.dp))
         Text(
@@ -346,21 +378,6 @@ private fun StockCard(state: DeviceDetailUiState) {
             style = MaterialTheme.typography.bodySmall,
             color = AppColors.TextFaint,
         )
-    }
-}
-
-@Composable
-private fun StockCell(label: String, value: Int, color: androidx.compose.ui.graphics.Color, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .padding(vertical = 4.dp),
-    ) {
-        Text(
-            value.toString(),
-            style = MaterialTheme.typography.titleMedium,
-            color = if (value > 0) color else AppColors.TextFaint,
-        )
-        Text(label, style = MaterialTheme.typography.labelSmall, color = AppColors.TextMuted)
     }
 }
 
@@ -449,7 +466,12 @@ private fun UnitCard(unit: DeviceUnitDto, canEdit: Boolean, onClick: () -> Unit)
                 StatusChip(unitStatusLabel(unit.status), unitStatusTone(unit.status))
                 if (canEdit) {
                     Spacer(Modifier.height(4.dp))
-                    Text("Editar", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Editar la identificación de la pieza",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp),
+                    )
                 }
             }
         }
@@ -501,11 +523,7 @@ private fun KardexRow(row: StockLedgerRowDto) {
                     )
                 }
             }
-            Text(
-                "Saldo ${row.balance}",
-                style = MaterialTheme.typography.labelSmall,
-                color = AppColors.TextMuted,
-            )
+            StatusChip(label = "Saldo ${row.balance}", tone = BentoTone.Plain)
         }
     }
 }
@@ -604,6 +622,15 @@ private fun InfoRow(label: String, value: String) {
 // ---------------------------------------------------------------------------
 // Etiquetas y tonos de piezas / kardex (los enums son texto en el API)
 // ---------------------------------------------------------------------------
+
+/** Tono del chip del estado del dispositivo (mismo criterio que las piezas). */
+private fun deviceStatusTone(status: String): BentoTone = when (status) {
+    "AVAILABLE" -> BentoTone.Mint
+    "ASSIGNED" -> BentoTone.Sun
+    "DAMAGED" -> BentoTone.Rose
+    "IN_MAINTENANCE" -> BentoTone.Sea
+    else -> BentoTone.Plain
+}
 
 private fun unitStatusLabel(status: String): String = when (status) {
     "AVAILABLE" -> "Disponible"

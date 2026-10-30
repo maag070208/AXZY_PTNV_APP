@@ -51,6 +51,7 @@ import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
 import com.axzydev.puertonuevoapp.core.ui.AppSearchField
 import com.axzydev.puertonuevoapp.core.ui.AppSnackbar
+import com.axzydev.puertonuevoapp.core.ui.BentoAvatar
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
 import com.axzydev.puertonuevoapp.core.ui.BentoErrorState
 import com.axzydev.puertonuevoapp.core.ui.BentoState
@@ -290,6 +291,12 @@ private fun AccessMemberList(state: AccessTabUiState, viewModel: AccessTabViewMo
             items(state.filteredMembers, key = { it.id }) { member ->
                 AppCard(modifier = Modifier.fillMaxWidth(), onClick = { viewModel.selectMember(member) }) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        BentoAvatar(
+                            name = member.name,
+                            color = AppColors.roleAccent(member.role),
+                            size = 40.dp,
+                        )
+                        Spacer(Modifier.width(10.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 member.name,
@@ -350,21 +357,31 @@ private fun AccessDetail(
             }
             item {
                 AppCard(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        member.name,
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = AppColors.TextPrimary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Text(
-                        "@${member.username} · ${member.department ?: "Sin departamento"}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = AppColors.TextFaint,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Spacer(Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        BentoAvatar(
+                            name = member.name,
+                            color = AppColors.roleAccent(member.role),
+                            size = 48.dp,
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                member.name,
+                                style = MaterialTheme.typography.headlineSmall,
+                                color = AppColors.TextPrimary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(
+                                "@${member.username} · ${member.department ?: "Sin departamento"}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = AppColors.TextFaint,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(10.dp))
                     Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
                         (access?.roles ?: emptyList()).forEach { role ->
                             StatusChip(
@@ -545,11 +562,22 @@ private fun SimulatorCard(state: AccessTabUiState, viewModel: AccessTabViewModel
 @Composable
 private fun SimulationResult(simulation: SimulationDto, state: AccessTabUiState) {
     Column {
-        StatusChip(
-            label = if (simulation.allowed) "Puede hacerlo" else "No puede",
-            tone = if (simulation.allowed) BentoTone.Mint else BentoTone.Rose,
+        Text(
+            if (simulation.allowed) "Sí puede hacerlo" else "No puede hacerlo",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Black,
+            color = if (simulation.allowed) AppColors.Success else AppColors.Danger,
         )
-        Spacer(Modifier.height(8.dp))
+        val decidedRule = simulation.abac.explanation?.decidedBy
+        val reason = simulation.abac.explanation?.decision?.reason
+            ?: decidedRule?.let { "Lo decide la regla «${it.name}»." }
+            ?: if (simulation.allowed) "Ninguna regla lo impide." else "Alguna capa del control de acceso lo rechaza."
+        Text(
+            reason,
+            style = MaterialTheme.typography.bodySmall,
+            color = AppColors.TextMuted,
+        )
+        Spacer(Modifier.height(10.dp))
         LayerRow(
             label = "Identidad",
             ok = simulation.identity.ok,
@@ -561,7 +589,6 @@ private fun SimulationResult(simulation: SimulationDto, state: AccessTabUiState)
             detail = "Alcance ${permissionScopeLabel(simulation.rbac.scope)}" +
                 if (simulation.rbac.permissionActive) "" else " · permiso inactivo",
         )
-        val decidedRule = simulation.abac.explanation?.decidedBy
         LayerRow(
             label = "ABAC",
             ok = simulation.abac.ok,
@@ -583,8 +610,8 @@ private fun SimulationResult(simulation: SimulationDto, state: AccessTabUiState)
         }
         val explanation = simulation.abac.explanation
         if (explanation != null && explanation.rules.isNotEmpty()) {
-            Spacer(Modifier.height(8.dp))
-            Text("Reglas evaluadas (en orden):", style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint)
+            Spacer(Modifier.height(10.dp))
+            SectionLabel("Traza de reglas (en orden de prioridad)")
             explanation.rules.forEach { rule -> SimulationRuleRow(rule) }
         }
     }

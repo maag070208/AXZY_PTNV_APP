@@ -1,6 +1,5 @@
 package com.axzydev.puertonuevoapp.feature.users
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
@@ -35,9 +33,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,9 +46,9 @@ import com.axzydev.puertonuevoapp.core.network.users.UserHistoryEntryDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.session.PermissionKeys
 import com.axzydev.puertonuevoapp.core.theme.AppColors
-import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppCard
+import com.axzydev.puertonuevoapp.core.ui.BentoAvatar
 import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
 import com.axzydev.puertonuevoapp.core.ui.BentoErrorState
 import com.axzydev.puertonuevoapp.core.ui.BentoFeed
@@ -64,7 +59,6 @@ import com.axzydev.puertonuevoapp.core.ui.BentoState
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.formatLocalTime
-import com.axzydev.puertonuevoapp.core.util.initials
 import com.axzydev.puertonuevoapp.core.util.relativeDayLabel
 import com.axzydev.puertonuevoapp.core.util.roleLabel
 
@@ -164,20 +158,10 @@ fun UserHistoryScreen(
 @Composable
 private fun UserHeaderCard(account: UserDto) {
     val accent = AppColors.roleAccent(account.role)
-    val gradient = Brush.verticalGradient(listOf(accent, lerp(accent, Color.Black, 0.30f)))
 
     AppCard(modifier = Modifier.fillMaxWidth(), elevation = 2.dp) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier.size(48.dp).background(gradient, AppShape.pill),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    initials(account.name),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = Color.White,
-                )
-            }
+            BentoAvatar(name = account.name, color = accent, size = 48.dp)
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(

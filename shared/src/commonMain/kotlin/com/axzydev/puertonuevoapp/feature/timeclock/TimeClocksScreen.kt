@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -70,6 +71,7 @@ import com.axzydev.puertonuevoapp.core.ui.AppModalTone
 import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
 import com.axzydev.puertonuevoapp.core.ui.BentoErrorState
+import com.axzydev.puertonuevoapp.core.ui.BentoIconButton
 import com.axzydev.puertonuevoapp.core.ui.BentoState
 import com.axzydev.puertonuevoapp.core.ui.BentoTabItem
 import com.axzydev.puertonuevoapp.core.ui.BentoTabs
@@ -272,7 +274,13 @@ private fun ReadOnlyCard(state: TimeClocksUiState, viewModel: TimeClocksViewMode
 @Composable
 private fun ClockCard(device: TimeClockDeviceDto, onClick: () -> Unit) {
     val status = clockCardStatus(device)
-    AppCard(modifier = Modifier.fillMaxWidth(), onClick = onClick, borderColor = null) {
+    val colors = AppBento.tone(clockStatusTone(status))
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        borderColor = null,
+        containerColor = colors.container,
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -319,6 +327,8 @@ private fun ClockCard(device: TimeClockDeviceDto, onClick: () -> Unit) {
                     TimeClockCardStatus.Error, TimeClockCardStatus.Paused -> AppColors.Danger
                     else -> AppColors.TextMuted
                 },
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
         }
         Spacer(Modifier.height(10.dp))
@@ -472,6 +482,14 @@ private fun ClockDetail(state: TimeClocksUiState, clock: TimeClockDeviceDto, vie
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             PillButton(
+                text = if (state.syncing) "Sincronizando…" else "Sincronizar",
+                onClick = viewModel::sync,
+                variant = PillButtonVariant.Ink,
+                enabled = state.configured && !state.syncing,
+                loading = state.syncing,
+                leadingIcon = Icons.Filled.Sync,
+            )
+            PillButton(
                 text = "Volver a leer",
                 onClick = {
                     viewModel.loadConfig(clock.clockSerial)
@@ -624,12 +642,19 @@ private fun ConfigSection(config: TimeClocksConfigUi, onRefresh: () -> Unit) {
     AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             SectionLabel("Configuración del reloj", modifier = Modifier.weight(1f))
-            AppFilterChip(
-                label = if (config.loading) "Leyendo…" else "Actualizar",
-                selected = false,
-                onClick = onRefresh,
-                enabled = !config.loading,
-            )
+            if (config.loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = AppColors.TextFaint,
+                )
+            } else {
+                BentoIconButton(
+                    icon = Icons.Filled.Refresh,
+                    contentDescription = "Actualizar configuración",
+                    onClick = onRefresh,
+                )
+            }
         }
         Text(
             "Leída en vivo del reloj, sin cambiarle nada.",
@@ -721,12 +746,19 @@ private fun InspectSection(
     AppSurfaceCard(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             SectionLabel("Lo que tiene el reloj", modifier = Modifier.weight(1f))
-            AppFilterChip(
-                label = if (inspect.loading) "Leyendo…" else "Actualizar",
-                selected = false,
-                onClick = onRefresh,
-                enabled = !inspect.loading,
-            )
+            if (inspect.loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = AppColors.TextFaint,
+                )
+            } else {
+                BentoIconButton(
+                    icon = Icons.Filled.Refresh,
+                    contentDescription = "Actualizar inspección",
+                    onClick = onRefresh,
+                )
+            }
         }
         Text(
             "Personas, tarjetas y eventos que el reloj tiene guardados. Solo lectura: no cambia nada en el equipo.",

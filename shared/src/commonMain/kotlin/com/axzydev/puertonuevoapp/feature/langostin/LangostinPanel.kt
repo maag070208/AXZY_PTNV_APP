@@ -1,6 +1,7 @@
 package com.axzydev.puertonuevoapp.feature.langostin
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -12,22 +13,26 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
@@ -39,6 +44,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -52,6 +58,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.session.SessionUser
@@ -59,14 +66,15 @@ import com.axzydev.puertonuevoapp.core.theme.AppBento
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.theme.BentoTone
+import com.axzydev.puertonuevoapp.core.theme.LocalDarkTheme
 import com.axzydev.puertonuevoapp.core.ui.BentoAvatar
 import com.axzydev.puertonuevoapp.core.ui.BentoIconButton
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.ui.langostin.LangostinMascot
 import com.axzydev.puertonuevoapp.core.ui.langostin.LangostinScene
 import com.axzydev.puertonuevoapp.core.ui.langostin.LangostinSceneSpec
-import com.axzydev.puertonuevoapp.core.ui.langostin.langostinSceneFor
 import com.axzydev.puertonuevoapp.core.ui.langostin.LangostinSeason
+import com.axzydev.puertonuevoapp.core.ui.langostin.langostinSceneFor
 import com.axzydev.puertonuevoapp.core.ui.langostin.langostinSeasonNow
 import com.axzydev.puertonuevoapp.feature.langostin.model.LangostinAction
 import com.axzydev.puertonuevoapp.feature.langostin.model.LangostinHelp
@@ -82,14 +90,15 @@ internal sealed interface LangostinMessage {
 }
 
 /**
- * Panel de Langostín como hoja inferior sobre el shell: scrim + superficie blanca de 93 % de
- * alto con esquinas superiores de 28dp. Arriba el encabezado (mascota con la temporada del año,
- * estado, reiniciar y cerrar) y el chip de contexto; debajo, el hilo de ayuda con las opciones de
- * la pantalla actual ("Ir a…", "En esta pantalla", "Langostín") o el alta de ticket en chat.
+ * Panel de Langostín como hoja inferior sobre el shell: scrim + superficie de 93 % de
+ * alto con esquinas superiores de 28dp. Arriba el encabezado (escena animada de la
+ * temporada con la mascota, píldora de nombre/estado y botones de reiniciar/cerrar) y el
+ * chip de contexto; debajo, el hilo de ayuda con las opciones de la pantalla actual
+ * ("Ir a…", "En esta pantalla", "Langostín") o el alta de ticket/tarea en chat.
  *
- * Es determinista: solo ofrece lo registrado en [LangostinHelp] y respeta los permisos de la
- * sesión; la API vuelve a validar cada escritura. Al abrirse (o al cambiar de pantalla) saluda
- * una sola vez.
+ * Es determinista: solo ofrece lo registrado en [LangostinHelp] y respeta los permisos de
+ * la sesión; la API vuelve a validar cada escritura. Al abrirse (o al cambiar de pantalla)
+ * saluda una sola vez.
  */
 @Composable
 fun LangostinOverlay(
@@ -147,7 +156,9 @@ fun LangostinOverlay(
                 onReset = { sessionKey += 1 },
                 onClose = onClose,
             )
-            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 4.dp),
+            ) {
                 StatusChip(label = "Estás en: ${help.title}", tone = BentoTone.Sea)
             }
             val showTicketAgent = activeAgent == LangostinAgentKind.TICKET && user?.canCreateTickets == true
@@ -213,8 +224,10 @@ private fun greeting(help: LangostinScreen, season: LangostinSeason): String {
 
 /**
  * Hero del panel: escena 8-bit animada de Langostín (la mascota ya viene dibujada dentro,
- * en el centro de la escena) con el nombre y la temporada en una píldora translúcida y los
- * botones de reiniciar/cerrar encima. La escena se elige por temporada, hora y módulo.
+ * en el centro) con la píldora de nombre/estado arriba a la izquierda y los botones de
+ * reiniciar/cerrar arriba a la derecha, los tres con el mismo velo translúcido para no
+ * perderse sobre la escena. En oscuro se oscurece un poco la escena para que la cabecera
+ * no deslumbre, y el pie se funde con la superficie del panel.
  */
 @Composable
 private fun PanelHero(
@@ -223,20 +236,33 @@ private fun PanelHero(
     onReset: () -> Unit,
     onClose: () -> Unit,
 ) {
-    Box(modifier = Modifier.fillMaxWidth().height(172.dp)) {
+    val dark = LocalDarkTheme.current
+    val veil = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f)
+    Box(modifier = Modifier.fillMaxWidth().height(176.dp)) {
         LangostinScene(
             scene = scene,
             modifier = Modifier.fillMaxSize(),
         )
-        // Velo inferior para fundir la escena con la superficie blanca del panel.
+        if (dark) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.14f)),
+            )
+        }
+        // Velo inferior para fundir la escena con la superficie del panel.
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .height(48.dp)
+                .height(56.dp)
                 .background(
                     Brush.verticalGradient(
-                        listOf(Color.Transparent, MaterialTheme.colorScheme.surface),
+                        listOf(
+                            Color.Transparent,
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                            MaterialTheme.colorScheme.surface,
+                        ),
                     ),
                 ),
         )
@@ -247,18 +273,23 @@ private fun PanelHero(
             Row(
                 modifier = Modifier
                     .weight(1f, fill = false)
+                    .widthIn(max = 208.dp)
+                    .defaultMinSize(minHeight = 48.dp)
                     .clip(AppShape.pill)
-                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.86f))
+                    .background(veil)
+                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.22f), AppShape.pill)
                     .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(Modifier.size(7.dp).background(AppColors.Success, CircleShape))
                 Spacer(Modifier.width(6.dp))
-                Column {
+                Column(modifier = Modifier.weight(1f, fill = false)) {
                     Text(
                         "Langostín",
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                     Text(
                         text = buildString {
@@ -268,21 +299,29 @@ private fun PanelHero(
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
-            Spacer(Modifier.weight(1f))
-            BentoIconButton(
-                icon = Icons.Filled.Refresh,
-                contentDescription = "Reiniciar",
-                onClick = onReset,
-            )
             Spacer(Modifier.width(8.dp))
-            BentoIconButton(
-                icon = Icons.Filled.Close,
-                contentDescription = "Cerrar",
-                onClick = onClose,
-            )
+            Row(
+                modifier = Modifier
+                    .clip(AppShape.pill)
+                    .background(veil)
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                BentoIconButton(
+                    icon = Icons.Filled.Refresh,
+                    contentDescription = "Reiniciar",
+                    onClick = onReset,
+                )
+                BentoIconButton(
+                    icon = Icons.Filled.Close,
+                    contentDescription = "Cerrar",
+                    onClick = onClose,
+                )
+            }
         }
     }
 }
@@ -321,8 +360,17 @@ private fun ColumnScope.HelpBody(
     val actions = help.actions.filter { it.isVisibleFor(user) }
     val goTo = actions.filterIsInstance<LangostinAction.GoTo>()
     val answers = actions.filterIsInstance<LangostinAction.Answer>()
+    val canTask = user?.canCreateAssignments == true && isTaskAgentScreen(current)
 
-    Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 12.dp)) {
+    // Las tres secciones no deben empujar el hilo fuera de la hoja: si no caben
+    // (pantallas con muchas respuestas o teclado abierto) se desplazan en vertical.
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = 300.dp)
+            .verticalScroll(rememberScrollState())
+            .padding(start = 16.dp, end = 16.dp, bottom = 18.dp),
+    ) {
         if (goTo.isNotEmpty()) {
             SectionLabel("Ir a…")
             LangostinOptionChips(goTo.map { LangostinChip(it.label, Icons.AutoMirrored.Filled.ArrowForward) { onAction(it) } })
@@ -331,7 +379,6 @@ private fun ColumnScope.HelpBody(
             SectionLabel("En esta pantalla")
             LangostinOptionChips(answers.map { LangostinChip(it.label, null) { onAction(it) } })
         }
-        val canTask = user?.canCreateAssignments == true && isTaskAgentScreen(current)
         if (user?.canCreateTickets == true || canTask) {
             SectionLabel("Langostín")
             LangostinOptionChips(
@@ -413,40 +460,70 @@ internal data class LangostinChip(
     val onClick: () -> Unit,
 )
 
-/** Fila de opciones en píldoras, desplazable en horizontal para no recortar etiquetas. */
+/**
+ * Fila de opciones en píldoras, desplazable en horizontal. Lleva un velo degradado en el
+ * borde derecho cuando hay más opciones y deja un aire final para que la última píldora
+ * no quede recortada ni debajo del velo al llegar al final.
+ */
 @Composable
 internal fun LangostinOptionChips(chips: List<LangostinChip>) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        chips.forEach { chip ->
-            Row(
-                modifier = Modifier
-                    .clip(AppShape.pill)
-                    .background(AppBento.field)
-                    .clickable(onClick = chip.onClick)
-                    .padding(horizontal = 14.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                if (chip.icon != null) {
-                    Icon(
-                        imageVector = chip.icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(16.dp),
+    val scrollState = rememberScrollState()
+    val moreToRight by remember { derivedStateOf { scrollState.canScrollForward } }
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(scrollState),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            chips.forEach { chip ->
+                Row(
+                    modifier = Modifier
+                        .defaultMinSize(minHeight = 44.dp)
+                        .clip(AppShape.pill)
+                        .background(AppBento.field)
+                        .clickable(onClick = chip.onClick)
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (chip.icon != null) {
+                        Icon(
+                            imageVector = chip.icon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                    }
+                    Text(
+                        text = chip.label,
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
-                    Spacer(Modifier.width(6.dp))
                 }
-                Text(
-                    text = chip.label,
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                )
             }
+            // Aire final: cubre el ancho del velo (32dp) para que la última píldora
+            // quede completamente visible al llegar al final del scroll.
+            Spacer(Modifier.width(36.dp))
+        }
+        if (moreToRight) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .width(32.dp)
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(
+                                Color.Transparent,
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                                MaterialTheme.colorScheme.surface,
+                            ),
+                        ),
+                    ),
+            )
         }
     }
 }
@@ -455,10 +532,10 @@ internal fun LangostinOptionChips(chips: List<LangostinChip>) {
 private fun SectionLabel(text: String) {
     Text(
         text = text,
-        style = MaterialTheme.typography.labelSmall,
+        style = MaterialTheme.typography.labelMedium,
         fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(top = 10.dp, bottom = 6.dp),
+        modifier = Modifier.padding(top = 12.dp, bottom = 6.dp),
     )
 }
 
