@@ -21,6 +21,9 @@ class DepartmentsApi(private val client: ApiClient) {
     suspend fun addSubarea(departmentId: String, name: String): SubareaDto =
         client.post("/departments/$departmentId/subareas", SubareaCreateInput(name))
 
+    suspend fun updateSubarea(subareaId: String, name: String): SubareaDto =
+        client.put("/departments/subareas/$subareaId", SubareaCreateInput(name))
+
     suspend fun removeSubarea(subareaId: String): SubareaDeleteResultDto =
         client.delete("/departments/subareas/$subareaId")
 }

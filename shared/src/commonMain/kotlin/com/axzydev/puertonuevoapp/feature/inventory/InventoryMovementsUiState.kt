@@ -16,6 +16,14 @@ internal object MovementFilterKeys {
 }
 
 /**
+ * La API solo revierte movimientos de mantenimiento (`movementReversion` en
+ * `inventory.service.ts`); el resto responde 409 `MOVEMENT_NOT_REVERSIBLE` y uno
+ * ya revertido 409 `MOVEMENT_ALREADY_REVERSED`.
+ */
+val InventoryMovementRow.isReversible: Boolean
+    get() = type == "MAINTENANCE_IN" || type == "MAINTENANCE_OUT"
+
+/**
  * Fila aplanada del kardex para el estándar `AppTableScreen`. Un movimiento = una
  * fila, con la etiqueta del primer renglón (`items[0]`: dispositivo y activos fijos)
  * que expone `InventoryMovementDto`.

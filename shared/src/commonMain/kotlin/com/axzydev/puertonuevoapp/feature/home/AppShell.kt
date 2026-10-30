@@ -49,6 +49,20 @@ import com.axzydev.puertonuevoapp.feature.access.AccessLogScreen
 import com.axzydev.puertonuevoapp.feature.access.AccessScanScreen
 import com.axzydev.puertonuevoapp.feature.audit.AuditLogsScreen
 import com.axzydev.puertonuevoapp.feature.credential.MyCredentialScreen
+import com.axzydev.puertonuevoapp.feature.catalogs.CatalogsScreen
+import com.axzydev.puertonuevoapp.feature.hr.DisciplinaryReportDetailScreen
+import com.axzydev.puertonuevoapp.feature.hr.DisciplinaryReportsScreen
+import com.axzydev.puertonuevoapp.feature.hr.EmployeeRecordsScreen
+import com.axzydev.puertonuevoapp.feature.schedules.OvertimeApprovalScreen
+import com.axzydev.puertonuevoapp.feature.schedules.PayrollScreen
+import com.axzydev.puertonuevoapp.feature.schedules.ScheduleAssignScreen
+import com.axzydev.puertonuevoapp.feature.schedules.ScheduleFormScreen
+import com.axzydev.puertonuevoapp.feature.schedules.SchedulesScreen
+import com.axzydev.puertonuevoapp.feature.timeclock.TimeClockEmployeesScreen
+import com.axzydev.puertonuevoapp.feature.timeclock.TimeClockEntriesExitsScreen
+import com.axzydev.puertonuevoapp.feature.timeclock.TimeClockRosterScreen
+import com.axzydev.puertonuevoapp.feature.timeclock.TimeClockScreen
+import com.axzydev.puertonuevoapp.feature.timeclock.TimeClocksScreen
 import com.axzydev.puertonuevoapp.feature.custodyletters.CustodyLetterDetailScreen
 import com.axzydev.puertonuevoapp.feature.custodyletters.CustodyLetterFormScreen
 import com.axzydev.puertonuevoapp.feature.custodyletters.CustodyLettersListScreen
@@ -330,6 +344,21 @@ private fun AppNavHost(screen: Screen) {
         // Control de acceso — módulo 6
         Screen.AccessScan -> AccessScanScreen()
         Screen.AccessLog -> AccessLogScreen()
+
+        Screen.EmployeeRecords -> EmployeeRecordsScreen()
+        Screen.DisciplinaryReports -> DisciplinaryReportsScreen()
+        is Screen.DisciplinaryReportDetail -> DisciplinaryReportDetailScreen(screen.reportId)
+        Screen.TimeClock -> TimeClockScreen()
+        Screen.TimeClockEntriesExits -> TimeClockEntriesExitsScreen()
+        Screen.TimeClockRoster -> TimeClockRosterScreen()
+        Screen.TimeClockEmployees -> TimeClockEmployeesScreen()
+        Screen.TimeClocks -> TimeClocksScreen()
+        Screen.Schedules -> SchedulesScreen()
+        is Screen.ScheduleForm -> ScheduleFormScreen(screen.scheduleId)
+        Screen.ScheduleAssign -> ScheduleAssignScreen()
+        Screen.OvertimeApproval -> OvertimeApprovalScreen()
+        Screen.Payroll -> PayrollScreen()
+        Screen.Catalogs -> CatalogsScreen()
 
         Screen.Reports -> ReportsScreen()
         Screen.Notifications -> NotificationsScreen()

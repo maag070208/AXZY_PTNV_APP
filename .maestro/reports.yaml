@@ -1,0 +1,25 @@
+# Reportes: pestañas nuevas y export.
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: login.yaml
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- tapOn:
+    id: "drawer-node-inventario"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-child-reportes"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-child-reportes"
+- extendedWaitUntil:
+    visible: "Dispositivos"
+    timeout: 15000
+- assertVisible: "Asignados"
+- tapOn: "Salidas de material"
+- extendedWaitUntil:
+    visible: "Salidas de material"
+    timeout: 10000

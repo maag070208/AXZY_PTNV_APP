@@ -44,6 +44,20 @@ fun Screen.chrome(): ScreenChrome = when (this) {
     is Screen.EmployeeProfile -> ScreenChrome("Perfil", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
 
     // Departments
+    Screen.EmployeeRecords -> ScreenChrome("Expedientes", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    Screen.DisciplinaryReports -> ScreenChrome("Actas administrativas", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    is Screen.DisciplinaryReportDetail -> ScreenChrome("Acta administrativa", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    Screen.TimeClock -> ScreenChrome("Asistencia", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    Screen.TimeClockEntriesExits -> ScreenChrome("Entradas y salidas", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    Screen.TimeClockRoster -> ScreenChrome("Rol de turnos", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    Screen.TimeClockEmployees -> ScreenChrome("Padrón del reloj", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    Screen.TimeClocks -> ScreenChrome("Relojes", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    Screen.Schedules -> ScreenChrome("Horarios", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    is Screen.ScheduleForm -> ScreenChrome(if (scheduleId == null) "Nuevo horario" else "Editar horario", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    Screen.ScheduleAssign -> ScreenChrome("Asignar horarios", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    Screen.OvertimeApproval -> ScreenChrome("Tiempo extra", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    Screen.Payroll -> ScreenChrome("Pre nómina", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    Screen.Catalogs -> ScreenChrome("Catálogos", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
     Screen.DepartmentsList -> ScreenChrome("Departamentos", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
     is Screen.DepartmentDetail -> ScreenChrome("Detalle del departamento", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
 

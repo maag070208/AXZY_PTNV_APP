@@ -1,18 +1,26 @@
 package com.axzydev.puertonuevoapp.feature.inventory
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +34,9 @@ import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.ui.AppCard
+import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
+import com.axzydev.puertonuevoapp.core.ui.AppModal
+import com.axzydev.puertonuevoapp.core.ui.AppModalTone
 import com.axzydev.puertonuevoapp.core.ui.RegisterTopBarAction
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.ui.table.AppTableScreen
@@ -43,6 +54,10 @@ import com.axzydev.puertonuevoapp.core.util.movementTypeLabel
  * de fechas, dispositivo y usuario) y orden por fecha/tipo. Tocar una fila abre el
  * detalle del dispositivo cuando el movimiento trae uno.
  *
+ * Los movimientos de mantenimiento se pueden **revertir** desde la fila (con
+ * confirmación y solo con `devices.edit`); el API decide siempre y, si el
+ * movimiento ya no es reversible, su mensaje se muestra en un snackbar.
+ *
  * El botón "Nuevo movimiento" (solo con `devices.edit`) va en la barra superior del
  * shell; la tabla ya no necesita el icono de filtros ahí porque los filtros viven
  * en el chip de la cabecera.
@@ -54,9 +69,15 @@ fun InventoryMovementsScreen(
     },
 ) {
     val state by viewModel.uiState.collectAsState()
+    val revertingId by viewModel.revertingId.collectAsState()
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
-    val canRegister = (authState as? AuthState.LoggedIn)?.user?.canRegisterMovement == true
+    val user = (authState as? AuthState.LoggedIn)?.user
+    val canRegister = user?.canRegisterMovement == true
+    val canRevert = user?.canRegisterMovement == true
+
+    // Fila pendiente de confirmar la reversión (el modal nombra el movimiento).
+    var pendingRevert by remember { mutableStateOf<InventoryMovementRow?>(null) }
 
     if (canRegister) {
         RegisterTopBarAction(Icons.Filled.Add, "Nuevo movimiento") {
@@ -87,6 +108,51 @@ fun InventoryMovementsScreen(
             } else {
                 null
             },
+            canRevert = canRevert,
+            reverting = revertingId == row.id,
+            onRevert = { pendingRevert = row },
+        )
+    }
+
+    pendingRevert?.let { row ->
+        RevertMovementModal(
+            row = row,
+            onConfirm = {
+                pendingRevert = null
+                viewModel.revert(row)
+            },
+            onDismiss = { pendingRevert = null },
+        )
+    }
+}
+
+/** Confirmación de la reversión: nombra tipo, fecha y dispositivo del movimiento. */
+@Composable
+private fun RevertMovementModal(
+    row: InventoryMovementRow,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AppModal(
+        title = "Revertir movimiento",
+        icon = Icons.AutoMirrored.Filled.Undo,
+        tone = AppModalTone.Danger,
+        confirmLabel = "Revertir",
+        onConfirm = onConfirm,
+        onDismiss = onDismiss,
+    ) {
+        Text(
+            text = "¿Revertir ${movementTypeLabelOf(row.type).lowercase()} del " +
+                "${formatDateTime(row.date)} sobre ${row.deviceLabel}?",
+            style = MaterialTheme.typography.bodyMedium,
+            color = AppColors.TextPrimary,
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "El movimiento quedará cancelado y la reversión se registrará en el kardex. " +
+                "Solo los movimientos de mantenimiento se pueden revertir; el API rechaza el resto.",
+            style = MaterialTheme.typography.bodySmall,
+            color = AppColors.TextMuted,
         )
     }
 }
@@ -135,7 +201,13 @@ private fun movementTypeColorOf(type: String): Color = when (type) {
 }
 
 @Composable
-private fun MovementCard(row: InventoryMovementRow, onOpenDevice: (() -> Unit)?) {
+private fun MovementCard(
+    row: InventoryMovementRow,
+    onOpenDevice: (() -> Unit)?,
+    canRevert: Boolean,
+    reverting: Boolean,
+    onRevert: () -> Unit,
+) {
     AppCard(
         modifier = Modifier.fillMaxWidth(),
         onClick = onOpenDevice,
@@ -195,6 +267,31 @@ private fun MovementCard(row: InventoryMovementRow, onOpenDevice: (() -> Unit)?)
                     color = AppColors.EmeraldPrimary,
                     modifier = Modifier.padding(start = 8.dp),
                 )
+            }
+        }
+        if (canRevert && row.isReversible) {
+            Spacer(Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (reverting) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        color = AppColors.Danger,
+                        strokeWidth = 2.dp,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text("Revirtiendo…", style = MaterialTheme.typography.labelSmall, color = AppColors.Danger)
+                } else {
+                    AppFilterChip(
+                        label = "Revertir",
+                        selected = true,
+                        selectedColor = AppColors.Danger,
+                        onClick = onRevert,
+                    )
+                }
             }
         }
     }

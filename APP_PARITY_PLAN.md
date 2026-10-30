@@ -198,3 +198,49 @@ Definición de terminado (por pantalla):
 | `hotel-store` y `mail` tienen API sin pantalla web | Bajo: no son paridad | Mantenerlos fuera; si el dueño los quiere, es alcance nuevo, no paridad |
 | Idioma: la app fija español | Bajo | Confirmar con el dueño si es requisito antes de invertir en i18n |
 | Deep links: la app no los tiene (la web abre por ruta de notificación) | Medio: los avisos no llevan al lugar exacto | Al implementar push/sondeo, mapear tipo→`Screen` en un solo archivo (hoy el mapa vive en `feature/home/HomeScreen.kt`) |
+
+## 8. Estado de implementación (bitácora)
+
+> Actualizado por el Lead durante la ejecución. `✅` = hecho y compilando; `🟡` = en curso; `⬜` = pendiente. Cada pantalla nueva se valida con `./gradlew :shared:compileCommonMainKotlinMetadata` y, cuando aplica, con un flujo de Maestro (`.maestro/`).
+
+### Fase 0 — Fundaciones ✅
+- [x] Tabla server-side estándar (`core/ui/table`: `PaginatedTableViewModel` + `ClientTableViewModel`, filtros/orden/estados) y piloto **Kardex** (`InventoryMovementsScreen`).
+- [x] Multipart + selector de archivos + compartir (`core/platform/{FilePicker,ShareFiles}`, `ApiClient.postMultipart/postBytes`, `AttachmentPicker`; Android real, iOS stub documentado).
+- [x] CSV (`shareCsv`) y decisión PDF: **no** se genera PDF en el cliente; pendiente de endpoint en `api/` (§7).
+- [x] Sondeo de notificaciones cada 45 s en `AppShell` (la web usa Ably).
+- [x] Sesión endurecida: refresh token + `ensureFreshSession()` + cambio forzado de contraseña (`ChangePasswordScreen`).
+- [x] Claves de permiso: `PermissionKeys` se sincronizó con el catálogo del API (42 claves nuevas).
+
+### Fase 1 — Operación 🟡
+- [x] Dispositivo: **unidades** (identidad editable), **stock** y **kardex** en el detalle; botón «Agregar unidades».
+- [x] Alta de **N piezas con identidades** (`DeviceForm` + `DeviceCreateInput.initialQuantity/units`).
+- [x] **Entrada de unidades** a un dispositivo existente (`DeviceStockInScreen`, `STOCK_IN` con identidades e `Idempotency-Key`).
+- [x] **Devoluciones**: bandeja (`InventoryReturnsScreen`), devolución **parcial por pieza con condición** desde la carta; ROTO da de baja.
+- [x] **Auditor de inventario** (`InventoryAuditScreen`, 8 reglas + conciliación de discrepancias).
+- [x] **Carga masiva de dispositivos** por Excel (`InventoryImportScreen`: subir→revisar→confirmar, plantilla, re-preview por overrides, archivo repetido).
+- [x] **Usuarios** (Fase 3 adelantada): lista de cuentas, historial, activar/desactivar, contraseña e importación.
+- [ ] Revertir movimiento + `STOCK_IN` del alta genérica + entrada a Excel desde Dispositivos (`task-13` en curso).
+- [ ] Reportes: pestañas faltantes + resumen por periodo + export CSV (`task-14` en curso).
+- [ ] Adjuntos de ticket (`task-15` en curso).
+
+### Fase 2 — RH, reloj y horarios 🟡
+- [x] Capa de datos completa (`core/network/{hr,timeclock,schedules,catalogs}`).
+- [ ] Expediente: documentos/foto/perfil/descuentos/avisos (`task-16` en curso).
+- [ ] Tablero de expedientes + actas administrativas (pantallas creadas como esqueleto, pendiente implementación).
+- [ ] Reloj: asistencia, entradas/salidas, rol de turnos, padrón y relojes (pantallas creadas como esqueleto, tareas asignadas).
+- [ ] Horarios, asignación masiva, tiempo extra y pre nómina (pantallas creadas como esqueleto, tarea asignada).
+
+### Fase 3 — Administración 🟡
+- [x] Usuarios (lista, historial, importación) — adelantada.
+- [ ] Consola `/roles` completa (Roles, Acceso por persona, Políticas ABAC, simulador, Actividad): la app hoy tiene Matriz y Catálogo.
+- [ ] Catálogos (7 pestañas) + configuración de notificaciones (`sys-config`): pantalla `Screen.Catalogs` creada como esqueleto.
+
+### E2E (Maestro)
+- [x] Harness: `scripts/e2e.sh` (adb reverse + prefs del API + permisos del sistema) y flujos en `.maestro/`.
+- [x] `login.yaml`, `smoke.yaml` (shell, drawer, Langostín + chat de ticket), `inventory-returns.yaml`, `inventory-audit.yaml`.
+- [ ] Flujos por pantalla nueva (se agregan al implementar cada una) y `maestro test` de toda la carpeta al cierre de cada fase.
+
+### Langostín (adicional al plan, pedido del dueño)
+- [x] Botón central del shell + panel de ayuda contextual (37 pantallas) + alta de ticket en chat.
+- [x] Mascota pixel-art y **escenas 8-bit** (`langostin-escenas`) animadas en el hero del panel (hotel/sistemas/navidad/playa/noche + badge de temporada).
+- [ ] Globo proactivo, agentes de tarea/persona/acta/horario y guía del tablero.

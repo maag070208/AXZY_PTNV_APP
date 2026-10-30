@@ -3,8 +3,12 @@ package com.axzydev.puertonuevoapp.feature.tickets
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.axzydev.puertonuevoapp.core.network.http.networkMessage
+import com.axzydev.puertonuevoapp.core.network.tickets.TicketAttachmentDto
 import com.axzydev.puertonuevoapp.core.network.tickets.TicketUpdateInput
 import com.axzydev.puertonuevoapp.core.network.tickets.TicketsApi
+import com.axzydev.puertonuevoapp.core.platform.PickedFile
+import com.axzydev.puertonuevoapp.core.platform.shareFile
+import com.axzydev.puertonuevoapp.core.ui.AppSnackbar
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,13 +31,95 @@ class TicketDetailViewModel(
         _uiState.update { it.copy(loading = true, error = null) }
         viewModelScope.launch {
             val result = runCatching { ticketsApi.get(ticketId) }
+            val ticket = result.getOrNull()
             _uiState.update {
                 it.copy(
                     loading = false,
                     error = result.exceptionOrNull()?.let(::networkMessage),
-                    ticket = result.getOrNull(),
+                    ticket = ticket,
+                    // El detalle ya trae sus adjuntos: se pintan mientras llega la lista fresca.
+                    attachments = ticket?.attachments ?: it.attachments,
                 )
             }
+            if (ticket != null) loadAttachments()
+        }
+    }
+
+    /**
+     * Relee solo la lista de adjuntos (`GET /tickets/:id/attachments`). Va
+     * aparte del resto del detalle para que un fallo de red en los archivos no
+     * tumbe la pantalla.
+     */
+    fun loadAttachments() {
+        if (_uiState.value.loadingAttachments) return
+        _uiState.update { it.copy(loadingAttachments = true, attachmentsError = null) }
+        viewModelScope.launch {
+            val result = runCatching { ticketsApi.attachments(ticketId) }
+            _uiState.update { state ->
+                val fresh = result.getOrNull()
+                state.copy(
+                    loadingAttachments = false,
+                    attachments = fresh ?: state.attachments,
+                    attachmentsError = result.exceptionOrNull()?.let(::networkMessage),
+                    ticket = fresh?.let { list -> state.ticket?.copy(attachments = list) } ?: state.ticket,
+                )
+            }
+        }
+    }
+
+    // ── Adjuntos: elegir, subir y descargar/compartir ────────────────────────
+
+    fun onAttachmentPicked(file: PickedFile) =
+        _uiState.update { it.copy(attachmentFile = file, attachmentsError = null) }
+
+    fun clearAttachmentFile() = _uiState.update { it.copy(attachmentFile = null) }
+
+    /** Sube el archivo elegido (`POST /tickets/:id/attachments`) y refresca la lista. */
+    fun uploadAttachment() {
+        val state = _uiState.value
+        val file = state.attachmentFile ?: return
+        if (state.uploadingAttachment) return
+        _uiState.update { it.copy(uploadingAttachment = true, attachmentsError = null) }
+        viewModelScope.launch {
+            val result = runCatching { ticketsApi.uploadAttachment(ticketId, file) }
+            result.fold(
+                onSuccess = { uploaded ->
+                    _uiState.update { current ->
+                        val list = listOf(uploaded) + current.attachments.filterNot { it.id == uploaded.id }
+                        current.copy(
+                            uploadingAttachment = false,
+                            attachmentFile = null,
+                            attachments = list,
+                            ticket = current.ticket?.copy(attachments = list),
+                        )
+                    }
+                    AppSnackbar.show("Adjunto subido")
+                    loadAttachments()
+                },
+                onFailure = { error ->
+                    _uiState.update { it.copy(uploadingAttachment = false, attachmentsError = networkMessage(error)) }
+                },
+            )
+        }
+    }
+
+    /** Descarga los bytes del adjunto y abre la hoja de compartir del sistema. */
+    fun downloadAndShare(attachment: TicketAttachmentDto) {
+        if (_uiState.value.downloadingAttachmentId != null) return
+        _uiState.update { it.copy(downloadingAttachmentId = attachment.id, attachmentsError = null) }
+        viewModelScope.launch {
+            val result = runCatching { ticketsApi.downloadAttachment(ticketId, attachment.id) }
+            result.fold(
+                onSuccess = { bytes ->
+                    runCatching { shareFile(attachment.originalName, attachment.mimeType, bytes) }
+                    _uiState.update { it.copy(downloadingAttachmentId = null) }
+                },
+                onFailure = { error ->
+                    _uiState.update {
+                        it.copy(downloadingAttachmentId = null, attachmentsError = networkMessage(error))
+                    }
+                },
+            )
         }
     }
 

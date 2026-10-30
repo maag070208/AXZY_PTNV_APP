@@ -23,10 +23,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.FolderShared
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Inventory
@@ -575,8 +577,35 @@ private fun drawerSections(user: SessionUser?): List<DrawerSection> = buildList 
                     icon = Icons.Filled.Groups,
                     children = buildList {
                         if (user.canViewHR) add(DrawerChild("Personal", Screen.EmployeesList))
-                        add(DrawerChild("Departamentos", Screen.DepartmentsList))
+                        if (user.canViewHR) add(DrawerChild("Expedientes", Screen.EmployeeRecords))
+                        if (user.can(PermissionKeys.HR_DISCIPLINARY_REPORTS)) {
+                            add(DrawerChild("Actas administrativas", Screen.DisciplinaryReports))
+                        }
+                        if (user.canManageDepartments) add(DrawerChild("Departamentos", Screen.DepartmentsList))
                     },
+                ),
+            )
+        }
+        val clockChildren = buildList {
+            if (user?.can(PermissionKeys.TIME_CLOCK_VIEW) == true) {
+                add(DrawerChild("Asistencia", Screen.TimeClock))
+                add(DrawerChild("Entradas y salidas", Screen.TimeClockEntriesExits))
+                add(DrawerChild("Rol de turnos", Screen.TimeClockRoster))
+                add(DrawerChild("Padrón del reloj", Screen.TimeClockEmployees))
+            }
+            if (user?.can(PermissionKeys.SCHEDULES_VIEW) == true) {
+                add(DrawerChild("Horarios", Screen.Schedules))
+                add(DrawerChild("Asignar horarios", Screen.ScheduleAssign))
+            }
+            if (user?.can(PermissionKeys.OVERTIME_VIEW) == true) add(DrawerChild("Tiempo extra", Screen.OvertimeApproval))
+            if (user?.can(PermissionKeys.PAYROLL_VIEW) == true) add(DrawerChild("Pre nómina", Screen.Payroll))
+        }
+        if (clockChildren.isNotEmpty()) {
+            add(
+                DrawerNode(
+                    label = "Reloj y horarios",
+                    icon = Icons.Filled.AccessTime,
+                    children = clockChildren,
                 ),
             )
         }
@@ -584,14 +613,20 @@ private fun drawerSections(user: SessionUser?): List<DrawerSection> = buildList 
     if (organization.isNotEmpty()) add(DrawerSection("Organización", organization))
 
     val configuration = buildList {
-        if (user?.canManageCatalogs == true || user?.canSeeAudit == true || user?.canManageRoles == true) {
+        if (user?.canManageCatalogs == true || user?.canSeeAudit == true || user?.canManageRoles == true ||
+            user?.canConfigureSystem == true || user?.can(PermissionKeys.TIME_CLOCKS_MANAGE) == true
+        ) {
             add(
                 DrawerNode(
                     label = "Configuración",
                     icon = Icons.Filled.Settings,
                     children = buildList {
                         if (user.can(PermissionKeys.USERS_VIEW)) add(DrawerChild("Usuarios", Screen.UsersList))
+                        if (user.canManageCatalogs || user.canConfigureSystem) {
+                            add(DrawerChild("Catálogos", Screen.Catalogs))
+                        }
                         if (user.canManageCatalogs) add(DrawerChild("Tipos de dispositivo", Screen.DeviceTypesList))
+                        if (user.can(PermissionKeys.TIME_CLOCKS_MANAGE)) add(DrawerChild("Relojes", Screen.TimeClocks))
                         if (user.canSeeAudit) add(DrawerChild("Auditoría", Screen.AuditLogs))
                         if (user.canManageRoles) add(DrawerChild("Roles y permisos", Screen.RolesPermissions))
                     },

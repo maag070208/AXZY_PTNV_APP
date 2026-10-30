@@ -1,0 +1,30 @@
+# Alta de un ticket desde Langostín y validación de la sección de adjuntos.
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: login.yaml
+- tapOn: "Abrir Langostín"
+- tapOn: "Nuevo ticket"
+- tapOn:
+    id: "langostin.input"
+- inputText: "E2E adjuntos"
+- hideKeyboard
+- tapOn: "Enviar"
+- tapOn:
+    id: "langostin.input"
+- inputText: "Detalle de prueba E2E para adjuntos"
+- hideKeyboard
+- tapOn: "Enviar"
+- tapOn: "Sin categoría"
+- tapOn: "Media"
+- tapOn: "Crear ticket"
+- extendedWaitUntil:
+    visible: "Ver ticket"
+    timeout: 30000
+- tapOn: "Ver ticket"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Sin adjuntos.*"
+    direction: DOWN
+    timeout: 20000
+- assertVisible: "Sin adjuntos.*"

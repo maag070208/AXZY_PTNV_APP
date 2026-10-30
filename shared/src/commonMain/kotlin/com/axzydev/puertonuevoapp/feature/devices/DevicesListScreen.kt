@@ -1,7 +1,5 @@
 package com.axzydev.puertonuevoapp.feature.devices
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,7 +22,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
@@ -33,8 +30,8 @@ import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.devices.DeviceDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
-import com.axzydev.puertonuevoapp.core.theme.AppShape
 import com.axzydev.puertonuevoapp.core.ui.AppCard
+import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
 import com.axzydev.puertonuevoapp.core.ui.AppSearchField
 import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
@@ -47,7 +44,10 @@ fun DevicesListScreen(viewModel: DevicesListViewModel = viewModel { DevicesListV
     val state by viewModel.uiState.collectAsState()
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
-    val canManageTypes = (authState as? AuthState.LoggedIn)?.user?.canManageCatalogs == true
+    val user = (authState as? AuthState.LoggedIn)?.user
+    val canManageTypes = user?.canManageCatalogs == true
+    // "Cargar Excel" es el asistente de importación (`/inventory/devices/import`).
+    val canImportDevices = user?.canCreateDevices == true
 
     Column(modifier = Modifier.fillMaxSize().imePadding()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -66,28 +66,24 @@ fun DevicesListScreen(viewModel: DevicesListViewModel = viewModel { DevicesListV
             Spacer(Modifier.height(10.dp))
             Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 deviceStatusFilters.forEach { (value, label) ->
-                    val selected = state.statusFilter == value
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (selected) AppColors.Surface else AppColors.TextMuted,
-                        modifier = Modifier
-                            .clip(AppShape.pill)
-                            .background(if (selected) AppColors.EmeraldPrimary else AppColors.SurfaceVariant, AppShape.pill)
-                            .clickable { viewModel.onStatusFilterChange(value) }
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                    AppFilterChip(
+                        label = label,
+                        selected = state.statusFilter == value,
+                        onClick = { viewModel.onStatusFilterChange(value) },
+                    )
+                }
+                if (canImportDevices) {
+                    AppFilterChip(
+                        label = "Cargar Excel",
+                        selected = false,
+                        onClick = { navigator.push(Screen.DeviceImport) },
                     )
                 }
                 if (canManageTypes) {
-                    Text(
-                        text = "Tipos de equipo",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = AppColors.EmeraldPrimary,
-                        modifier = Modifier
-                            .clip(AppShape.pill)
-                            .background(AppColors.SurfaceVariant, AppShape.pill)
-                            .clickable { navigator.push(Screen.DeviceTypesList) }
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                    AppFilterChip(
+                        label = "Tipos de equipo",
+                        selected = false,
+                        onClick = { navigator.push(Screen.DeviceTypesList) },
                     )
                 }
             }

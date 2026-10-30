@@ -2,6 +2,7 @@ package com.axzydev.puertonuevoapp.feature.roles
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -37,6 +38,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -55,6 +59,8 @@ import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
 import com.axzydev.puertonuevoapp.core.ui.AppModal
 import com.axzydev.puertonuevoapp.core.ui.AppSearchField
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
+import com.axzydev.puertonuevoapp.core.ui.BentoTabItem
+import com.axzydev.puertonuevoapp.core.ui.BentoTabs
 import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
@@ -62,7 +68,12 @@ import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.roleLabel
 
-/** Roles y permisos (`roles.manage`): matriz rol → permiso → alcance y catálogo. */
+/**
+ * Consola de roles y permisos (`roles.manage`), con las seis pestañas de la web:
+ * Roles (lista por módulo + detalle con niveles, personas y reglas), Matriz
+ * (rol × permiso × alcance, editable con diff), Acceso por persona (acceso
+ * efectivo + probador), Reglas ABAC, Catálogo de permisos y Actividad.
+ */
 @Composable
 fun RolesPermissionsScreen(
     viewModel: RolesPermissionsViewModel = viewModel {
@@ -77,21 +88,47 @@ fun RolesPermissionsScreen(
     }
 
     val state by viewModel.uiState.collectAsState()
+    val tabs = RolesConsoleTab.entries
+    var selected by rememberSaveable { mutableIntStateOf(0) }
+    val current = tabs[selected.coerceIn(0, tabs.lastIndex)]
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TabRow(selectedTabIndex = state.tab, containerColor = AppColors.Surface, contentColor = AppColors.EmeraldPrimary) {
-            Tab(selected = state.tab == 0, onClick = { viewModel.onTabChange(0) }, text = { Text("Matriz") })
-            Tab(selected = state.tab == 1, onClick = { viewModel.onTabChange(1) }, text = { Text("Catálogo") })
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 10.dp)) {
+            BentoTabs(
+                items = tabs.map { BentoTabItem(it.label, it.icon) },
+                selectedIndex = selected.coerceIn(0, tabs.lastIndex),
+                onSelect = { selected = it },
+            )
         }
-        when {
-            state.loading && state.data == null -> LoadingState(modifier = Modifier.fillMaxSize())
-            state.error != null && state.data == null -> ErrorState(state.error ?: "Error", Modifier.fillMaxSize(), onRetry = viewModel::load)
-            state.tab == 0 -> MatrixTab(state, viewModel)
-            else -> CatalogTab(state, viewModel)
+        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+            when (current) {
+                RolesConsoleTab.Roles -> RolesAdminTab()
+                RolesConsoleTab.Access -> AccessTab()
+                RolesConsoleTab.Policies -> PoliciesTab()
+                RolesConsoleTab.Activity -> ActivityTab()
+                RolesConsoleTab.Matrix -> MatrixOrCatalog(state, viewModel, catalog = false)
+                RolesConsoleTab.Catalog -> MatrixOrCatalog(state, viewModel, catalog = true)
+            }
         }
     }
 
     state.form?.let { form -> PermissionFormModal(form, state.savingCatalog, viewModel) }
+}
+
+/** Envuelve Matriz/Catálogo con sus estados de carga y error (comparten `admin()`). */
+@Composable
+private fun MatrixOrCatalog(
+    state: RolesPermissionsUiState,
+    viewModel: RolesPermissionsViewModel,
+    catalog: Boolean,
+) {
+    when {
+        state.loading && state.data == null -> LoadingState(modifier = Modifier.fillMaxSize())
+        state.error != null && state.data == null ->
+            ErrorState(state.error, Modifier.fillMaxSize(), onRetry = viewModel::load)
+        catalog -> CatalogTab(state, viewModel)
+        else -> MatrixTab(state, viewModel)
+    }
 }
 
 @Composable

@@ -189,3 +189,26 @@ data class TicketAssignmentUpdateInput(
 
 @Serializable
 data class TicketAssignmentCommentInput(val text: String)
+
+// ── Catálogo de categorías de ticket (CRUD en Catálogos) ────────────────────
+
+/** Alta de categoría (`POST /tickets/categories`, permiso `catalogs.manage`). */
+@Serializable
+data class TicketCategoryCreateInput(val name: String)
+
+/** Edición parcial de categoría (`PATCH /tickets/categories/:id`). */
+@Serializable
+data class TicketCategoryUpdateInput(
+    val name: String? = null,
+    val active: Boolean? = null,
+)
+
+/**
+ * DELETE de una categoría: igual que los catálogos de RH, la API desactiva la
+ * primera vez (`soft = true`) y borra físicamente cuando ya estaba inactiva.
+ */
+@Serializable
+data class TicketCategoryDeleteResultDto(
+    val soft: Boolean = false,
+    val data: TicketCategoryRefDto? = null,
+)

@@ -1,8 +1,15 @@
 package com.axzydev.puertonuevoapp.feature.inventory
 
+import androidx.lifecycle.viewModelScope
 import com.axzydev.puertonuevoapp.core.network.http.TableSort
+import com.axzydev.puertonuevoapp.core.network.http.networkMessage
 import com.axzydev.puertonuevoapp.core.network.inventory.InventoryApi
+import com.axzydev.puertonuevoapp.core.ui.AppSnackbar
 import com.axzydev.puertonuevoapp.core.ui.table.ClientTableViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 /**
  * Kardex / Movimientos sobre el estándar de tablas (`AppTableScreen`).
@@ -12,6 +19,11 @@ import com.axzydev.puertonuevoapp.core.ui.table.ClientTableViewModel
  * y `deviceId`). Por eso el piloto usa [ClientTableViewModel], espejo de
  * `makeClientTableFetch` de la web: trae la lista una vez y este ViewModel aplica
  * filtros y orden en memoria, mientras el estándar pagina el resultado.
+ *
+ * Además de la tabla expone "Revertir" (`POST /inventory/movements/:id/revert`):
+ * la API solo revierte movimientos de mantenimiento y responde 409
+ * (`MOVEMENT_NOT_REVERSIBLE` / `MOVEMENT_ALREADY_REVERSED`) en el resto; su
+ * mensaje se muestra con `networkMessage`.
  *
  * Cuando el API agregue el endpoint de tabla, esta clase pasa a
  * `PaginatedTableViewModel` (con `TableRequest`/`TableResponse` y `sort`) sin tocar
@@ -24,8 +36,37 @@ class InventoryMovementsViewModel(
     override val pageSize: Int = 10
     override val searchKey: String? = MovementFilterKeys.Search
 
+    private val _revertingId = MutableStateFlow<String?>(null)
+
+    /** Id del movimiento cuya reversión está en curso (para el spinner de su fila). */
+    val revertingId: StateFlow<String?> = _revertingId.asStateFlow()
+
     override suspend fun fetchAll(): List<InventoryMovementRow> =
         inventoryApi.movements().map { it.toRow() }
+
+    /**
+     * Revierte un movimiento de mantenimiento. La fila se valida aquí y el API
+     * revalida tipo/estado; al terminar refresca el kardex.
+     */
+    fun revert(row: InventoryMovementRow) {
+        if (_revertingId.value != null) return
+        if (!row.isReversible) {
+            AppSnackbar.showError("Solo se pueden revertir movimientos de mantenimiento.")
+            return
+        }
+        _revertingId.value = row.id
+        viewModelScope.launch {
+            val result = runCatching { inventoryApi.revertMovement(row.id) }
+            result.fold(
+                onSuccess = {
+                    AppSnackbar.show("Movimiento revertido.")
+                    refresh()
+                },
+                onFailure = { e -> AppSnackbar.showError(networkMessage(e)) },
+            )
+            _revertingId.value = null
+        }
+    }
 
     override fun applyFilters(
         items: List<InventoryMovementRow>,

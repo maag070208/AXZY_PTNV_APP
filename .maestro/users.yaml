@@ -1,0 +1,26 @@
+# Usuarios: lista de cuentas desde el drawer (Configuración → Usuarios).
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: login.yaml
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-node-configuracion"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-node-configuracion"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-child-usuarios"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-child-usuarios"
+- extendedWaitUntil:
+    visible: "Usuarios"
+    timeout: 15000
+- assertVisible: "Importar"

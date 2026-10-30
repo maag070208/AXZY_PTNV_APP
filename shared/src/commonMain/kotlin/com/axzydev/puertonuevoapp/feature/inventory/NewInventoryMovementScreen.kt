@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -25,22 +27,33 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.AppShape
+import com.axzydev.puertonuevoapp.core.ui.AppCard
+import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
 import com.axzydev.puertonuevoapp.core.ui.AppSurfaceCard
+import com.axzydev.puertonuevoapp.core.ui.AppTextField
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
 import com.axzydev.puertonuevoapp.core.util.conditionLabel
 import com.axzydev.puertonuevoapp.core.util.deviceStatusLabel
-import com.axzydev.puertonuevoapp.core.ui.AppTextField
 
+/**
+ * Registrar un movimiento de inventario. El tipo **Entrada** (`STOCK_IN`) captura
+ * piezas NUEVAS: cantidad 1..5000 e identidades opcionales por pieza (serie/MAC/
+ * IP/hostname según el tipo del dispositivo), sin ubicación obligatoria, igual que
+ * la web; el resto de tipos mueve una pieza/estado como antes.
+ */
 @Composable
 fun NewInventoryMovementScreen(deviceId: String? = null) {
     val navigator = LocalNavigator.current
@@ -93,6 +106,54 @@ fun NewInventoryMovementScreen(deviceId: String? = null) {
                 onSelect = viewModel::onTypeChange,
                 modifier = Modifier.fillMaxWidth(),
             )
+
+            if (state.isEntry) {
+                Spacer(Modifier.height(14.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(AppColors.Success.copy(alpha = 0.08f), RoundedCornerShape(14.dp))
+                        .padding(12.dp),
+                ) {
+                    Text("Entrada de piezas nuevas", style = MaterialTheme.typography.labelSmall, color = AppColors.Success)
+                    Spacer(Modifier.height(8.dp))
+                    AppTextField(
+                        value = state.quantityText,
+                        onValueChange = viewModel::onQuantityChange,
+                        label = { Text("Cantidad de piezas (1 a 5000)") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    state.folioHint?.let { hint ->
+                        Spacer(Modifier.height(8.dp))
+                        Text(hint, style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
+                    }
+                    if (!state.quantityValid) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "La cantidad debe estar entre 1 y 5000 piezas.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = AppColors.Danger,
+                        )
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "La entrada no pide ubicación: las piezas se crean en el dispositivo seleccionado.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = AppColors.TextFaint,
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    AppTextField(
+                        value = state.entryReason,
+                        onValueChange = viewModel::onEntryReasonChange,
+                        label = { Text("Motivo de la entrada (opcional)") },
+                        placeholder = { Text("Ej. Llegó mercancía nueva") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
 
             if (state.requiresLocation) {
                 Spacer(Modifier.height(10.dp))
@@ -203,6 +264,64 @@ fun NewInventoryMovementScreen(deviceId: String? = null) {
             )
         }
 
+        // Identidades por pieza: solo para la entrada y cuando el tipo pide datos.
+        if (state.isEntry && state.selectedDevice != null) {
+            Spacer(Modifier.height(16.dp))
+            if (state.usesUnitIdentity) {
+                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
+                    Text(
+                        "Identificación de las piezas (${state.identityCount} de ${state.quantity.coerceAtLeast(0)})",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = AppColors.TextPrimary,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "Opcional y por pieza; se aplica en el orden en que se crean. El tipo del dispositivo decide qué campos se piden.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = AppColors.TextMuted,
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
+                state.identityRows.forEachIndexed { index, row ->
+                    EntryIdentityCard(
+                        label = "Pieza ${index + 1}",
+                        row = row,
+                        showSerial = state.showField("serialNumber"),
+                        showMac = state.showField("macAddress"),
+                        showIp = state.showField("ip"),
+                        showHostname = state.showField("hostname"),
+                        onChange = { field, value -> viewModel.onIdentityChange(row.id, field, value) },
+                        onRemove = { viewModel.removeIdentityRow(row.id) },
+                    )
+                    Spacer(Modifier.height(10.dp))
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    AppFilterChip(
+                        label = "Agregar identidad",
+                        selected = false,
+                        enabled = state.canAddIdentity,
+                        onClick = viewModel::addIdentityRow,
+                    )
+                }
+                if (!state.canAddIdentity) {
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "Ya hay una identidad por cada pieza de la cantidad indicada.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = AppColors.TextFaint,
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                    )
+                }
+            } else {
+                Text(
+                    "El tipo de dispositivo no pide serie/MAC/IP/hostname por pieza; solo se registrará la cantidad.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AppColors.TextFaint,
+                    modifier = Modifier.padding(horizontal = 4.dp),
+                )
+            }
+        }
+
         Spacer(Modifier.height(20.dp))
         Button(
             onClick = viewModel::submit,
@@ -211,8 +330,108 @@ fun NewInventoryMovementScreen(deviceId: String? = null) {
             colors = ButtonDefaults.buttonColors(containerColor = AppColors.EmeraldPrimary),
             modifier = Modifier.fillMaxWidth().height(50.dp),
         ) {
-            if (state.saving) CircularProgressIndicator(modifier = Modifier.height(20.dp), color = AppColors.Surface, strokeWidth = 2.dp)
-            else Text("Registrar movimiento", style = MaterialTheme.typography.titleMedium)
+            if (state.saving) {
+                CircularProgressIndicator(modifier = Modifier.height(20.dp), color = AppColors.Surface, strokeWidth = 2.dp)
+            } else {
+                Text(
+                    text = when {
+                        state.isEntry && state.quantity > 1 -> "Registrar ${state.quantity} piezas"
+                        state.isEntry -> "Registrar entrada"
+                        else -> "Registrar movimiento"
+                    },
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+        }
+    }
+}
+
+/** Identificación opcional de una pieza nueva (todos los campos que pide el tipo). */
+@Composable
+private fun EntryIdentityCard(
+    label: String,
+    row: StockInIdentityRow,
+    showSerial: Boolean,
+    showMac: Boolean,
+    showIp: Boolean,
+    showHostname: Boolean,
+    onChange: (StockInIdentityField, String) -> Unit,
+    onRemove: () -> Unit,
+) {
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(14.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleSmall,
+                color = AppColors.TextPrimary,
+                modifier = Modifier.weight(1f),
+            )
+            AppFilterChip(
+                label = "Quitar",
+                selected = true,
+                selectedColor = AppColors.Danger,
+                onClick = onRemove,
+            )
+        }
+        if (showSerial) {
+            Spacer(Modifier.height(10.dp))
+            AppTextField(
+                value = row.serialNumber,
+                onValueChange = { onChange(StockInIdentityField.SerialNumber, it) },
+                label = { Text("No. de serie") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        if (showMac && showIp) {
+            Spacer(Modifier.height(10.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                AppTextField(
+                    value = row.macAddress,
+                    onValueChange = { onChange(StockInIdentityField.Mac, it) },
+                    label = { Text("MAC") },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+                AppTextField(
+                    value = row.ip,
+                    onValueChange = { onChange(StockInIdentityField.Ip, it) },
+                    label = { Text("IP") },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        } else if (showMac) {
+            Spacer(Modifier.height(10.dp))
+            AppTextField(
+                value = row.macAddress,
+                onValueChange = { onChange(StockInIdentityField.Mac, it) },
+                label = { Text("MAC") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        } else if (showIp) {
+            Spacer(Modifier.height(10.dp))
+            AppTextField(
+                value = row.ip,
+                onValueChange = { onChange(StockInIdentityField.Ip, it) },
+                label = { Text("IP") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        if (showHostname) {
+            Spacer(Modifier.height(10.dp))
+            AppTextField(
+                value = row.hostname,
+                onValueChange = { onChange(StockInIdentityField.Hostname, it) },
+                label = { Text("Nombre del equipo") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }

@@ -67,6 +67,28 @@ sealed interface Screen {
     data object AccessScan : Screen
     data object AccessLog : Screen
 
+    // RH: expedientes y actas administrativas
+    data object EmployeeRecords : Screen
+    data object DisciplinaryReports : Screen
+    data class DisciplinaryReportDetail(val reportId: String) : Screen
+
+    // Reloj checador (asistencia, reportes, padrón y relojes)
+    data object TimeClock : Screen
+    data object TimeClockEntriesExits : Screen
+    data object TimeClockRoster : Screen
+    data object TimeClockEmployees : Screen
+    data object TimeClocks : Screen
+
+    // Horarios, asignación, tiempo extra y pre nómina
+    data object Schedules : Screen
+    data class ScheduleForm(val scheduleId: String? = null) : Screen
+    data object ScheduleAssign : Screen
+    data object OvertimeApproval : Screen
+    data object Payroll : Screen
+
+    // Administración de catálogos
+    data object Catalogs : Screen
+
     data object Reports : Screen
     data object Notifications : Screen
     data object AuditLogs : Screen
