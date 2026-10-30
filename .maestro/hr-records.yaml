@@ -1,0 +1,20 @@
+# Expedientes y actas: carga de las dos pantallas del tablero.
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: login.yaml
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-node-recursos-humanos"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-node-recursos-humanos"
+- waitForAnimationToEnd
+- tapOn:
+    id: "drawer-child-expedientes"
+- extendedWaitUntil:
+    visible: "Expedientes"
+    timeout: 15000

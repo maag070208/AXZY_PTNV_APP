@@ -37,8 +37,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
-import com.axzydev.puertonuevoapp.core.nav.Screen
 import com.axzydev.puertonuevoapp.core.network.notifications.NotificationDto
+import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.EmptyState
@@ -63,10 +63,14 @@ private fun typeColor(type: String) = when (type) {
 fun NotificationsScreen(viewModel: NotificationsViewModel = viewModel { NotificationsViewModel(AppContainer.notificationsApi) }) {
     val state by viewModel.uiState.collectAsState()
     val navigator = LocalNavigator.current
+    val authState by AppContainer.authRepository.state.collectAsState()
+    val user = (authState as? AuthState.LoggedIn)?.user
 
+    // Tocar una notificación la marca leída y, si su tipo tiene pantalla y la
+    // persona tiene el permiso, navega (mapeo en `NotificationRoutes`).
     fun onOpen(n: NotificationDto) {
         viewModel.markRead(n)
-        n.ticketId?.let { navigator.push(Screen.TicketDetail(it)) }
+        NotificationRoutes.screenFor(n, user)?.let { navigator.push(it) }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {

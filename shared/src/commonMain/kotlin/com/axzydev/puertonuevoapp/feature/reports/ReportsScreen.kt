@@ -72,6 +72,11 @@ import com.axzydev.puertonuevoapp.core.ui.StatCard
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.deviceStatusLabel
 import com.axzydev.puertonuevoapp.core.util.formatShortDate
+import androidx.compose.ui.text.style.TextOverflow
+import com.axzydev.puertonuevoapp.core.ui.PillButton
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
+import androidx.compose.ui.graphics.Color
+import com.axzydev.puertonuevoapp.core.theme.BentoTone
 
 /**
  * Reportes al nivel de la web: Asignados, Dispositivos y Salidas de material
@@ -370,29 +375,53 @@ private fun AssignedTab(state: ReportsUiState, onRetry: () -> Unit, onLoadMore: 
 private fun AssignedReportCard(row: AssignedDeviceRowDto) {
     AppCard(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(14.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(row.assetTag, style = MaterialTheme.typography.titleSmall, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold)
+            Text(
+                row.assetTag,
+                style = MaterialTheme.typography.titleSmall,
+                color = AppColors.TextPrimary,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
             Spacer(Modifier.weight(1f))
             Text(formatShortDate(row.date), style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint)
         }
-        Text("${row.description} · ${row.type}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
+        Text(
+            "${row.description} · ${row.type}",
+            style = MaterialTheme.typography.bodySmall,
+            color = AppColors.TextMuted,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
         Spacer(Modifier.height(4.dp))
         Text(
             "Responsable: ${row.custodian}" + (row.employeeNumber?.let { " (No. $it)" } ?: ""),
             style = MaterialTheme.typography.bodySmall,
             color = AppColors.TextMuted,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         row.department?.takeIf { it.isNotBlank() }?.let {
-            Text(it, style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint)
+            Text(
+                it,
+                style = MaterialTheme.typography.labelSmall,
+                color = AppColors.TextFaint,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
         Spacer(Modifier.height(6.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            StatusChip(row.folio ?: "Sin folio", AppColors.EmeraldPrimary)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+        ) {
+            StatusChip(row.folio ?: "Sin folio", BentoTone.Sea)
             StatusChip(
-                if (row.source == "CUSTODY_LETTER") "Carta" else "Movimiento",
-                if (row.source == "CUSTODY_LETTER") AppColors.Success else AppColors.Warning,
+                label = if (row.source == "CUSTODY_LETTER") "Carta" else "Movimiento",
+                tone = if (row.source == "CUSTODY_LETTER") BentoTone.Mint else BentoTone.Sun,
             )
             val days = row.daysAssigned ?: 0
-            StatusChip("$days día(s)", if (days > 30) AppColors.Danger else AppColors.TextFaint)
+            StatusChip("$days día(s)", if (days > 30) BentoTone.Rose else BentoTone.Plain)
         }
     }
 }
@@ -475,31 +504,67 @@ private fun DevicesTab(state: ReportsUiState, onRetry: () -> Unit, onLoadMore: (
 private fun DeviceReportCard(row: DeviceReportRowDto) {
     AppCard(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(14.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(row.assetTag, style = MaterialTheme.typography.titleSmall, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold)
+            Text(
+                row.assetTag,
+                style = MaterialTheme.typography.titleSmall,
+                color = AppColors.TextPrimary,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
             Spacer(Modifier.weight(1f))
-            StatusChip(deviceStatusLabel(row.status), statusColor(row.status))
+            StatusChip(deviceStatusLabel(row.status), toneOf(statusColor(row.status)))
         }
-        Text("${row.description} · ${row.type}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
-        Text("Área: ${row.area}", style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint)
+        Text(
+            "${row.description} · ${row.type}",
+            style = MaterialTheme.typography.bodySmall,
+            color = AppColors.TextMuted,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            "Área: ${row.area}",
+            style = MaterialTheme.typography.labelSmall,
+            color = AppColors.TextFaint,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
         row.serialNumber?.takeIf { it.isNotBlank() }?.let {
-            Text("Serie: $it", style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint)
+            Text(
+                "Serie: $it",
+                style = MaterialTheme.typography.labelSmall,
+                color = AppColors.TextFaint,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
         row.hostname?.takeIf { it.isNotBlank() }?.let {
-            Text("Hostname: $it", style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint)
+            Text(
+                "Hostname: $it",
+                style = MaterialTheme.typography.labelSmall,
+                color = AppColors.TextFaint,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
         row.custodian?.takeIf { it.isNotBlank() }?.let { custodian ->
             Text(
                 "Responsable: $custodian" + (row.employeeNumber?.let { " (No. $it)" } ?: ""),
                 style = MaterialTheme.typography.bodySmall,
                 color = AppColors.TextMuted,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
         Spacer(Modifier.height(6.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            StatusChip("×${row.quantity}", AppColors.EmeraldPrimary)
-            row.folio?.takeIf { it.isNotBlank() }?.let { StatusChip(it, AppColors.Slate) }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+        ) {
+            StatusChip("×${row.quantity}", BentoTone.Sea)
+            row.folio?.takeIf { it.isNotBlank() }?.let { StatusChip(it, BentoTone.Plain) }
             row.daysAssigned?.let { days ->
-                StatusChip("$days día(s)", if (days > 30) AppColors.Danger else AppColors.TextFaint)
+                StatusChip("$days día(s)", if (days > 30) BentoTone.Rose else BentoTone.Plain)
             }
         }
     }
@@ -555,22 +620,37 @@ private fun OutputsTab(
 private fun OutputReportCard(row: MaterialOutputDto, onClick: (() -> Unit)? = null) {
     AppCard(modifier = Modifier.fillMaxWidth(), onClick = onClick, contentPadding = PaddingValues(14.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(row.description, style = MaterialTheme.typography.titleSmall, color = AppColors.TextPrimary, modifier = Modifier.weight(1f))
+            Text(
+                row.description,
+                style = MaterialTheme.typography.titleSmall,
+                color = AppColors.TextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
             Text(formatShortDate(row.date), style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint)
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("×${row.quantity}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
             Spacer(Modifier.weight(1f))
-            StatusChip(outputReasonLabel(row.reason), AppColors.Slate)
+            StatusChip(outputReasonLabel(row.reason), BentoTone.Plain)
         }
         Text(
             "${row.departmentName} · ${row.userName}",
             style = MaterialTheme.typography.bodySmall,
             color = AppColors.TextMuted,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         listOfNotNull(row.project?.takeIf { it.isNotBlank() }, row.notes?.takeIf { it.isNotBlank() })
             .forEach { extra ->
-                Text(extra, style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint)
+                Text(
+                    extra,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = AppColors.TextFaint,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
     }
 }
@@ -596,7 +676,7 @@ private fun SummaryTab(state: ReportsUiState, onRetry: () -> Unit) {
             ) {
                 item(key = "range") {
                     Text(
-                        "Ventana: ${summary?.range?.start ?: "—"} a ${summary?.range?.end ?: "—"}",
+                        "Ventana: ${formatShortDate(summary?.range?.start)} a ${formatShortDate(summary?.range?.end)}",
                         style = MaterialTheme.typography.bodySmall,
                         color = AppColors.TextMuted,
                     )
@@ -639,19 +719,19 @@ private fun SummaryTab(state: ReportsUiState, onRetry: () -> Unit) {
                 }
                 item(key = "peopleTitle") { SectionLabel("Personas") }
                 if (summary?.recipients.isNullOrEmpty()) {
-                    item(key = "peopleEmpty") { Text("Sin movimientos de personas en el periodo", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint) }
+                    item(key = "peopleEmpty") { BentoState(message = "Sin movimientos de personas en el periodo") }
                 } else {
                     items(summary?.recipients.orEmpty(), key = { it.userId }) { recipient -> RecipientRow(recipient) }
                 }
                 item(key = "devicesTitle") { SectionLabel("Por dispositivo") }
                 if (summary?.byDevice.isNullOrEmpty()) {
-                    item(key = "devicesEmpty") { Text("Sin dispositivos movidos en el periodo", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint) }
+                    item(key = "devicesEmpty") { BentoState(message = "Sin dispositivos movidos en el periodo") }
                 } else {
                     items(summary?.byDevice.orEmpty(), key = { it.deviceId }) { device -> DeviceAggregateRow(device) }
                 }
                 item(key = "bucketsTitle") { SectionLabel("Serie diaria") }
                 if (summary?.byPeriod.isNullOrEmpty()) {
-                    item(key = "bucketsEmpty") { Text("Sin días con movimientos", style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint) }
+                    item(key = "bucketsEmpty") { BentoState(message = "Sin días con movimientos") }
                 } else {
                     items(summary?.byPeriod.orEmpty(), key = { it.day }) { bucket -> BucketRow(bucket) }
                 }
@@ -664,17 +744,33 @@ private fun SummaryTab(state: ReportsUiState, onRetry: () -> Unit) {
 private fun RecipientRow(row: RecipientAggregateDto) {
     AppCard(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(12.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(row.name, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary, modifier = Modifier.weight(1f))
-            StatusChip("Pend. ${row.outstanding}", if (row.outstanding > 0) AppColors.Warning else AppColors.TextFaint)
+            Text(
+                row.name,
+                style = MaterialTheme.typography.bodyMedium,
+                color = AppColors.TextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            StatusChip("Pend. ${row.outstanding}", if (row.outstanding > 0) BentoTone.Sun else BentoTone.Plain)
         }
         row.departmentName?.takeIf { it.isNotBlank() }?.let {
-            Text(it, style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint)
+            Text(
+                it,
+                style = MaterialTheme.typography.labelSmall,
+                color = AppColors.TextFaint,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
         Spacer(Modifier.height(4.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            StatusChip("Cartas ${row.loans}", AppColors.Slate)
-            StatusChip("Entregado ${row.delivered}", AppColors.EmeraldPrimary)
-            StatusChip("Devuelto ${row.returned}", AppColors.Success)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+        ) {
+            StatusChip("Cartas ${row.loans}", BentoTone.Plain)
+            StatusChip("Entregado ${row.delivered}", BentoTone.Sea)
+            StatusChip("Devuelto ${row.returned}", BentoTone.Mint)
         }
     }
 }
@@ -683,15 +779,31 @@ private fun RecipientRow(row: RecipientAggregateDto) {
 private fun DeviceAggregateRow(row: DeviceAggregateDto) {
     AppCard(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(12.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(row.description, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary, modifier = Modifier.weight(1f))
-            Text(row.typeName, style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint)
+            Text(
+                row.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = AppColors.TextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                row.typeName,
+                style = MaterialTheme.typography.labelSmall,
+                color = AppColors.TextFaint,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
         Spacer(Modifier.height(4.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            StatusChip("Entregado ${row.delivered}", AppColors.EmeraldPrimary)
-            StatusChip("Devuelto ${row.returned}", AppColors.Success)
-            StatusChip("Alta ${row.admitted}", AppColors.Info)
-            StatusChip("Neto ${row.net}", AppColors.Warning)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+        ) {
+            StatusChip("Entregado ${row.delivered}", BentoTone.Sea)
+            StatusChip("Devuelto ${row.returned}", BentoTone.Mint)
+            StatusChip("Alta ${row.admitted}", BentoTone.Lavender)
+            StatusChip("Neto ${row.net}", BentoTone.Sun)
         }
     }
 }
@@ -704,10 +816,13 @@ private fun BucketRow(row: PeriodBucketDto) {
             Text("Neto ${row.net}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
         }
         Spacer(Modifier.height(4.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            StatusChip("Entregado ${row.delivered}", AppColors.EmeraldPrimary)
-            StatusChip("Devuelto ${row.returned}", AppColors.Success)
-            StatusChip("Alta ${row.admitted}", AppColors.Info)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+        ) {
+            StatusChip("Entregado ${row.delivered}", BentoTone.Sea)
+            StatusChip("Devuelto ${row.returned}", BentoTone.Mint)
+            StatusChip("Alta ${row.admitted}", BentoTone.Lavender)
         }
     }
 }
@@ -755,21 +870,39 @@ private fun DeliveriesTab(state: ReportsUiState, onRetry: () -> Unit, onLoadMore
 private fun DeliveryReportCard(row: DeliveryRowDto) {
     AppCard(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(14.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(row.number, style = MaterialTheme.typography.titleSmall, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold)
+            Text(
+                row.number,
+                style = MaterialTheme.typography.titleSmall,
+                color = AppColors.TextPrimary,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
             Spacer(Modifier.weight(1f))
             Text(formatShortDate(row.date), style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint)
         }
-        Text("${row.description} · ${row.typeName}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
+        Text(
+            "${row.description} · ${row.typeName}",
+            style = MaterialTheme.typography.bodySmall,
+            color = AppColors.TextMuted,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
         Text(
             row.custodianName + (row.departmentName?.let { " · $it" } ?: ""),
             style = MaterialTheme.typography.labelSmall,
             color = AppColors.TextFaint,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         Spacer(Modifier.height(6.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            StatusChip("×${row.quantity}", AppColors.EmeraldPrimary)
-            StatusChip("Devuelto ${row.returnedQuantity}", AppColors.Success)
-            StatusChip(deliveryStatusLabel(row.status), deliveryStatusColor(row.status))
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+        ) {
+            StatusChip("×${row.quantity}", BentoTone.Sea)
+            StatusChip("Devuelto ${row.returnedQuantity}", BentoTone.Mint)
+            StatusChip(deliveryStatusLabel(row.status), toneOf(deliveryStatusColor(row.status)))
         }
     }
 }
@@ -781,11 +914,12 @@ private fun DeliveryReportCard(row: DeliveryRowDto) {
 @Composable
 private fun LoadMoreRow(loading: Boolean, onLoadMore: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-        if (loading) {
-            Text("Cargando más…", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
-        } else {
-            AppFilterChip(label = "Cargar más", selected = false, onClick = onLoadMore)
-        }
+        PillButton(
+            text = "Cargar más",
+            onClick = onLoadMore,
+            variant = PillButtonVariant.Ghost,
+            loading = loading,
+        )
     }
 }
 
@@ -803,4 +937,14 @@ private fun deliveryStatusColor(status: String) = when (status) {
     "PARTIAL" -> AppColors.Warning
     "ACTIVE" -> AppColors.Info
     else -> AppColors.TextFaint
+}
+
+/** Tono bento equivalente a un color semántico (chips con contraste AA). */
+private fun toneOf(color: Color): BentoTone = when (color) {
+    AppColors.Success -> BentoTone.Mint
+    AppColors.Warning -> BentoTone.Sun
+    AppColors.Danger -> BentoTone.Rose
+    AppColors.Info -> BentoTone.Lavender
+    AppColors.EmeraldPrimary -> BentoTone.Sea
+    else -> BentoTone.Plain
 }

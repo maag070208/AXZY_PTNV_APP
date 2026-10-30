@@ -14,6 +14,8 @@ data class InventoryMovementDto(
     val locationId: String? = null,
     val location: LocationDto? = null,
     val type: String,
+    /** `ACTIVE` o `CANCELLED` (`MovementStatus` del API; una reversión cancela el origen). */
+    val status: String = "ACTIVE",
     val notes: String? = null,
     val userId: String,
     val user: UserRefDto? = null,

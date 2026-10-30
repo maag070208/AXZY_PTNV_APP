@@ -137,3 +137,12 @@ permiso: solo sesión). Abre una hoja inferior de 93 % con scrim:
   de la app + `default`, mínimo 3 opciones, toda ruta y permiso verificados contra `Screen`/`PermissionKeys`).
 - Pendiente (siguiente iteración): globo proactivo en Tickets, formularios de tarea/persona/acta/horario y guía animada
   del tablero; y los resultados de la web que la app no tiene se explican como respuesta, no como navegación.
+
+## Notas de la migración a paridad
+
+- El **panel de Langostín** se abre desde el `AppShell` (`LangostinLauncher` + `LangostinOverlay`): el botón central, el globo proactivo de Tickets y el agente de tareas comparten la misma hoja. Tickets ya no monta su propio overlay.
+- **Escenas 8-bit** de `langostin-escenas` en el hero del panel (hotel/sistemas/navidad/playa/noche, elegidas por temporada, hora y módulo), con la mascota dibujada dentro de la escena.
+- **Tablas**: `core/ui/table` quedó como estándar (`AppTableScreen` + `PaginatedTableViewModel` server-side o `ClientTableViewModel` para endpoints sin `/query`, con filtros, orden, búsqueda con debounce y `BentoState`).
+- **Píldoras de filtro** (`AppFilterChip`) ahora miden ≥40dp (objetivo táctil); en pantallas nuevas se prefieren `PillButton` para acciones de fila.
+- **Chips de estado** en pantallas nuevas usan `BentoTone` (Mint/Sun/Rose/Sea) en vez de hex/colores sueltos.
+- Los campos de formulario nuevos exponen `testTag` para E2E de Maestro (`login.*`, `langostin.input`, `changePassword.*`, nodos del drawer `drawer-node-*` / `drawer-child-*`).

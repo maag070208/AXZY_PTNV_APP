@@ -47,3 +47,19 @@ Si algo no existe en el estándar: se crea UN componente reutilizable en
 - Android: `androidApp/src/main/res/mipmap-*` (`ic_launcher.png`,
   `ic_launcher_round.png`, capas adaptativas `ic_launcher_adaptive_fore/back.png`).
 - iOS: `iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/app-icon-1024.png`.
+
+## Pruebas E2E (Maestro)
+
+La app tiene flujos de UI en `.maestro/` que corren contra el **API local real** con el teléfono por USB:
+
+```bash
+cd PuertoNuevoApp
+./scripts/e2e.sh                    # smoke
+./scripts/e2e.sh inventory-returns.yaml
+./scripts/e2e.sh all                # todos, en serie (cada flujo reinicia la app)
+```
+
+- El script hace `adb reverse tcp:4001`, limpia los datos de la app, escribe la URL del API en las preferencias (`ptnv_session`) y concede los permisos del sistema; así los flujos no pelean con teclado/autofill/diálogos.
+- Credenciales por variables: `E2E_USER` / `E2E_PASSWORD` / `E2E_API_URL` (por defecto la cuenta ADMIN de pruebas sembrada en local).
+- Los campos y acciones nuevas necesitan un `testTag` (`AppTextField(testTag = "...")`, `Modifier.testTag("...")` en filas de menú/shell) para que Maestro los seleccione por `id:` en vez de por texto/coordenadas.
+- Regla del dueño: se corre **solo el flujo del cambio** mientras se desarrolla; la carpeta completa se corre al cerrar una fase o antes de entregar.

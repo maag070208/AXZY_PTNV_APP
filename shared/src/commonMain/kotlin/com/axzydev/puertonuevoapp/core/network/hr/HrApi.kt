@@ -129,6 +129,42 @@ class HrApi(private val client: ApiClient) {
     suspend fun disciplinaryReports(request: TableRequest): TableResponse<DisciplinaryReportDto> =
         client.post("/hr/disciplinary-reports/query", request)
 
+    /**
+     * Tabla de actas con rango de fechas: el API lee
+     * `filters.incidentDate = [desde, hasta]` (arreglo de dos días), que
+     * [TableRequest.filters] no puede expresar (`Map<String, String>`), así que
+     * el cuerpo JSON se arma aquí. `fromDay`/`toDay` son días locales
+     * `YYYY-MM-DD`; si ambos vienen vacíos el filtro no viaja.
+     */
+    suspend fun disciplinaryReports(
+        page: Int,
+        limit: Int,
+        q: String? = null,
+        reason: String? = null,
+        fromDay: String? = null,
+        toDay: String? = null,
+    ): TableResponse<DisciplinaryReportDto> =
+        client.post<JsonObject, TableResponse<DisciplinaryReportDto>>(
+            "/hr/disciplinary-reports/query",
+            buildJsonObject {
+                put("page", JsonPrimitive(page))
+                put("limit", JsonPrimitive(limit))
+                put(
+                    "filters",
+                    buildJsonObject {
+                        q?.takeIf { it.isNotBlank() }?.let { put("q", JsonPrimitive(it)) }
+                        reason?.takeIf { it.isNotBlank() }?.let { put("reason", JsonPrimitive(it)) }
+                        if (!fromDay.isNullOrBlank() || !toDay.isNullOrBlank()) {
+                            putJsonArray("incidentDate") {
+                                add(fromDay?.takeIf { it.isNotBlank() }?.let(::JsonPrimitive) ?: JsonNull)
+                                add(toDay?.takeIf { it.isNotBlank() }?.let(::JsonPrimitive) ?: JsonNull)
+                            }
+                        }
+                    },
+                )
+            },
+        )
+
     suspend fun disciplinaryReportsByEmployee(id: String): List<DisciplinaryReportDto> =
         client.get("/hr/disciplinary-reports/employee/${id.encodeURLPathPart()}")
 

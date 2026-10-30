@@ -67,6 +67,7 @@ import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.formatDateTime
 import com.axzydev.puertonuevoapp.core.util.formatShortDate
 import com.axzydev.puertonuevoapp.core.util.initials
+import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 
 /**
  * Rol de turnos (`/hr/time-clock/roster` de la web): padrón del reloj con los
@@ -659,10 +660,10 @@ private fun ReappearedCard(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            AppFilterChip(
-                label = "Ver cuenta",
-                selected = false,
+            PillButton(
+                text = "Ver cuenta",
                 onClick = onOpenUser,
+                variant = PillButtonVariant.Ghost,
             )
         }
         Spacer(Modifier.height(8.dp))

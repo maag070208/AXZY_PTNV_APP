@@ -216,6 +216,10 @@ private fun MovementCard(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             StatusChip(movementTypeLabelOf(row.type), movementTypeColorOf(row.type))
+            if (row.status == "CANCELLED") {
+                Spacer(Modifier.width(6.dp))
+                StatusChip("Cancelado", AppColors.Danger)
+            }
             Spacer(Modifier.weight(1f))
             Text(
                 text = formatDateTime(row.date),

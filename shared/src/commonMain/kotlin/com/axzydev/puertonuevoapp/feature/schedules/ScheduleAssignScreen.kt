@@ -47,6 +47,7 @@ import com.axzydev.puertonuevoapp.core.ui.PillButton
 import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
+import androidx.compose.ui.text.style.TextOverflow
 
 /**
  * Asignación masiva de horarios (`schedules.manage`).
@@ -333,12 +334,16 @@ private fun AssignPersonRow(
                     person.name,
                     style = MaterialTheme.typography.bodyMedium,
                     color = AppColors.TextPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 if (person.meta.isNotBlank()) {
                     Text(
                         person.meta,
                         style = MaterialTheme.typography.bodySmall,
                         color = AppColors.TextMuted,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }

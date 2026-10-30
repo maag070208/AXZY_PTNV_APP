@@ -197,10 +197,14 @@ class EmployeeProfileViewModel(
 
     // ── Avisos ───────────────────────────────────────────────────────────────
 
+    fun requestNotifyMissing() = _uiState.update { it.copy(confirmNotifyMissing = true) }
+
+    fun cancelNotifyMissing() = _uiState.update { it.copy(confirmNotifyMissing = false) }
+
     /** Avisa a la persona qué le falta del expediente (notificación + correo). */
     fun notifyMissing() {
         if (_uiState.value.notifyingMissing) return
-        _uiState.update { it.copy(notifyingMissing = true) }
+        _uiState.update { it.copy(confirmNotifyMissing = false, notifyingMissing = true) }
         viewModelScope.launch {
             runCatching { hrApi.notifyMissing(personId) }
                 .fold(

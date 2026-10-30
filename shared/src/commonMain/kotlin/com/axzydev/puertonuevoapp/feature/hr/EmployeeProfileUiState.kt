@@ -195,6 +195,7 @@ data class EmployeeProfileUiState(
     val deletingDocumentBusy: Boolean = false,
 
     // Avisos
+    val confirmNotifyMissing: Boolean = false,
     val notifyingMissing: Boolean = false,
     val notifyingRegistration: Boolean = false,
     val confirmNotifyRegistration: Boolean = false,

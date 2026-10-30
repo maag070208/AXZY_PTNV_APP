@@ -88,6 +88,8 @@ import com.axzydev.puertonuevoapp.feature.inventory.LocationsListScreen
 import com.axzydev.puertonuevoapp.feature.inventory.NewInventoryMovementScreen
 import com.axzydev.puertonuevoapp.feature.materialoutputs.MaterialOutputFormScreen
 import com.axzydev.puertonuevoapp.feature.materialoutputs.MaterialOutputsListScreen
+import com.axzydev.puertonuevoapp.feature.langostin.LangostinAgentKind
+import com.axzydev.puertonuevoapp.feature.langostin.LangostinLauncher
 import com.axzydev.puertonuevoapp.feature.langostin.LangostinOverlay
 import com.axzydev.puertonuevoapp.feature.notifications.NotificationsScreen
 import com.axzydev.puertonuevoapp.feature.reports.ReportsScreen
@@ -137,6 +139,19 @@ fun AppShell() {
     var unreadCount by remember { mutableStateOf(0) }
     // Panel de Langostín (botón central de la barra): se cierra al cambiar de pantalla.
     var langostinOpen by remember { mutableStateOf(false) }
+    // Apertura desde una pantalla (globo proactivo de Tickets, agente de tareas…).
+    var langostinAgent by remember { mutableStateOf<LangostinAgentKind?>(null) }
+    var langostinTicketId by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) {
+        LangostinLauncher.request.collect { request ->
+            if (request != null) {
+                langostinAgent = request.agent
+                langostinTicketId = request.ticketId
+                langostinOpen = true
+                LangostinLauncher.close()
+            }
+        }
+    }
     // Sondeo de no leídas (la web usa Ably; la app no tiene SDK todavía):
     // se refresca al navegar y cada 45 s mientras el shell está montado.
     LaunchedEffect(current) {
@@ -211,7 +226,11 @@ fun AppShell() {
                                 icon = null,
                                 label = "Langostín",
                                 selected = false,
-                                onClick = { langostinOpen = true },
+                                onClick = {
+                                    langostinAgent = null
+                                    langostinTicketId = null
+                                    langostinOpen = true
+                                },
                                 contentDescription = "Abrir Langostín",
                             )
                             if (items.size > 1) {
@@ -242,7 +261,13 @@ fun AppShell() {
                         current = current,
                         user = user,
                         onNavigate = { navigator.push(it) },
-                        onClose = { langostinOpen = false },
+                        onClose = {
+                            langostinOpen = false
+                            langostinAgent = null
+                            langostinTicketId = null
+                        },
+                        initialAgent = langostinAgent,
+                        preselectedTicketId = langostinTicketId,
                     )
                 }
             }

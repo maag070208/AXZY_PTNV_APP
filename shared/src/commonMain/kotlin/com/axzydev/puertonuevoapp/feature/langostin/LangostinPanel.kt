@@ -33,12 +33,14 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -95,16 +97,21 @@ fun LangostinOverlay(
     user: SessionUser?,
     onNavigate: (Screen) -> Unit,
     onClose: () -> Unit,
+    /** Agente que debe abrirse de entrada (globo proactivo o detalle del ticket). */
+    initialAgent: LangostinAgentKind? = null,
+    /** Solo para el agente de tareas: ticket ya elegido desde su detalle. */
+    preselectedTicketId: String? = null,
 ) {
     val help = remember(current) { LangostinHelp.forScreen(current) }
     val season = remember { langostinSeasonNow() }
     val scene = remember(current, season) { langostinSceneFor(season, current) }
     var sessionKey by remember { mutableIntStateOf(0) }
-    var agentOpen by remember { mutableStateOf(false) }
+    // record(current, sessionKey): cambiar de pantalla o reiniciar rearma el panel y
+    // vuelve al agente con el que se abrió (el globo de Tickets entra directo al alta).
+    var activeAgent by remember(current, sessionKey) { mutableStateOf(initialAgent) }
     var messages by remember { mutableStateOf(emptyList<LangostinMessage>()) }
 
     LaunchedEffect(current, sessionKey) {
-        agentOpen = false
         messages = buildList {
             add(LangostinMessage.Agent(greeting(help, season)))
             if (user?.canCreateTickets == true) {
@@ -143,20 +150,38 @@ fun LangostinOverlay(
             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                 StatusChip(label = "Estás en: ${help.title}", tone = BentoTone.Sea)
             }
-            if (agentOpen && user?.canCreateTickets == true) {
+            val showTicketAgent = activeAgent == LangostinAgentKind.TICKET && user?.canCreateTickets == true
+            val showTaskAgent = activeAgent == LangostinAgentKind.TASK &&
+                user?.canCreateAssignments == true && isTaskAgentScreen(current)
+            if (showTicketAgent || showTaskAgent) {
                 Column(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                    TicketChatAgent(
-                        user = user,
-                        onBack = { agentOpen = false },
-                        onViewTicket = { id ->
-                            onClose()
-                            onNavigate(Screen.TicketDetail(id))
-                        },
-                    )
+                    key(sessionKey) {
+                        if (showTicketAgent) {
+                            TicketChatAgent(
+                                user = user,
+                                onBack = { activeAgent = null },
+                                onViewTicket = { id ->
+                                    onClose()
+                                    onNavigate(Screen.TicketDetail(id))
+                                },
+                            )
+                        } else {
+                            TaskChatAgent(
+                                user = user,
+                                preselectedTicketId = preselectedTicketId,
+                                onBack = { activeAgent = null },
+                                onViewTicket = { id ->
+                                    onClose()
+                                    onNavigate(Screen.TicketDetail(id))
+                                },
+                            )
+                        }
+                    }
                 }
             } else {
                 HelpBody(
                     help = help,
+                    current = current,
                     user = user,
                     messages = messages,
                     onAction = { action ->
@@ -172,7 +197,8 @@ fun LangostinOverlay(
                             }
                         }
                     },
-                    onOpenTicket = { agentOpen = true },
+                    onOpenTicket = { activeAgent = LangostinAgentKind.TICKET },
+                    onOpenTask = { activeAgent = LangostinAgentKind.TASK },
                 )
             }
         }
@@ -264,10 +290,12 @@ private fun PanelHero(
 @Composable
 private fun ColumnScope.HelpBody(
     help: LangostinScreen,
+    current: Screen,
     user: SessionUser?,
     messages: List<LangostinMessage>,
     onAction: (LangostinAction) -> Unit,
     onOpenTicket: () -> Unit,
+    onOpenTask: () -> Unit,
 ) {
     val listState = rememberLazyListState()
     LaunchedEffect(messages.size) {
@@ -303,12 +331,18 @@ private fun ColumnScope.HelpBody(
             SectionLabel("En esta pantalla")
             LangostinOptionChips(answers.map { LangostinChip(it.label, null) { onAction(it) } })
         }
-        if (user?.canCreateTickets == true) {
+        val canTask = user?.canCreateAssignments == true && isTaskAgentScreen(current)
+        if (user?.canCreateTickets == true || canTask) {
             SectionLabel("Langostín")
             LangostinOptionChips(
-                listOf(
-                    LangostinChip("Nuevo ticket", Icons.Filled.ConfirmationNumber, onOpenTicket),
-                ),
+                buildList {
+                    if (user.canCreateTickets) {
+                        add(LangostinChip("Nuevo ticket", Icons.Filled.ConfirmationNumber, onOpenTicket))
+                    }
+                    if (canTask) {
+                        add(LangostinChip("Nueva tarea", Icons.Filled.TaskAlt, onOpenTask))
+                    }
+                },
             )
         }
     }
@@ -427,3 +461,13 @@ private fun SectionLabel(text: String) {
         modifier = Modifier.padding(top = 10.dp, bottom = 6.dp),
     )
 }
+
+/**
+ * El agente de tareas se ofrece donde se ven tareas de varios tickets (tablero y
+ * administración de tareas) y también en Tickets: en la app el panel solo abre
+ * desde la barra inferior, que esas dos pantallas ocultan, así que sin Tickets el
+ * agente quedaría inalcanzable hasta que el shell centralice la apertura. En el
+ * detalle del ticket la tarea se crea desde su propio chat.
+ */
+private fun isTaskAgentScreen(screen: Screen): Boolean =
+    screen is Screen.TicketsKanban || screen is Screen.AdminTasks || screen is Screen.TicketsList

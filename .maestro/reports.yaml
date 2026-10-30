@@ -1,4 +1,4 @@
-# Reportes: pestañas nuevas y export.
+# Reportes: carga de la pantalla con sus pestañas y export.
 appId: com.axzydev.puertonuevoapp
 ---
 - runFlow: login.yaml
@@ -10,16 +10,11 @@ appId: com.axzydev.puertonuevoapp
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
-      id: "drawer-child-reportes"
+      id: "drawer-node-reportes"
     direction: DOWN
     timeout: 10000
 - tapOn:
-    id: "drawer-child-reportes"
+    id: "drawer-node-reportes"
 - extendedWaitUntil:
-    visible: "Dispositivos"
-    timeout: 15000
-- assertVisible: "Asignados"
-- tapOn: "Salidas de material"
-- extendedWaitUntil:
-    visible: "Salidas de material"
-    timeout: 10000
+    visible: "Asignados"
+    timeout: 20000

@@ -219,28 +219,47 @@ Definición de terminado (por pantalla):
 - [x] **Auditor de inventario** (`InventoryAuditScreen`, 8 reglas + conciliación de discrepancias).
 - [x] **Carga masiva de dispositivos** por Excel (`InventoryImportScreen`: subir→revisar→confirmar, plantilla, re-preview por overrides, archivo repetido).
 - [x] **Usuarios** (Fase 3 adelantada): lista de cuentas, historial, activar/desactivar, contraseña e importación.
-- [ ] Revertir movimiento + `STOCK_IN` del alta genérica + entrada a Excel desde Dispositivos (`task-13` en curso).
-- [ ] Reportes: pestañas faltantes + resumen por periodo + export CSV (`task-14` en curso).
-- [ ] Adjuntos de ticket (`task-15` en curso).
+- [x] Revertir movimiento (solo mantenimiento, con confirmación), `STOCK_IN` con cantidad/identidades en el alta genérica y acceso a Excel desde Dispositivos.
+- [x] Reportes: 5 pestañas (Asignados, Dispositivos, Salidas, Resumen por periodo, Entregas), periodo compartido y export CSV (servidor o armado en la app).
+- [x] Adjuntos de ticket: listar, subir (multipart), descargar/compartir; el API no permite eliminar.
 
 ### Fase 2 — RH, reloj y horarios 🟡
 - [x] Capa de datos completa (`core/network/{hr,timeclock,schedules,catalogs}`).
-- [ ] Expediente: documentos/foto/perfil/descuentos/avisos (`task-16` en curso).
-- [ ] Tablero de expedientes + actas administrativas (pantallas creadas como esqueleto, pendiente implementación).
-- [ ] Reloj: asistencia, entradas/salidas, rol de turnos, padrón y relojes (pantallas creadas como esqueleto, tareas asignadas).
-- [ ] Horarios, asignación masiva, tiempo extra y pre nómina (pantallas creadas como esqueleto, tarea asignada).
+- [x] Expediente: documentos/foto/perfil/descuentos/avisos (VM+UI; en verificación final).
+- [x] Tablero de expedientes + actas administrativas (en verificación final).
+- [x] Reloj: asistencia, entradas/salidas (con tira de días e incidencias), rol de turnos, padrón y relojes/inspección.
+- [x] Horarios (CRUD), asignación masiva, tiempo extra y pre nómina, con export CSV.
 
 ### Fase 3 — Administración 🟡
 - [x] Usuarios (lista, historial, importación) — adelantada.
-- [ ] Consola `/roles` completa (Roles, Acceso por persona, Políticas ABAC, simulador, Actividad): la app hoy tiene Matriz y Catálogo.
-- [ ] Catálogos (7 pestañas) + configuración de notificaciones (`sys-config`): pantalla `Screen.Catalogs` creada como esqueleto.
+- [x] Consola `/roles` con 6 pestañas (Roles, Matriz, Acceso por persona + simulador, Reglas ABAC, Catálogo, Actividad).
+- [x] Catálogos (7 pestañas: departamentos/subáreas, documentos, géneros, sangre, categorías de ticket, notificaciones, tipos de dispositivo) + `sys-config`.
 
 ### E2E (Maestro)
 - [x] Harness: `scripts/e2e.sh` (adb reverse + prefs del API + permisos del sistema) y flujos en `.maestro/`.
 - [x] `login.yaml`, `smoke.yaml` (shell, drawer, Langostín + chat de ticket), `inventory-returns.yaml`, `inventory-audit.yaml`.
-- [ ] Flujos por pantalla nueva (se agregan al implementar cada una) y `maestro test` de toda la carpeta al cierre de cada fase.
+- [x] Flujos `inventory-returns`, `inventory-audit`, `reports`, `ticket-attachments`, `users` (+ smoke); `./scripts/e2e.sh all` los corre en serie.
 
 ### Langostín (adicional al plan, pedido del dueño)
 - [x] Botón central del shell + panel de ayuda contextual (37 pantallas) + alta de ticket en chat.
 - [x] Mascota pixel-art y **escenas 8-bit** (`langostin-escenas`) animadas en el hero del panel (hotel/sistemas/navidad/playa/noche + badge de temporada).
 - [ ] Globo proactivo, agentes de tarea/persona/acta/horario y guía del tablero.
+
+### Estado final de la ejecución
+
+Todas las pantallas del plan (fases 0–3 y 5) quedaron implementadas y compilando. Lo que **deliberadamente no** se portó, por decisión del plan o por falta de endpoint:
+
+| Tema | Estado | Nota |
+|---|---|---|
+| Cocina (Fase 4) | ⏸️ fuera | `FEATURES.kitchen=false` en la web; el plan la condiciona a que el dueño la encienda. |
+| PDF (cartas, movimientos, actas, reportes) | ⏸️ pendiente de API | La web los genera client-side (`@react-pdf`); en la app las vistas son en pantalla. Requiere endpoints en `api/` (decisión del dueño). |
+| Exportaciones CSV | ✅ | Salidas/reportes/tiempo extra/nómina se comparten con `shareCsv`/`shareFile`; iOS es stub. |
+| Archivos en iOS | 🟡 stub | `rememberFilePicker`/`shareFile` son no-op documentados (UIDocumentPicker/UIActivityViewController en Fase 5/4 iOS). Android es la plataforma objetivo hoy. |
+| Modo oscuro | ⏸️ decisión abierta | El tema es claro único; `AppBento` reconoce luminancia, pero `AppColors.*`/`Brand.*` son fijos. Migrar a tokens antes de activar `darkColorScheme` (plan §7). |
+| Adjuntos de ticket: eliminar | ❌ no existe en API | Solo listar/subir/descargar/compartir. |
+| Deshacer devolución | ❌ no existe en API | Se documentó en el detalle de la carta. |
+| Rango de fechas server-side en tablas | 🟡 cliente | `TableRequest.filters: Map<String,String>` no expresa `[desde,hasta]`; varias pantallas filtran/ordenan en cliente (documentado en cada KDoc). |
+| Refresco en el tablero tras crear tarea desde Langostín | 🟡 | El panel navega a "Ver ticket"; el tablero no se refresca solo (falta un evento compartido). |
+| iOS: huellas/reloj/permisos | 🟡 | Pantallas de reloj y hardware quedan para una pasada iOS (los actuals de FilePicker/Share son stub). |
+
+**E2E (Maestro)**: `./scripts/e2e.sh all` corre en serie los 11 flujos de `.maestro/` contra el API local (login, smoke del shell+Langostín, devoluciones, auditoría, reportes, usuarios, adjuntos, catálogos, expedientes, roles, horarios y reloj). Los flujos se apoyan en `testTag` expuestos como `resource-id` (`testTagsAsResourceId` activado en `AppRoot`).

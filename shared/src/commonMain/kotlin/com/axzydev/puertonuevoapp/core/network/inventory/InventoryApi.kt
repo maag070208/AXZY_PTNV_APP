@@ -309,6 +309,7 @@ private fun ApiMovement.toDto(): InventoryMovementDto {
         id = id,
         deviceId = item?.deviceId ?: "",
         type = type,
+        status = status,
         notes = notes,
         userId = createdById,
         user = createdBy?.let { UserRefDto(id = it.id, name = it.name, username = "") },

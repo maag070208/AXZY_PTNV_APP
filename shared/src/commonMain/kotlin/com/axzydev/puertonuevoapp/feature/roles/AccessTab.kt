@@ -354,11 +354,15 @@ private fun AccessDetail(
                         member.name,
                         style = MaterialTheme.typography.headlineSmall,
                         color = AppColors.TextPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                     Text(
                         "@${member.username} · ${member.department ?: "Sin departamento"}",
                         style = MaterialTheme.typography.bodySmall,
                         color = AppColors.TextFaint,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                     Spacer(Modifier.height(8.dp))
                     Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
@@ -614,6 +618,8 @@ private fun SimulationRuleRow(rule: SimulationRuleTraceDto) {
                 "${rule.name} · ${if (rule.effect == "ALLOW") "permite" else "niega"} · prioridad ${rule.priority}",
                 style = MaterialTheme.typography.bodySmall,
                 color = AppColors.TextPrimary,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
             if (rule.conditions.isNotEmpty()) {
                 Text(

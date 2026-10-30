@@ -43,7 +43,10 @@ if [ "$FLOW" = "all" ]; then
     [ "$name" = "login.yaml" ] && continue
     echo "=== $name ==="
     prepare_app
-    if ! maestro test "${MAESTRO_ENV[@]}" "$flow"; then
+    if maestro test "${MAESTRO_ENV[@]}" "$flow"; then
+      echo "[PASS] $name"
+    else
+      echo "[FAIL] $name"
       status=1
     fi
   done

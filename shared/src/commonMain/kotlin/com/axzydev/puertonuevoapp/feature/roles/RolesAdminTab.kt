@@ -636,16 +636,26 @@ private fun RoleDetail(
                                 role.name,
                                 style = MaterialTheme.typography.headlineSmall,
                                 color = AppColors.TextPrimary,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
                             )
                             Text(
                                 role.key + (role.module?.let { " · $it" } ?: ""),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontFamily = FontFamily.Monospace,
                                 color = AppColors.TextFaint,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                             )
                             role.description?.takeIf { it.isNotBlank() }?.let {
                                 Spacer(Modifier.height(4.dp))
-                                Text(it, style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
+                                Text(
+                                    it,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = AppColors.TextMuted,
+                                    maxLines = 3,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
                             }
                             Spacer(Modifier.height(6.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {

@@ -112,6 +112,14 @@ data class TicketCreateInput(
     val categoryId: String? = null,
     val departmentId: String? = null,
     val assignedToId: String? = null,
+    /**
+     * Solo ADMIN (`api/src/modules/tickets/controllers/ticket.controller.ts`
+     * responde 403 `FORBIDDEN` si lo manda otro rol): el ticket se levanta **a
+     * nombre de** esta cuenta. Queda creado por ella, le llega la notificación
+     * y el historial deja la traza de quién lo capturó. Sin el campo, el ticket
+     * es del usuario en sesión.
+     */
+    val onBehalfOfId: String? = null,
 )
 
 /**

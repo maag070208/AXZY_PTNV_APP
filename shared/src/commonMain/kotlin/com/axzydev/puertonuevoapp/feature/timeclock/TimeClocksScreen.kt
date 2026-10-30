@@ -78,6 +78,7 @@ import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.formatDateTime
+import androidx.compose.ui.semantics.Role
 
 /** A partir de esta diferencia con el servidor se avisa que el reloj no está en hora. */
 private const val DriftNoticeSeconds = 60
@@ -581,7 +582,7 @@ private fun HistorySection(history: TimeClocksHistoryUi, onRetry: () -> Unit) {
                 }
                 if (data.events.isEmpty()) {
                     Spacer(Modifier.height(6.dp))
-                    Text("Sin intentos registrados.", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
+                    BentoState(message = "Sin intentos registrados.")
                 } else {
                     Spacer(Modifier.height(6.dp))
                     data.events.take(8).forEach { event ->
@@ -942,7 +943,14 @@ private fun InspectTable(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .then(if (action != null) Modifier.clickable(onClick = action) else Modifier)
+                    .heightIn(min = 44.dp)
+                    .then(
+                        if (action != null) {
+                            Modifier.clickable(role = Role.Button, onClick = action)
+                        } else {
+                            Modifier
+                        }
+                    )
                     .padding(vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {

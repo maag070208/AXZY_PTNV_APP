@@ -1,0 +1,25 @@
+# Roles y permisos: consola con pestañas (solo carga).
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: login.yaml
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-node-configuracion"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-node-configuracion"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-child-roles-y-permisos"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-child-roles-y-permisos"
+- extendedWaitUntil:
+    visible: "Matriz"
+    timeout: 15000

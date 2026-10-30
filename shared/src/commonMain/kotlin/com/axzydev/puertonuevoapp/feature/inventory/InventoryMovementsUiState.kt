@@ -16,12 +16,14 @@ internal object MovementFilterKeys {
 }
 
 /**
- * La API solo revierte movimientos de mantenimiento (`movementReversion` en
- * `inventory.service.ts`); el resto responde 409 `MOVEMENT_NOT_REVERSIBLE` y uno
- * ya revertido 409 `MOVEMENT_ALREADY_REVERSED`.
+ * La API solo revierte movimientos de mantenimiento **activos** (`movementReversion`
+ * en `inventory.service.ts`): el resto responde 409 `MOVEMENT_NOT_REVERSIBLE` y
+ * uno ya revertido 409 `MOVEMENT_ALREADY_REVERSED`. Por eso el botón se oculta
+ * también cuando el movimiento está `CANCELLED` (ya revertido) o es la propia
+ * `REVERSAL`, además de por tipo.
  */
 val InventoryMovementRow.isReversible: Boolean
-    get() = type == "MAINTENANCE_IN" || type == "MAINTENANCE_OUT"
+    get() = status == "ACTIVE" && (type == "MAINTENANCE_IN" || type == "MAINTENANCE_OUT")
 
 /**
  * Fila aplanada del kardex para el estándar `AppTableScreen`. Un movimiento = una
@@ -32,6 +34,8 @@ data class InventoryMovementRow(
     val id: String,
     val date: String,
     val type: String,
+    /** `ACTIVE` o `CANCELLED` (`MovementStatus` del API). */
+    val status: String = "ACTIVE",
     val deviceId: String,
     val deviceLabel: String,
     val unitsLabel: String,
@@ -66,6 +70,7 @@ internal fun InventoryMovementDto.toRow(): InventoryMovementRow {
         id = id,
         date = createdAt,
         type = type,
+        status = status,
         deviceId = deviceId,
         deviceLabel = this.deviceLabel?.takeIf { it.isNotBlank() } ?: fallbackDevice ?: "—",
         unitsLabel = this.unitsLabel?.takeIf { it.isNotBlank() } ?: "—",

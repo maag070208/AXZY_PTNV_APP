@@ -6,6 +6,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -45,6 +46,9 @@ import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
+import com.axzydev.puertonuevoapp.feature.langostin.LangostinHints
+import com.axzydev.puertonuevoapp.feature.langostin.LangostinLauncher
+import com.axzydev.puertonuevoapp.feature.langostin.LangostinTicketsHint
 import com.axzydev.puertonuevoapp.core.util.formatShortDate
 import com.axzydev.puertonuevoapp.core.util.ticketPriorityLabel
 import com.axzydev.puertonuevoapp.core.util.ticketStatusLabel
@@ -54,65 +58,79 @@ fun TicketsListScreen(viewModel: TicketsListViewModel = viewModel { TicketsListV
     val state by viewModel.uiState.collectAsState()
     val navigator = LocalNavigator.current
     val authState by AppContainer.authRepository.state.collectAsState()
-    val canCreate = (authState as? AuthState.LoggedIn)?.user?.canCreateTickets == true
+    val user = (authState as? AuthState.LoggedIn)?.user
+    val canCreate = user?.canCreateTickets == true
+    // Globo proactivo: solo con `tickets.create` y si no se descartó en esta sesión.
+    val showLangostinHint = canCreate && LangostinHints.showsTicketHint(user)
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        floatingActionButton = {
-            // Levantar tickets requiere `tickets.create` (por defecto, todos los roles).
-            if (canCreate) {
-                FloatingActionButton(
-                    onClick = { navigator.push(Screen.NewTicket) },
-                    containerColor = AppColors.EmeraldPrimary,
-                ) {
-                    Icon(Icons.Filled.Add, contentDescription = "Nuevo ticket")
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = MaterialTheme.colorScheme.background,
+            floatingActionButton = {
+                // Levantar tickets requiere `tickets.create` (por defecto, todos los roles).
+                if (canCreate) {
+                    FloatingActionButton(
+                        onClick = { navigator.push(Screen.NewTicket) },
+                        containerColor = AppColors.EmeraldPrimary,
+                    ) {
+                        Icon(Icons.Filled.Add, contentDescription = "Nuevo ticket")
+                    }
                 }
-            }
-        },
-    ) { padding ->
-        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                AppSearchField(
-                    value = state.query,
-                    onValueChange = viewModel::onQueryChange,
-                    placeholder = "Buscar ticket…",
-                )
-                Spacer(Modifier.height(10.dp))
-                Row(
-                    modifier = Modifier.horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    ticketStatusFilters.forEach { (value, label) ->
-                        val selected = state.statusFilter == value
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (selected) AppColors.Surface else AppColors.TextMuted,
-                            modifier = Modifier
-                                .clip(AppShape.pill)
-                                .background(if (selected) AppColors.EmeraldPrimary else AppColors.SurfaceVariant, AppShape.pill)
-                                .clickable { viewModel.onStatusFilterChange(value) }
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
-                        )
+            },
+        ) { padding ->
+            Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    AppSearchField(
+                        value = state.query,
+                        onValueChange = viewModel::onQueryChange,
+                        placeholder = "Buscar ticket…",
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        ticketStatusFilters.forEach { (value, label) ->
+                            val selected = state.statusFilter == value
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (selected) AppColors.Surface else AppColors.TextMuted,
+                                modifier = Modifier
+                                    .clip(AppShape.pill)
+                                    .background(if (selected) AppColors.EmeraldPrimary else AppColors.SurfaceVariant, AppShape.pill)
+                                    .clickable { viewModel.onStatusFilterChange(value) }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                            )
+                        }
+                    }
+                }
+
+                when {
+                    state.loading -> LoadingState(modifier = Modifier.weight(1f))
+                    state.error != null -> ErrorState(message = state.error ?: "Error", modifier = Modifier.weight(1f), onRetry = viewModel::load)
+                    state.filtered.isEmpty() -> EmptyState("No hay tickets", modifier = Modifier.weight(1f))
+                    else -> LazyColumn(
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        // Holgura abajo: la barra inferior sobresale y el último ticket no debe quedar pegado.
+                        contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 24.dp),
+                    ) {
+                        items(state.filtered, key = { it.id }) { ticket ->
+                            TicketRow(ticket, onClick = { navigator.push(Screen.TicketDetail(ticket.id)) })
+                            Spacer(Modifier.height(10.dp))
+                        }
                     }
                 }
             }
+        }
 
-            when {
-                state.loading -> LoadingState(modifier = Modifier.weight(1f))
-                state.error != null -> ErrorState(message = state.error ?: "Error", modifier = Modifier.weight(1f), onRetry = viewModel::load)
-                state.filtered.isEmpty() -> EmptyState("No hay tickets", modifier = Modifier.weight(1f))
-                else -> LazyColumn(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    // Holgura abajo: la barra inferior sobresale y el último ticket no debe quedar pegado.
-                    contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 24.dp),
-                ) {
-                    items(state.filtered, key = { it.id }) { ticket ->
-                        TicketRow(ticket, onClick = { navigator.push(Screen.TicketDetail(ticket.id)) })
-                        Spacer(Modifier.height(10.dp))
-                    }
-                }
-            }
+        // Globo proactivo sobre la barra: "Nuevo ticket" abre el panel en el agente.
+        if (showLangostinHint) {
+            LangostinTicketsHint(
+                user = user,
+                onOpenAgent = { LangostinLauncher.openTicketAgent() },
+                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 8.dp, vertical = 80.dp),
+            )
         }
     }
 }

@@ -52,6 +52,7 @@ import com.axzydev.puertonuevoapp.core.ui.RegisterTopBarAction
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
+import androidx.compose.ui.text.style.TextOverflow
 
 /**
  * Tiempo extra (`overtime.view`; aprobar/rechazar exige `overtime.approve`).
@@ -334,10 +335,10 @@ private fun OvertimeDayCard(
     canSelect: Boolean,
     onToggle: () -> Unit,
 ) {
-    val statusColor = when (row.status) {
-        "APPROVED" -> AppColors.Success
-        "REJECTED" -> AppColors.Danger
-        else -> AppColors.Warning
+    val statusTone = when (row.status) {
+        "APPROVED" -> BentoTone.Mint
+        "REJECTED" -> BentoTone.Rose
+        else -> BentoTone.Sun
     }
     AppCard(
         modifier = Modifier.fillMaxWidth(),
@@ -360,6 +361,8 @@ private fun OvertimeDayCard(
                     row.employeeName,
                     style = MaterialTheme.typography.bodyMedium,
                     color = AppColors.TextPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     buildString {
@@ -372,7 +375,7 @@ private fun OvertimeDayCard(
                     color = AppColors.TextMuted,
                 )
             }
-            StatusChip(label = overtimeStatusLabel(row.status), color = statusColor)
+            StatusChip(label = overtimeStatusLabel(row.status), tone = statusTone)
         }
 
         Spacer(Modifier.height(8.dp))
@@ -405,6 +408,8 @@ private fun OvertimeDayCard(
                 "Nota: ${row.note}",
                 style = MaterialTheme.typography.bodySmall,
                 color = AppColors.TextFaint,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }

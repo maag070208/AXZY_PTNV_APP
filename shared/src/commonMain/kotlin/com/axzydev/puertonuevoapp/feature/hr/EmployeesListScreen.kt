@@ -47,6 +47,8 @@ import com.axzydev.puertonuevoapp.core.ui.table.FilterControl
 import com.axzydev.puertonuevoapp.core.ui.table.FilterOption
 import com.axzydev.puertonuevoapp.core.ui.table.TableFilterSpec
 import com.axzydev.puertonuevoapp.core.util.initials
+import androidx.compose.foundation.layout.defaultMinSize
+import com.axzydev.puertonuevoapp.core.theme.BentoTone
 
 /**
  * Directorio de personal sobre el componente genérico de tabla
@@ -183,7 +185,7 @@ private fun EmployeeCard(
             Spacer(Modifier.width(8.dp))
             StatusChip(
                 label = if (person.active) "Activo" else "Inactivo",
-                color = if (person.active) AppColors.Success else AppColors.Danger,
+                tone = if (person.active) BentoTone.Mint else BentoTone.Rose,
             )
         }
 
@@ -221,13 +223,14 @@ private fun CardActionPill(
 ) {
     Row(
         modifier = Modifier
+            .defaultMinSize(minHeight = 44.dp)
             .clip(AppShape.pill)
             .background(color.copy(alpha = 0.12f), AppShape.pill)
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 7.dp),
+            .padding(horizontal = 14.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icon, contentDescription = label, tint = color, modifier = Modifier.size(14.dp))
+        Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(16.dp))
         Spacer(Modifier.width(5.dp))
         Text(label, style = MaterialTheme.typography.labelMedium, color = color)
     }

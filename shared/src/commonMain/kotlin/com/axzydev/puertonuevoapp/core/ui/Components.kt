@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -120,20 +121,27 @@ fun AppFilterChip(
         selected -> selectedColor.copy(alpha = 0.45f)
         else -> AppColors.SurfaceVariant
     }
-    Text(
-        text = label,
-        style = MaterialTheme.typography.bodySmall,
-        color = when {
-            selected -> AppColors.Surface
-            enabled -> AppColors.TextMuted
-            else -> AppColors.TextFaint
-        },
+    // Mínimo de 40dp de alto: los filtros/píldoras son objetivos táctiles y con 28dp
+    // quedaban por debajo del mínimo accesible (se centra el texto en la caja).
+    Box(
         modifier = modifier
+            .defaultMinSize(minHeight = 40.dp)
             .clip(AppShape.pill)
             .background(background, AppShape.pill)
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-    )
+            .padding(horizontal = 12.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = when {
+                selected -> AppColors.Surface
+                enabled -> AppColors.TextMuted
+                else -> AppColors.TextFaint
+            },
+        )
+    }
 }
 
 @Composable

@@ -191,7 +191,13 @@ private fun ActivityCard(row: ActivityRowDto, onClick: () -> Unit) {
 private fun DetailLine(label: String, value: String) {
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
         Text(label, style = MaterialTheme.typography.labelSmall, color = AppColors.TextFaint, modifier = Modifier.width(90.dp))
-        Text(value, style = MaterialTheme.typography.bodySmall, color = AppColors.TextPrimary)
+        Text(
+            value,
+            style = MaterialTheme.typography.bodySmall,
+            color = AppColors.TextPrimary,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 

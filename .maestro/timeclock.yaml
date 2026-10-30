@@ -1,0 +1,20 @@
+# Reloj: asistencia y entradas/salidas (solo carga de pantallas).
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: login.yaml
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-node-reloj-y-horarios"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-node-reloj-y-horarios"
+- waitForAnimationToEnd
+- tapOn:
+    id: "drawer-child-asistencia"
+- extendedWaitUntil:
+    visible: "Asistencia"
+    timeout: 15000

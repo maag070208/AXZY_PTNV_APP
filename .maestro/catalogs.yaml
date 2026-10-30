@@ -1,0 +1,25 @@
+# Catálogos: pantalla con pestañas (solo carga).
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: login.yaml
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-node-configuracion"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-node-configuracion"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-child-catalogos"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-child-catalogos"
+- extendedWaitUntil:
+    visible: "Catálogos"
+    timeout: 15000

@@ -27,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,7 +50,10 @@ import com.axzydev.puertonuevoapp.core.ui.RegisterTopBarAction
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
-import com.axzydev.puertonuevoapp.core.util.formatShortDate
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.text.style.TextOverflow
+import com.axzydev.puertonuevoapp.core.util.formatLocalTime
 
 /**
  * Pre nómina (`payroll.view`): reporte semanal de asistencia de RH y
@@ -358,6 +360,8 @@ private fun WeeklyPersonCard(
                 row.name,
                 style = MaterialTheme.typography.bodyMedium,
                 color = AppColors.TextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Text(
                 buildString {
@@ -372,11 +376,14 @@ private fun WeeklyPersonCard(
         }
 
         Spacer(Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        ) {
             row.days.forEach { day ->
                 StatusChip(
                     label = attendanceDayStatusCode(day.status),
-                    color = attendanceStatusColor(day.status),
+                    tone = attendanceStatusTone(day.status),
                 )
             }
         }
@@ -408,15 +415,15 @@ private fun WeeklyDayLine(day: WeeklyAttendanceDayDto) {
             )
             Text(
                 buildString {
-                    append(day.entryAt?.let { formatShortDate(it) } ?: "—")
+                    append(day.entryAt?.let { formatLocalTime(it) } ?: "—")
                     append(" → ")
-                    append(day.exitAt?.let { formatShortDate(it) } ?: "—")
+                    append(day.exitAt?.let { formatLocalTime(it) } ?: "—")
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = AppColors.TextFaint,
                 modifier = Modifier.weight(1.4f),
             )
-            StatusChip(label = attendanceDayStatusLabel(day.status), color = attendanceStatusColor(day.status))
+            StatusChip(label = attendanceDayStatusLabel(day.status), tone = attendanceStatusTone(day.status))
         }
         Text(
             buildString {
@@ -450,6 +457,8 @@ private fun PeopleAttendanceCard(
                 row.employeeName,
                 style = MaterialTheme.typography.bodyMedium,
                 color = AppColors.TextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Text(
                 buildString {
@@ -463,11 +472,14 @@ private fun PeopleAttendanceCard(
         }
 
         Spacer(Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        ) {
             row.days.forEach { day ->
                 StatusChip(
                     label = attendanceDayStatusCode(day.status),
-                    color = attendanceStatusColor(day.status),
+                    tone = attendanceStatusTone(day.status),
                 )
             }
         }
@@ -492,28 +504,27 @@ private fun PeopleAttendanceCard(
                     )
                     Text(
                         buildString {
-                            append(day.entryAt?.let { formatShortDate(it) } ?: "—")
+                            append(day.entryAt?.let { formatLocalTime(it) } ?: "—")
                             append(" → ")
-                            append(day.exitAt?.let { formatShortDate(it) } ?: "—")
+                            append(day.exitAt?.let { formatLocalTime(it) } ?: "—")
                             if (day.onSite) append(" · en sitio")
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = AppColors.TextFaint,
                         modifier = Modifier.weight(1.6f),
                     )
-                    StatusChip(label = attendanceDayStatusLabel(day.status), color = attendanceStatusColor(day.status))
+                    StatusChip(label = attendanceDayStatusLabel(day.status), tone = attendanceStatusTone(day.status))
                 }
             }
         }
     }
 }
 
-private fun attendanceStatusColor(status: String): Color = when (status) {
-    "WORKED", "ATTENDED" -> AppColors.Success
-    "OVERTIME", "REST_WORKED" -> AppColors.Info
-    "LATE" -> AppColors.Warning
-    "ABSENCE" -> AppColors.Danger
-    "INCOMPLETE" -> AppColors.Purple
-    "REST" -> AppColors.Slate
-    else -> AppColors.TextFaint
+private fun attendanceStatusTone(status: String): BentoTone = when (status) {
+    "WORKED", "ATTENDED" -> BentoTone.Mint
+    "OVERTIME", "REST_WORKED" -> BentoTone.Sea
+    "LATE" -> BentoTone.Sun
+    "ABSENCE" -> BentoTone.Rose
+    "INCOMPLETE" -> BentoTone.Lavender
+    else -> BentoTone.Plain
 }

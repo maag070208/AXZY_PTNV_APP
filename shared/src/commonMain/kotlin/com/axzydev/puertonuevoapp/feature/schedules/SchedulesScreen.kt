@@ -57,6 +57,8 @@ import com.axzydev.puertonuevoapp.core.ui.BentoWeekBars
 import com.axzydev.puertonuevoapp.core.ui.BentoWeekDay
 import com.axzydev.puertonuevoapp.core.ui.RegisterTopBarAction
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
+import androidx.compose.ui.text.style.TextOverflow
+import com.axzydev.puertonuevoapp.core.ui.StatusChip
 
 /**
  * Horarios y turnos (`schedules.view`): listado con búsqueda y filtro por
@@ -312,24 +314,22 @@ private fun ScheduleCard(
                         name,
                         style = MaterialTheme.typography.titleMedium,
                         color = AppColors.TextPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
                     )
                     Spacer(Modifier.size(8.dp))
-                    Text(
-                        if (active) "ACTIVO" else "INACTIVO",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (active) AppColors.Success else AppColors.Danger,
-                        modifier = Modifier
-                            .background(
-                                (if (active) AppColors.Success else AppColors.Danger).copy(alpha = 0.12f),
-                                AppShape.pill,
-                            )
-                            .padding(horizontal = 8.dp, vertical = 3.dp),
+                    StatusChip(
+                        label = if (active) "Activo" else "Inactivo",
+                        tone = if (active) BentoTone.Mint else BentoTone.Rose,
                     )
                 }
                 Text(
                     "${daySummary(days)} · ${hoursLabel(weeklyMinutes(days, mealBreakMin))} a la semana",
                     style = MaterialTheme.typography.bodySmall,
                     color = AppColors.TextMuted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     "$assigned persona(s) asignada(s)",

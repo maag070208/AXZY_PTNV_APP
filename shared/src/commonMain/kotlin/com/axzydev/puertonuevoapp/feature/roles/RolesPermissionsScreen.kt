@@ -67,6 +67,8 @@ import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.SectionLabel
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.roleLabel
+import androidx.compose.ui.text.style.TextOverflow
+import com.axzydev.puertonuevoapp.core.theme.BentoTone
 
 /**
  * Consola de roles y permisos (`roles.manage`), con las seis pestañas de la web:
@@ -149,8 +151,8 @@ private fun MatrixTab(state: RolesPermissionsUiState, viewModel: RolesPermission
             ) {
                 val count = state.changes.size
                 StatusChip(
-                    if (count == 1) "1 cambio pendiente" else "$count cambios pendientes",
-                    if (count > 0) AppColors.Warning else AppColors.TextFaint,
+                    label = if (count == 1) "1 cambio pendiente" else "$count cambios pendientes",
+                    tone = if (count > 0) BentoTone.Sun else BentoTone.Plain,
                 )
                 Spacer(Modifier.weight(1f))
                 OutlinedButton(onClick = viewModel::discard, enabled = state.dirty && !state.savingMatrix) {
@@ -253,12 +255,21 @@ private fun PermissionTitle(permission: PermissionCatalogDto) {
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.SemiBold,
             color = if (permission.active) AppColors.TextPrimary else AppColors.TextFaint,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f, fill = false),
         )
-        if (permission.sensitive) StatusChip("Sensible", AppColors.Warning)
-        if (!permission.active) StatusChip("Inactivo", AppColors.Danger)
+        if (permission.sensitive) StatusChip(label = "Sensible", tone = BentoTone.Sun)
+        if (!permission.active) StatusChip(label = "Inactivo", tone = BentoTone.Rose)
     }
-    Text(permission.key, style = MaterialTheme.typography.labelSmall, fontFamily = FontFamily.Monospace, color = AppColors.TextFaint)
+    Text(
+        permission.key,
+        style = MaterialTheme.typography.labelSmall,
+        fontFamily = FontFamily.Monospace,
+        color = AppColors.TextFaint,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
 }
 
 @Composable
@@ -321,14 +332,20 @@ private fun CatalogCard(
         )
         permission.description?.takeIf { it.isNotBlank() }?.let {
             Spacer(Modifier.height(4.dp))
-            Text(it, style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
+            Text(
+                it,
+                style = MaterialTheme.typography.bodySmall,
+                color = AppColors.TextMuted,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
         Spacer(Modifier.height(8.dp))
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            permission.scopes.forEach { StatusChip(permissionScopeLabel(it), AppColors.Info) }
+            permission.scopes.forEach { StatusChip(permissionScopeLabel(it), BentoTone.Lavender) }
         }
         Spacer(Modifier.height(6.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
