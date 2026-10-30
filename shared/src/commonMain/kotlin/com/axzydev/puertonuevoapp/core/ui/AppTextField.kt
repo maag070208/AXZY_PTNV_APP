@@ -39,6 +39,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.axzydev.puertonuevoapp.core.theme.AppBento
 import com.axzydev.puertonuevoapp.core.theme.InputTokens
 
 /**
@@ -48,6 +49,9 @@ import com.axzydev.puertonuevoapp.core.theme.InputTokens
  * por completo altura, borde, paddings y evitar el recorte de texto del
  * componente M3 cuando se reduce por debajo de su altura mínima. Tamaño,
  * forma, borde y colores viven en `core/theme/InputTokens.kt`.
+ *
+ * Look bento: relleno neutro, sin borde en reposo, píldora en una línea
+ * (esquina de 20dp en multilínea) y aro de foco en el color primario.
  *
  * El `label` se dibuja como etiqueta compacta ARRIBA del campo (no flotante).
  */
@@ -74,16 +78,14 @@ fun AppTextField(
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
 
-    val borderColor = when {
+    // Estilo bento: relleno neutro sin borde en reposo; aro solo en foco/error.
+    val fieldShape = if (singleLine) InputTokens.Shape else InputTokens.MultilineShape
+    val ringColor = when {
         isError -> MaterialTheme.colorScheme.error
         focused -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.outline
+        else -> null
     }
-    val containerColor = if (enabled) {
-        MaterialTheme.colorScheme.surface
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant
-    }
+    val containerColor = if (enabled) AppBento.field else AppBento.field.copy(alpha = 0.5f)
 
     Column(modifier = modifier) {
         if (label != null) {
@@ -98,8 +100,14 @@ fun AppTextField(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(containerColor, InputTokens.Shape)
-                .border(1.dp, borderColor, InputTokens.Shape)
+                .background(containerColor, fieldShape)
+                .then(
+                    if (ringColor != null) {
+                        Modifier.border(InputTokens.RingWidth, ringColor, fieldShape)
+                    } else {
+                        Modifier
+                    }
+                )
                 .then(
                     if (singleLine) {
                         Modifier.height(InputTokens.Height)

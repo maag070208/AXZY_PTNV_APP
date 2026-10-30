@@ -44,6 +44,12 @@ class InventoryApi(private val client: ApiClient) {
         return client.post<ApiCreateMovement, ApiMovement>("/inventory/movements", body).toDto()
     }
 
+    /** Dispositivos por categoría (tipo) para el inicio; el API recorta por permiso. */
+    suspend fun deviceCategories(): List<DeviceCategoryDto> =
+        client.get<ApiDashboard>("/inventory/dashboard").byType.map { type ->
+            DeviceCategoryDto(type.name, type.devices.sumOf { it.total })
+        }
+
     suspend fun summary(): InventorySummaryDto {
         val dash = client.get<ApiDashboard>("/inventory/dashboard")
         return InventorySummaryDto(
@@ -134,4 +140,16 @@ private data class ApiDashboardStats(
 )
 
 @Serializable
-private data class ApiDashboard(val stats: ApiDashboardStats = ApiDashboardStats())
+private data class ApiDashboardDevice(val total: Int = 0)
+
+@Serializable
+private data class ApiDashboardType(val name: String = "", val devices: List<ApiDashboardDevice> = emptyList())
+
+@Serializable
+private data class ApiDashboard(
+    val stats: ApiDashboardStats = ApiDashboardStats(),
+    val byType: List<ApiDashboardType> = emptyList(),
+)
+
+/** Total de dispositivos por categoría (tipo) del inicio. */
+data class DeviceCategoryDto(val name: String, val total: Int)

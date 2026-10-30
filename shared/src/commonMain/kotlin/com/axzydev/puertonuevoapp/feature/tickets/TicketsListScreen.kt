@@ -104,7 +104,8 @@ fun TicketsListScreen(viewModel: TicketsListViewModel = viewModel { TicketsListV
                 state.filtered.isEmpty() -> EmptyState("No hay tickets", modifier = Modifier.weight(1f))
                 else -> LazyColumn(
                     modifier = Modifier.weight(1f).fillMaxWidth(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    // Holgura abajo: la barra inferior sobresale y el último ticket no debe quedar pegado.
+                    contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 24.dp),
                 ) {
                     items(state.filtered, key = { it.id }) { ticket ->
                         TicketRow(ticket, onClick = { navigator.push(Screen.TicketDetail(ticket.id)) })

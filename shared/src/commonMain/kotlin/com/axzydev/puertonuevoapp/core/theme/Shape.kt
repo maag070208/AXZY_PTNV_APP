@@ -20,4 +20,13 @@ object AppShape {
 
     /** Píldoras / chips. */
     val pill = RoundedCornerShape(50)
+
+    /** Tarjetas y mosaicos del diseño bento (24dp). */
+    val bento = RoundedCornerShape(24.dp)
+
+    /** Hoja inferior que se superpone a un encabezado (esquinas superiores 28dp). */
+    val sheetTop = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+
+    /** Panel lateral (drawer) que se desliza desde la izquierda: esquinas derechas 28dp. */
+    val sheetEnd = RoundedCornerShape(topEnd = 28.dp, bottomEnd = 28.dp)
 }

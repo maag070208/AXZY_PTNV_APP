@@ -52,7 +52,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.unit.dp
+import com.axzydev.puertonuevoapp.core.theme.AppBento
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.theme.AppShape
 
 @Composable
@@ -65,6 +67,36 @@ fun StatusChip(label: String, color: Color, modifier: Modifier = Modifier) {
         Text(
             text = label,
             color = color,
+            style = MaterialTheme.typography.labelSmall,
+        )
+    }
+}
+
+/**
+ * Variante bento de [StatusChip]: píldora pastel por [BentoTone] (fondo +
+ * texto del tono), con ícono opcional al inicio.
+ */
+@Composable
+fun StatusChip(
+    label: String,
+    tone: BentoTone,
+    modifier: Modifier = Modifier,
+    leadingIcon: ImageVector? = null,
+) {
+    val colors = AppBento.tone(tone)
+    Row(
+        modifier = modifier
+            .background(colors.container, AppShape.pill)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (leadingIcon != null) {
+            Icon(leadingIcon, contentDescription = null, tint = colors.content, modifier = Modifier.size(14.dp))
+            Spacer(Modifier.width(6.dp))
+        }
+        Text(
+            text = label,
+            color = colors.content,
             style = MaterialTheme.typography.labelSmall,
         )
     }

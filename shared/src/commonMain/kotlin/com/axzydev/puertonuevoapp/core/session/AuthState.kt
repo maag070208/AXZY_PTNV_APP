@@ -73,6 +73,8 @@ data class SessionUser(
 
     // Personal, usuarios y catálogos
     val canViewHR: Boolean get() = can(P.HR_RECORDS)
+    val canViewAttendance: Boolean get() = can(P.ATTENDANCE_VIEW)
+    val canViewOvertime: Boolean get() = can(P.OVERTIME_VIEW)
     val canCreateUsers: Boolean get() = can(P.USERS_CREATE)
     val canEditUsers: Boolean get() = can(P.USERS_EDIT)
     val canManageDepartments: Boolean get() = can(P.DEPARTMENTS_MANAGE)
@@ -80,6 +82,8 @@ data class SessionUser(
     val canManageRoles: Boolean get() = can(P.ROLES_MANAGE)
 
     // Tickets y tareas
+    val canViewTickets: Boolean get() = can(P.TICKETS_VIEW)
+    val canViewTasks: Boolean get() = can(P.TASKS_VIEW)
     val canCreateTickets: Boolean get() = can(P.TICKETS_CREATE)
     val canDeleteTicket: Boolean get() = can(P.TICKETS_DELETE)
 
@@ -91,6 +95,10 @@ data class SessionUser(
 
     /** Crear tareas desde el tablero. */
     val canCreateAssignments: Boolean get() = can(P.TASKS_ASSIGN)
+
+    // Reloj y sistema (pestañas del inicio)
+    val canLinkTimeClock: Boolean get() = can(P.TIME_CLOCK_LINK)
+    val canConfigureSystem: Boolean get() = can(P.SYSTEM_CONFIGURE)
 
     // Control de acceso
     /** Escanear credenciales y registrar entradas/salidas. */

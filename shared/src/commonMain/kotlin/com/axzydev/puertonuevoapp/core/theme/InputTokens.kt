@@ -11,17 +11,23 @@ import androidx.compose.ui.unit.dp
  * (`core/ui/AppTextField.kt`). Cambiar un valor aquí cambia toda la app.
  */
 object InputTokens {
-    /** Radio de esquina de todos los inputs. */
-    val Shape = RoundedCornerShape(10.dp)
+    /** Forma de los campos de una sola línea (bento: píldora). */
+    val Shape = RoundedCornerShape(50)
+
+    /** Forma de los campos multilínea (una píldora deformaría el texto). */
+    val MultilineShape = RoundedCornerShape(20.dp)
+
+    /** Grosor del aro de foco / error. */
+    val RingWidth = 2.dp
 
     /** Altura mínima táctil del campo (multilínea). */
-    val MinHeight = 44.dp
+    val MinHeight = 48.dp
 
     /** Altura exacta de los campos de una sola línea. */
-    val Height = 44.dp
+    val Height = 48.dp
 
     /** Padding horizontal interno del contenido. */
-    val ContentPaddingHorizontal = 14.dp
+    val ContentPaddingHorizontal = 18.dp
 
     /** Padding vertical interno del contenido. */
     val ContentPaddingVertical = 10.dp

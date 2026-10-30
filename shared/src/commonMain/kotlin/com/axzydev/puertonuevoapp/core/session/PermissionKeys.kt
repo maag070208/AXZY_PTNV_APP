@@ -32,6 +32,8 @@ object PermissionKeys {
     const val REPORTS_VIEW = "reports.view"
 
     const val HR_RECORDS = "hr.records"
+    const val ATTENDANCE_VIEW = "attendance.view"
+    const val OVERTIME_VIEW = "overtime.view"
 
     const val USERS_VIEW = "users.view"
     const val USERS_CREATE = "users.create"
@@ -46,6 +48,9 @@ object PermissionKeys {
     const val DASHBOARD_VIEW = "dashboard.view"
     const val AUDIT_VIEW = "audit.view"
     const val ROLES_MANAGE = "roles.manage"
+
+    const val TIME_CLOCK_LINK = "time_clock.link"
+    const val SYSTEM_CONFIGURE = "system.configure"
 }
 
 /** Alcance efectivo de un permiso (enum `PermissionScope` del API). */
