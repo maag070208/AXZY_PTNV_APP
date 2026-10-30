@@ -74,6 +74,8 @@ data class BentoNavItem(
     val onClick: () -> Unit,
     val avatarName: String? = null,
     val badge: Int = 0,
+    /** Descripción accesible si la etiqueta visible es ambigua (p. ej. el botón central). */
+    val contentDescription: String? = null,
 )
 
 /** Alto de la barra (sin el inset de la barra de navegación del sistema). */
@@ -289,7 +291,7 @@ fun BentoBottomBar(
                     .clip(CircleShape)
                     .background(surface, CircleShape)
                     .clickable(role = Role.Button, onClick = action.onClick)
-                    .semantics { contentDescription = action.label },
+                    .semantics { contentDescription = action.contentDescription ?: action.label },
                 contentAlignment = Alignment.Center,
             ) {
                 if (actionContent != null) {

@@ -1,54 +1,67 @@
 package com.axzydev.puertonuevoapp.feature.inventory
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.axzydev.puertonuevoapp.core.network.http.networkMessage
+import com.axzydev.puertonuevoapp.core.network.http.TableSort
 import com.axzydev.puertonuevoapp.core.network.inventory.InventoryApi
-import com.axzydev.puertonuevoapp.core.network.locations.LocationsApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import com.axzydev.puertonuevoapp.core.ui.table.ClientTableViewModel
 
+/**
+ * Kardex / Movimientos sobre el estándar de tablas (`AppTableScreen`).
+ *
+ * El API **no** expone `POST /inventory/movements/query`: `GET /inventory/movements`
+ * devuelve la lista completa (sin paginar ni filtrar por fecha; solo acepta `type`
+ * y `deviceId`). Por eso el piloto usa [ClientTableViewModel], espejo de
+ * `makeClientTableFetch` de la web: trae la lista una vez y este ViewModel aplica
+ * filtros y orden en memoria, mientras el estándar pagina el resultado.
+ *
+ * Cuando el API agregue el endpoint de tabla, esta clase pasa a
+ * `PaginatedTableViewModel` (con `TableRequest`/`TableResponse` y `sort`) sin tocar
+ * la pantalla: `AppTableScreen` es idéntico en ambos casos.
+ */
 class InventoryMovementsViewModel(
     private val inventoryApi: InventoryApi,
-    private val locationsApi: LocationsApi,
-) : ViewModel() {
+) : ClientTableViewModel<InventoryMovementRow>() {
 
-    private val _uiState = MutableStateFlow(InventoryMovementsUiState())
-    val uiState: StateFlow<InventoryMovementsUiState> = _uiState.asStateFlow()
+    override val pageSize: Int = 10
+    override val searchKey: String? = MovementFilterKeys.Search
 
-    init {
-        viewModelScope.launch {
-            val locations = runCatching { locationsApi.list() }.getOrDefault(emptyList())
-            _uiState.update { it.copy(locations = locations) }
-            load()
+    override suspend fun fetchAll(): List<InventoryMovementRow> =
+        inventoryApi.movements().map { it.toRow() }
+
+    override fun applyFilters(
+        items: List<InventoryMovementRow>,
+        filters: Map<String, String>,
+    ): List<InventoryMovementRow> {
+        val query = filters[MovementFilterKeys.Search]?.trim().orEmpty().lowercase()
+        val type = filters[MovementFilterKeys.Type]?.takeIf { it.isNotBlank() }
+        val device = filters[MovementFilterKeys.Device]?.trim().orEmpty().lowercase()
+        val user = filters[MovementFilterKeys.User]?.trim().orEmpty().lowercase()
+        val from = filters[MovementFilterKeys.DateFrom]?.takeIf { it.isNotBlank() }
+        val to = filters[MovementFilterKeys.DateTo]?.takeIf { it.isNotBlank() }
+
+        return items.filter { row ->
+            (type == null || row.type == type) &&
+                (query.isEmpty() || row.searchText.contains(query)) &&
+                (
+                    device.isEmpty() ||
+                        row.deviceLabel.lowercase().contains(device) ||
+                        row.deviceId.lowercase().contains(device)
+                    ) &&
+                (user.isEmpty() || row.userLabel.lowercase().contains(user)) &&
+                row.inDayRange(from, to)
         }
     }
 
-    fun load() {
-        val state = _uiState.value
-        _uiState.update { it.copy(loading = true, error = null) }
-        viewModelScope.launch {
-            val result = runCatching {
-                inventoryApi.movements(
-                    locationId = state.locationFilter.ifBlank { null },
-                    start = state.startFilter.ifBlank { null },
-                    end = state.endFilter.ifBlank { null },
-                )
-            }
-            _uiState.update {
-                it.copy(loading = false, error = result.exceptionOrNull()?.let(::networkMessage), movements = result.getOrDefault(it.movements))
-            }
+    override fun applySort(
+        items: List<InventoryMovementRow>,
+        sort: TableSort?,
+    ): List<InventoryMovementRow> {
+        // Sin orden elegido se conserva el del API (fecha descendente).
+        if (sort == null) return items
+        val ascending = sort.direction != "desc"
+        return when (sort.key) {
+            "date" -> if (ascending) items.sortedBy { it.date } else items.sortedByDescending { it.date }
+            "type" -> if (ascending) items.sortedBy { it.type } else items.sortedByDescending { it.type }
+            else -> items
         }
     }
-
-    fun onLocationFilterChange(value: String) {
-        _uiState.update { it.copy(locationFilter = value) }
-        load()
-    }
-
-    fun onStartFilterChange(value: String) = _uiState.update { it.copy(startFilter = value) }
-    fun onEndFilterChange(value: String) = _uiState.update { it.copy(endFilter = value) }
 }

@@ -1,0 +1,38 @@
+# Smoke del shell: login, drawer, Langostín (ayuda + alta de ticket en chat) y cierre.
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: login.yaml
+- assertVisible: "Buenas.*"
+# Drawer: hereda el header de marca con usuario y rol
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "PRINCIPAL"
+    timeout: 8000
+- scrollUntilVisible:
+    element:
+      text: "Cerrar sesión"
+    direction: DOWN
+    timeout: 8000
+- tapOn: "Cerrar menú"
+# Langostín: botón central de la barra inferior
+- tapOn: "Abrir Langostín"
+- extendedWaitUntil:
+    visible: "Estás en: Inicio"
+    timeout: 5000
+- assertVisible: "En esta pantalla"
+- tapOn: "Nuevo ticket"
+- assertVisible: "Paso 1 de 4.*"
+- tapOn:
+    id: "langostin.input"
+- inputText: "E2E prueba de humo"
+- hideKeyboard
+- tapOn: "Enviar"
+- assertVisible: "Paso 2 de 4.*"
+# Atrás dos veces: el agente vuelve a la ayuda y luego cierra el panel
+- back
+- back
+- extendedWaitUntil:
+    visible: "Buenas.*"
+    timeout: 5000

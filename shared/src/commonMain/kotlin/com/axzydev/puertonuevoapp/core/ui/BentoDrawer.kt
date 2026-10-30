@@ -50,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -59,6 +60,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.axzydev.puertonuevoapp.core.nav.Screen
+import com.axzydev.puertonuevoapp.core.session.PermissionKeys
 import com.axzydev.puertonuevoapp.core.session.SessionUser
 import com.axzydev.puertonuevoapp.core.theme.AppBento
 import com.axzydev.puertonuevoapp.core.theme.AppColors
@@ -166,6 +168,7 @@ fun BentoDrawer(
                                 unreadCount = unreadCount,
                                 isExpanded = isExpanded,
                                 forceOpen = searching,
+                                testTag = drawerTag("drawer-node-", node.label),
                                 onToggle = {
                                     expanded = if (isExpanded) expanded - node.label else expanded + node.label
                                 },
@@ -176,6 +179,7 @@ fun BentoDrawer(
                                     DrawerChildRow(
                                         label = child.label,
                                         selected = isRoute(current, child.screen),
+                                        testTag = drawerTag("drawer-child-", child.label),
                                         onClick = { onNavigate(child.screen) },
                                     )
                                 }
@@ -269,6 +273,7 @@ private fun DrawerNodeRow(
     unreadCount: Int,
     isExpanded: Boolean,
     forceOpen: Boolean,
+    testTag: String,
     onToggle: () -> Unit,
     onNavigate: (Screen) -> Unit,
 ) {
@@ -284,6 +289,7 @@ private fun DrawerNodeRow(
             .fillMaxWidth()
             .padding(horizontal = 10.dp, vertical = 2.dp)
             .height(52.dp)
+            .testTag(testTag)
             .clip(AppShape.row)
             .background(
                 when {
@@ -355,7 +361,7 @@ private fun DrawerNodeRow(
 
 /** Subnodo: riel vertical fino, punto y texto; el activo va en primario y negrita. */
 @Composable
-private fun DrawerChildRow(label: String, selected: Boolean, onClick: () -> Unit) {
+private fun DrawerChildRow(label: String, selected: Boolean, testTag: String, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val railColor = scheme.outline.copy(alpha = 0.7f)
     val dotColor = if (selected) scheme.primary else scheme.outline
@@ -365,6 +371,7 @@ private fun DrawerChildRow(label: String, selected: Boolean, onClick: () -> Unit
             .fillMaxWidth()
             .padding(start = 26.dp, end = 10.dp)
             .height(44.dp)
+            .testTag(testTag)
             .clip(AppShape.row)
             .background(if (selected) scheme.primaryContainer.copy(alpha = 0.5f) else Color.Transparent)
             .clickable(onClick = onClick),
@@ -547,7 +554,9 @@ private fun drawerSections(user: SessionUser?): List<DrawerSection> = buildList 
                             add(DrawerChild("Movimientos", Screen.InventoryMovements))
                         }
                         if (user.canViewCustodyLetters) add(DrawerChild("Cartas responsivas", Screen.CustodyLettersList))
+                        if (user.canViewCustodyLetters) add(DrawerChild("Devoluciones", Screen.InventoryReturns))
                         if (user.canRegisterMaterialOutputs) add(DrawerChild("Salidas de material", Screen.MaterialOutputsList))
+                        if (user.can(PermissionKeys.INVENTORY_AUDIT)) add(DrawerChild("Auditoría de inventario", Screen.InventoryAudit))
                     },
                 ),
             )
@@ -581,6 +590,7 @@ private fun drawerSections(user: SessionUser?): List<DrawerSection> = buildList 
                     label = "Configuración",
                     icon = Icons.Filled.Settings,
                     children = buildList {
+                        if (user.can(PermissionKeys.USERS_VIEW)) add(DrawerChild("Usuarios", Screen.UsersList))
                         if (user.canManageCatalogs) add(DrawerChild("Tipos de dispositivo", Screen.DeviceTypesList))
                         if (user.canSeeAudit) add(DrawerChild("Auditoría", Screen.AuditLogs))
                         if (user.canManageRoles) add(DrawerChild("Roles y permisos", Screen.RolesPermissions))
@@ -616,3 +626,11 @@ private fun filterSections(sections: List<DrawerSection>, query: String): List<D
 }
 
 private fun isRoute(current: Screen, target: Screen): Boolean = current::class == target::class
+
+/** Etiqueta estable para E2E (Maestro): `drawer-node-<slug>` / `drawer-child-<slug>`. */
+private fun drawerTag(prefix: String, label: String): String =
+    prefix + label.lowercase()
+        .replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("ñ", "n")
+        .replace(Regex("[^a-z0-9]+"), "-")
+        .trim('-')
+

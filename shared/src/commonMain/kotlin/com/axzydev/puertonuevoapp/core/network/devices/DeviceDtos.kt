@@ -89,6 +89,18 @@ data class DeviceListResponseDto(
     val total: Int = 0,
 )
 
+/** Tope del API para dar de alta piezas de un dispositivo en una sola operación. */
+const val MAX_DEVICE_INITIAL_QUANTITY = 5000
+
+/** Identificación de UNA pieza física al dar de alta N unidades (`POST /inventory/devices`). */
+@Serializable
+data class DeviceCreateUnitInput(
+    val serialNumber: String? = null,
+    val macAddress: String? = null,
+    val ip: String? = null,
+    val hostname: String? = null,
+)
+
 @Serializable
 data class DeviceCreateInput(
     val typeId: String,
@@ -105,6 +117,10 @@ data class DeviceCreateInput(
     val operatingSystem: String? = null,
     val ram: String? = null,
     val storage: String? = null,
+    /** Piezas NUEVAS que crea el alta (la web las llama "unidades"); tope 5000 en el API. */
+    val initialQuantity: Int = 1,
+    /** Identificación por pieza, en el orden en que se crean (opcional e incompleta). */
+    val units: List<DeviceCreateUnitInput> = emptyList(),
 )
 
 @Serializable

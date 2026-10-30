@@ -15,6 +15,15 @@ data class SessionUser(
     val role: String,
     val departmentId: String?,
     val permissions: Map<String, String> = emptyMap(),
+    /** Roles efectivos (principal + adicionales): solo informativo, la compuerta es [can]. */
+    val roles: List<String> = emptyList(),
+    /**
+     * El API marca la cuenta con contraseña provisional (`GET /auth/me` →
+     * `mustChangePassword`). Mientras sea true la app debe mostrar
+     * `ChangePasswordScreen` y no el shell; el API es quien la vuelve a poner
+     * en false al cambiar la contraseña.
+     */
+    val mustChangePassword: Boolean = false,
 ) {
     /** Alcance efectivo del permiso (NONE si no lo tiene). */
     fun scopeOf(permission: String): String = permissions[permission] ?: PermissionScopes.NONE

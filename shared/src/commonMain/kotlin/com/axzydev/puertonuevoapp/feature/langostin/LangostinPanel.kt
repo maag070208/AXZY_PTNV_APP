@@ -46,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -60,6 +61,9 @@ import com.axzydev.puertonuevoapp.core.ui.BentoAvatar
 import com.axzydev.puertonuevoapp.core.ui.BentoIconButton
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.ui.langostin.LangostinMascot
+import com.axzydev.puertonuevoapp.core.ui.langostin.LangostinScene
+import com.axzydev.puertonuevoapp.core.ui.langostin.LangostinSceneSpec
+import com.axzydev.puertonuevoapp.core.ui.langostin.langostinSceneFor
 import com.axzydev.puertonuevoapp.core.ui.langostin.LangostinSeason
 import com.axzydev.puertonuevoapp.core.ui.langostin.langostinSeasonNow
 import com.axzydev.puertonuevoapp.feature.langostin.model.LangostinAction
@@ -94,6 +98,7 @@ fun LangostinOverlay(
 ) {
     val help = remember(current) { LangostinHelp.forScreen(current) }
     val season = remember { langostinSeasonNow() }
+    val scene = remember(current, season) { langostinSceneFor(season, current) }
     var sessionKey by remember { mutableIntStateOf(0) }
     var agentOpen by remember { mutableStateOf(false) }
     var messages by remember { mutableStateOf(emptyList<LangostinMessage>()) }
@@ -129,8 +134,9 @@ fun LangostinOverlay(
                 .background(MaterialTheme.colorScheme.surface)
                 .windowInsetsPadding(WindowInsets.navigationBars.union(WindowInsets.ime)),
         ) {
-            PanelHeader(
+            PanelHero(
                 season = season,
+                scene = scene,
                 onReset = { sessionKey += 1 },
                 onClose = onClose,
             )
@@ -179,44 +185,79 @@ private fun greeting(help: LangostinScreen, season: LangostinSeason): String {
     return "$hello Estás en ${help.title}. ${help.explain}"
 }
 
+/**
+ * Hero del panel: escena 8-bit animada de Langostín (la mascota ya viene dibujada dentro,
+ * en el centro de la escena) con el nombre y la temporada en una píldora translúcida y los
+ * botones de reiniciar/cerrar encima. La escena se elige por temporada, hora y módulo.
+ */
 @Composable
-private fun PanelHeader(season: LangostinSeason, onReset: () -> Unit, onClose: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 12.dp, top = 14.dp, bottom = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        LangostinMascot(size = 46.dp)
-        Spacer(Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                "Langostín",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
+private fun PanelHero(
+    season: LangostinSeason,
+    scene: LangostinSceneSpec,
+    onReset: () -> Unit,
+    onClose: () -> Unit,
+) {
+    Box(modifier = Modifier.fillMaxWidth().height(172.dp)) {
+        LangostinScene(
+            scene = scene,
+            modifier = Modifier.fillMaxSize(),
+        )
+        // Velo inferior para fundir la escena con la superficie blanca del panel.
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .height(48.dp)
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color.Transparent, MaterialTheme.colorScheme.surface),
+                    ),
+                ),
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Row(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .clip(AppShape.pill)
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.86f))
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Box(Modifier.size(7.dp).background(AppColors.Success, CircleShape))
                 Spacer(Modifier.width(6.dp))
-                val seasonLabel = if (season.emoji.isNotEmpty()) "En línea · ${season.emoji} ${season.label}" else "En línea"
-                Text(
-                    seasonLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Column {
+                    Text(
+                        "Langostín",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = buildString {
+                            append(scene.label)
+                            if (season.emoji.isNotEmpty()) append(" · ${season.emoji} ${season.label}")
+                        },
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                    )
+                }
             }
+            Spacer(Modifier.weight(1f))
+            BentoIconButton(
+                icon = Icons.Filled.Refresh,
+                contentDescription = "Reiniciar",
+                onClick = onReset,
+            )
+            Spacer(Modifier.width(8.dp))
+            BentoIconButton(
+                icon = Icons.Filled.Close,
+                contentDescription = "Cerrar",
+                onClick = onClose,
+            )
         }
-        BentoIconButton(
-            icon = Icons.Filled.Refresh,
-            contentDescription = "Reiniciar",
-            onClick = onReset,
-        )
-        Spacer(Modifier.width(8.dp))
-        BentoIconButton(
-            icon = Icons.Filled.Close,
-            contentDescription = "Cerrar",
-            onClick = onClose,
-        )
     }
 }
 

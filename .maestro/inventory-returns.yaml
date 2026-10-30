@@ -1,0 +1,22 @@
+# Devoluciones de inventario: abre la bandeja desde el drawer y valida el estado de la pantalla.
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: login.yaml
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- tapOn:
+    id: "drawer-node-inventario"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-child-devoluciones"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-child-devoluciones"
+- extendedWaitUntil:
+    visible: "Devoluciones"
+    timeout: 15000
+- assertVisible:
+    text: ".*([Dd]evoluci|Sin resultados|No hay).*"

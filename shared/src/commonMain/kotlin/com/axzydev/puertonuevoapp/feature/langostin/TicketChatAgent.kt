@@ -218,6 +218,7 @@ fun TicketChatAgent(
                         keyboardActions = androidx.compose.foundation.text.KeyboardActions(
                             onSend = { sendDraft() },
                         ),
+                        testTag = "langostin.input",
                     )
                     Spacer(Modifier.width(10.dp))
                     PillButton(

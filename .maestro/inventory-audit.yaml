@@ -1,0 +1,20 @@
+# Auditor de inventario: panel con las reglas y el botón de revisión.
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: login.yaml
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- tapOn:
+    id: "drawer-node-inventario"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-child-auditoria-de-inventario"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-child-auditoria-de-inventario"
+- extendedWaitUntil:
+    visible: "Revisar ahora"
+    timeout: 15000

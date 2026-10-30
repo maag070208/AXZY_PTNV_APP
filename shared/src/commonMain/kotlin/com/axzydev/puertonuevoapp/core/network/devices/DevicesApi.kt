@@ -34,7 +34,23 @@ class DevicesApi(private val client: ApiClient) {
     suspend fun get(id: String): DeviceDto =
         client.get<ApiDevice>("/inventory/devices/$id").toDeviceDto()
 
+    /**
+     * Alta de un dispositivo con N unidades. [DeviceCreateInput.units] trae la
+     * identificación de cada pieza en el orden en que se crean; si viene vacía
+     * se conserva el comportamiento anterior (una pieza con los campos legacy
+     * del formulario).
+     */
     suspend fun create(input: DeviceCreateInput): DeviceDto {
+        val identities = input.units.ifEmpty {
+            listOf(
+                DeviceCreateUnitInput(
+                    serialNumber = input.serialNumber,
+                    macAddress = input.macAddress,
+                    ip = input.ip,
+                    hostname = input.hostname,
+                )
+            )
+        }
         val body = ApiCreateDevice(
             typeId = input.typeId,
             name = input.description,
@@ -42,15 +58,15 @@ class DevicesApi(private val client: ApiClient) {
             model = input.model,
             description = null,
             notes = null,
-            initialQuantity = 1,
-            units = listOf(
+            initialQuantity = input.initialQuantity.coerceIn(1, MAX_DEVICE_INITIAL_QUANTITY),
+            units = identities.map {
                 ApiUnitInput(
-                    serialNumber = input.serialNumber,
-                    macAddress = input.macAddress,
-                    ip = input.ip,
-                    hostname = input.hostname,
+                    serialNumber = it.serialNumber,
+                    macAddress = it.macAddress,
+                    ip = it.ip,
+                    hostname = it.hostname,
                 )
-            ),
+            },
         )
         return client.post<ApiCreateDevice, ApiDevice>("/inventory/devices", body).toDeviceDto()
     }

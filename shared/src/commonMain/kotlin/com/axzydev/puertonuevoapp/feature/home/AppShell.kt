@@ -24,7 +24,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
@@ -60,7 +62,11 @@ import com.axzydev.puertonuevoapp.feature.devicetypes.DeviceTypeFormScreen
 import com.axzydev.puertonuevoapp.feature.devicetypes.DeviceTypesListScreen
 import com.axzydev.puertonuevoapp.feature.hr.EmployeeProfileScreen
 import com.axzydev.puertonuevoapp.feature.hr.EmployeesListScreen
+import com.axzydev.puertonuevoapp.feature.inventory.DeviceStockInScreen
+import com.axzydev.puertonuevoapp.feature.inventory.InventoryAuditScreen
+import com.axzydev.puertonuevoapp.feature.inventory.InventoryImportScreen
 import com.axzydev.puertonuevoapp.feature.inventory.InventoryIndexScreen
+import com.axzydev.puertonuevoapp.feature.inventory.InventoryReturnsScreen
 import com.axzydev.puertonuevoapp.feature.inventory.InventoryMovementsScreen
 import com.axzydev.puertonuevoapp.feature.inventory.LocationDetailScreen
 import com.axzydev.puertonuevoapp.feature.inventory.LocationFormScreen
@@ -80,7 +86,14 @@ import com.axzydev.puertonuevoapp.feature.tickets.TicketDetailScreen
 import com.axzydev.puertonuevoapp.feature.tickets.TicketsKanbanScreen
 import com.axzydev.puertonuevoapp.feature.tickets.TicketsListScreen
 import com.axzydev.puertonuevoapp.feature.users.UserFormScreen
+import com.axzydev.puertonuevoapp.feature.users.UserHistoryScreen
+import com.axzydev.puertonuevoapp.feature.users.UserImportScreen
+import com.axzydev.puertonuevoapp.feature.users.UsersListScreen
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
+/** Cada cuánto se consulta el contador de notificaciones sin leer mientras el shell está montado. */
+private const val UNREAD_POLL_MS = 45_000L
 
 /**
  * Shell de la app: header bento ([BentoTopBar]: hamburguesa/atrás, marca o título de la
@@ -102,6 +115,7 @@ fun AppShell() {
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val keyboardController = LocalSoftwareKeyboardController.current
     val topBarActions = remember { TopBarActionsState() }
     // El Inicio usa el lienzo bento; el resto de pantallas aún conserva el fondo anterior.
     val canvas = if (isHome) AppBento.canvas else MaterialTheme.colorScheme.background
@@ -109,11 +123,24 @@ fun AppShell() {
     var unreadCount by remember { mutableStateOf(0) }
     // Panel de Langostín (botón central de la barra): se cierra al cambiar de pantalla.
     var langostinOpen by remember { mutableStateOf(false) }
+    // Sondeo de no leídas (la web usa Ably; la app no tiene SDK todavía):
+    // se refresca al navegar y cada 45 s mientras el shell está montado.
     LaunchedEffect(current) {
         langostinOpen = false
-        runCatching { AppContainer.notificationsApi.unreadCount() }.onSuccess { unreadCount = it }
+        while (true) {
+            runCatching { AppContainer.notificationsApi.unreadCount() }
+                .onSuccess { unreadCount = it }
+            delay(UNREAD_POLL_MS)
+        }
     }
 
+    // Al abrir el menú no debe saltar el teclado (el buscador del drawer quedaba enfocado
+    // en algunos teléfonos y tapaba el menú).
+    LaunchedEffect(drawerState) {
+        snapshotFlow { drawerState.isOpen }.collect { open ->
+            if (open) keyboardController?.hide()
+        }
+    }
     PlatformBackHandler(enabled = drawerState.isOpen) {
         scope.launch { drawerState.close() }
     }
@@ -171,6 +198,7 @@ fun AppShell() {
                                 label = "Langostín",
                                 selected = false,
                                 onClick = { langostinOpen = true },
+                                contentDescription = "Abrir Langostín",
                             )
                             if (items.size > 1) {
                                 BentoBottomBar(
@@ -269,6 +297,9 @@ private fun AppNavHost(screen: Screen) {
 
         // Users / employees — módulo 3
         is Screen.UserForm -> UserFormScreen(screen.id)
+        Screen.UsersList -> UsersListScreen()
+        is Screen.UserHistory -> UserHistoryScreen(screen.userId)
+        Screen.UserImport -> UserImportScreen()
         Screen.EmployeesList -> EmployeesListScreen()
         is Screen.EmployeeProfile -> EmployeeProfileScreen(screen.id)
 
@@ -283,6 +314,10 @@ private fun AppNavHost(screen: Screen) {
         is Screen.LocationForm -> LocationFormScreen(screen.id)
         Screen.InventoryMovements -> InventoryMovementsScreen()
         is Screen.NewInventoryMovement -> NewInventoryMovementScreen(screen.deviceId)
+        is Screen.DeviceStockIn -> DeviceStockInScreen(screen.deviceId)
+        Screen.InventoryReturns -> InventoryReturnsScreen()
+        Screen.InventoryAudit -> InventoryAuditScreen()
+        Screen.DeviceImport -> InventoryImportScreen()
 
         // Salidas / Cartas / Reports / Notifications / Audit — módulo 5
         Screen.MaterialOutputsList -> MaterialOutputsListScreen()

@@ -1,0 +1,36 @@
+# Subflujo de acceso para las pruebas E2E de Maestro.
+# El API se configura antes del flujo (scripts/e2e.sh escribe `server_url` en las
+# preferencias de la app); las credenciales llegan por variables de entorno.
+appId: com.axzydev.puertonuevoapp
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Configuración del servidor"
+    timeout: 25000
+- tapOn:
+    id: "login.username"
+- eraseText: 60
+- inputText: "${E2E_USER}"
+- hideKeyboard
+- tapOn:
+    id: "login.password"
+- eraseText: 60
+- inputText: "${E2E_PASSWORD}"
+- hideKeyboard
+- tapOn: "Entrar"
+# El teléfono puede ofrecer guardar la contraseña (Samsung Pass): se descarta.
+- runFlow:
+    when:
+      visible: "¿Desea guardar la información.*"
+    commands:
+      - tapOn: "Nunca en esta aplicación o sitio web"
+# Pantalla de permisos del sistema (Android): ya vienen concedidos por scripts/e2e.sh.
+# La pantalla de permisos aparece solo si al teléfono le falta alguno.
+- runFlow:
+    when:
+      visible: "Continuar.*"
+    commands:
+      - tapOn: "Continuar.*"
+- extendedWaitUntil:
+    visible: "Buenas.*"
+    timeout: 25000

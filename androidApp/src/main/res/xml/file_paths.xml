@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!--
+      Archivos que se comparten con el sistema (exportaciones CSV, adjuntos).
+      Ver ShareFiles.android.kt: se escriben en cacheDir/shared/ y se exponen
+      con el FileProvider declarado en AndroidManifest.xml.
+    -->
+    <cache-path name="shared" path="shared/" />
+</paths>

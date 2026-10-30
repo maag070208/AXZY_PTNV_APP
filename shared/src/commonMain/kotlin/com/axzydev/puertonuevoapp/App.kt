@@ -20,6 +20,7 @@ import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.PuertoNuevoTheme
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
+import com.axzydev.puertonuevoapp.feature.auth.ChangePasswordScreen
 import com.axzydev.puertonuevoapp.feature.auth.LoginScreen
 import com.axzydev.puertonuevoapp.feature.home.AppShell
 import com.axzydev.puertonuevoapp.feature.permissions.PermissionsScreen
@@ -33,8 +34,10 @@ fun App() {
 
         LaunchedEffect(Unit) {
             authRepository.restoreSession()
-            // Permisos vigentes (`GET /auth/me`): un cambio de rol aplica sin relogin.
-            authRepository.refreshSession()
+            // Sesión endurecida: renueva el access token si está por vencer
+            // (`POST /auth/refresh`) y relee permisos (`GET /auth/me`), así un
+            // cambio de rol aplica sin volver a iniciar sesión.
+            authRepository.ensureFreshSession()
         }
 
         Surface(modifier = Modifier.fillMaxSize(), color = AppColors.Background) {
@@ -42,6 +45,11 @@ fun App() {
                 AuthState.Loading -> LoadingState(modifier = Modifier.fillMaxSize())
                 AuthState.LoggedOut -> LoginScreen()
                 is AuthState.LoggedIn -> {
+                    // Contraseña provisional: no se monta la app hasta cambiarla (como la web).
+                    if (state.user.mustChangePassword) {
+                        ChangePasswordScreen(onDone = {})
+                        return@Surface
+                    }
                     // Tras iniciar sesión se muestran los permisos una vez por sesión.
                     var permissionsAcknowledged by remember(state.user.id) { mutableStateOf(false) }
                     if (!permissionsAcknowledged) {

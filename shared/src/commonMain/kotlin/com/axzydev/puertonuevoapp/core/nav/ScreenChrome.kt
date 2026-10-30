@@ -37,6 +37,9 @@ fun Screen.chrome(): ScreenChrome = when (this) {
 
     // Users / employees
     is Screen.UserForm -> ScreenChrome(if (id == null) "Nuevo personal" else "Editar personal", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    Screen.UsersList -> ScreenChrome("Usuarios", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    is Screen.UserHistory -> ScreenChrome("Historial de la cuenta", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
+    Screen.UserImport -> ScreenChrome("Importar usuarios", showBack = true, showBottomNavigation = false, section = MainSection.USERS)
     Screen.EmployeesList -> ScreenChrome("Personal", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
     is Screen.EmployeeProfile -> ScreenChrome("Perfil", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
 
@@ -51,6 +54,10 @@ fun Screen.chrome(): ScreenChrome = when (this) {
     is Screen.LocationForm -> ScreenChrome(if (id == null) "Nueva ubicación" else "Editar ubicación", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
     Screen.InventoryMovements -> ScreenChrome("Kardex", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
     is Screen.NewInventoryMovement -> ScreenChrome("Registrar movimiento", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
+    is Screen.DeviceStockIn -> ScreenChrome("Agregar unidades", showBack = true, showBottomNavigation = false, section = MainSection.DEVICES)
+    Screen.InventoryReturns -> ScreenChrome("Devoluciones", showBack = true, showBottomNavigation = false, section = MainSection.DEVICES)
+    Screen.InventoryAudit -> ScreenChrome("Auditoría de inventario", showBack = true, showBottomNavigation = false, section = MainSection.DEVICES)
+    Screen.DeviceImport -> ScreenChrome("Cargar dispositivos", showBack = true, showBottomNavigation = false, section = MainSection.DEVICES)
 
     // Salidas
     Screen.MaterialOutputsList -> ScreenChrome("Salidas de material", showBack = true, showBottomNavigation = false, section = MainSection.HOME)

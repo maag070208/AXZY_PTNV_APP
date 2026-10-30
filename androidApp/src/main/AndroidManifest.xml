@@ -28,6 +28,22 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <!--
+          Compartir archivos (exportaciones CSV, adjuntos): expone los archivos
+          de cacheDir/shared/ con un content:// uri. La autoridad debe coincidir
+          con ANDROID_FILE_PROVIDER_AUTHORITY en ShareFiles.android.kt y las
+          rutas con res/xml/file_paths.xml.
+        -->
+        <provider
+                android:name="androidx.core.content.FileProvider"
+                android:authorities="com.axzydev.puertonuevoapp.fileprovider"
+                android:exported="false"
+                android:grantUriPermissions="true">
+            <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/file_paths"/>
+        </provider>
     </application>
 
 </manifest>

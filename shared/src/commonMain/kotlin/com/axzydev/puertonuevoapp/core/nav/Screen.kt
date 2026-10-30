@@ -24,6 +24,12 @@ sealed interface Screen {
 
     // Users / employees
     data class UserForm(val id: String? = null) : Screen
+    /** Lista de cuentas de usuario (`/users` en la web). */
+    data object UsersList : Screen
+    /** Historial de una cuenta (`/users/:id/history`). */
+    data class UserHistory(val userId: String) : Screen
+    /** Importación de cuentas por Excel (`/users/import`). */
+    data object UserImport : Screen
     data object EmployeesList : Screen
     data class EmployeeProfile(val id: String) : Screen
 
@@ -38,6 +44,14 @@ sealed interface Screen {
     data class LocationForm(val id: String? = null) : Screen
     data object InventoryMovements : Screen
     data class NewInventoryMovement(val deviceId: String? = null) : Screen
+    /** Entrada de unidades nuevas a un dispositivo existente (`STOCK_IN`). */
+    data class DeviceStockIn(val deviceId: String) : Screen
+    /** Bandeja de devoluciones del inventario (bitácora de `/inventory/returns`). */
+    data object InventoryReturns : Screen
+    /** Auditor de inventario: reglas y conciliación de unidades. */
+    data object InventoryAudit : Screen
+    /** Carga masiva de dispositivos por Excel. */
+    data object DeviceImport : Screen
 
     // Salidas
     data object MaterialOutputsList : Screen
