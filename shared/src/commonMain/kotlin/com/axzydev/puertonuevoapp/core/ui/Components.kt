@@ -289,6 +289,7 @@ fun AppSearchField(
     onValueChange: (String) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
+    testTag: String? = null,
 ) {
     AppTextField(
         value = value,
@@ -298,6 +299,7 @@ fun AppSearchField(
         singleLine = true,
         modifier = modifier.fillMaxWidth(),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        testTag = testTag,
     )
 }
 

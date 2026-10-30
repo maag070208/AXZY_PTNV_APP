@@ -212,6 +212,7 @@ private fun LoginFormSheet(
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
                 modifier = Modifier.fillMaxWidth(),
+                testTag = "login.username",
             )
 
             Spacer(Modifier.height(16.dp))
@@ -234,6 +235,7 @@ private fun LoginFormSheet(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { onLogin() }),
                 modifier = Modifier.fillMaxWidth(),
+                testTag = "login.password",
             )
 
             AnimatedVisibility(visible = state.errorMessage != null) {
@@ -279,6 +281,7 @@ private fun LoginFormSheet(
                         label = { Text("URL del API") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
+                        testTag = "login.serverUrl",
                     )
                     Text(
                         "Ej. http://192.168.1.50:4001/api/v1 (IP local de la Mac). " +

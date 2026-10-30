@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         AndroidAppContext.init(this)
 
         setContent {
-            App()
+            AppRoot()
         }
     }
 }
