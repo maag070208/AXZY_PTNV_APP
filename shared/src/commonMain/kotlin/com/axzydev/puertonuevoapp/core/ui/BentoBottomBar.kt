@@ -194,6 +194,8 @@ fun BentoBottomBar(
     items: List<BentoNavItem>,
     modifier: Modifier = Modifier,
     action: BentoNavItem? = null,
+    /** Contenido del botón central (p. ej. la mascota de Langostín) en vez del ícono ámbar. */
+    actionContent: (@Composable () -> Unit)? = null,
 ) {
     val hasAction = action != null
     val surface = MaterialTheme.colorScheme.surface
@@ -290,20 +292,25 @@ fun BentoBottomBar(
                     .semantics { contentDescription = action.label },
                 contentAlignment = Alignment.Center,
             ) {
-                // Relleno ámbar dentro del anillo blanco de ActionRing.
-                Box(
-                    modifier = Modifier
-                        .size(ActionSize)
-                        .clip(CircleShape)
-                        .background(AppColors.Warning, CircleShape),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        imageVector = action.icon ?: Icons.Filled.Add,
-                        contentDescription = null,
-                        tint = AppBento.ink,
-                        modifier = Modifier.size(ActionIconSize),
-                    )
+                if (actionContent != null) {
+                    // Contenido propio (mascota): ocupa todo el círculo, sin relleno ámbar.
+                    actionContent()
+                } else {
+                    // Relleno ámbar dentro del anillo blanco de ActionRing.
+                    Box(
+                        modifier = Modifier
+                            .size(ActionSize)
+                            .clip(CircleShape)
+                            .background(AppColors.Warning, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = action.icon ?: Icons.Filled.Add,
+                            contentDescription = null,
+                            tint = AppBento.ink,
+                            modifier = Modifier.size(ActionIconSize),
+                        )
+                    }
                 }
             }
         }

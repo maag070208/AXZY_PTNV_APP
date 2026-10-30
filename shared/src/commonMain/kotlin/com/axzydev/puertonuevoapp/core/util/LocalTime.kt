@@ -80,6 +80,12 @@ fun formatMinutesAsHours(minutes: Int): String {
     return "$h:${m.toString().padStart(2, '0')} h"
 }
 
+/** Mes (1..12) y día del mes de un instante, en la zona del dispositivo. */
+fun localMonthDay(millis: Long = currentTimeMillis()): Pair<Int, Int> {
+    val (_, month, day) = civilFromEpochDay(localEpochDay(millis))
+    return month to day
+}
+
 /** Hora local actual (0..23) del dispositivo. */
 fun localHourNow(): Int {
     val now = currentTimeMillis()

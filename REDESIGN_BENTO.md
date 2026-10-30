@@ -24,6 +24,10 @@ Referencia web: `BENTO_REDESIGN.md` §3 y `PLAN_REDISENO_PANTALLAS.md` §0.1 (ra
 - `core/ui/BentoTopBar.kt`: header del shell (sustituye al `Material` `TopAppBar`): fila flush con el lienzo y controles
   circulares blancos flotantes — hamburguesa o atrás, marca o título + subtítulo de la sección, acción de la pantalla,
   campana con insignia y avatar. En el Inicio muestra el lockup "Puerto Nuevo · Hotel y Villas".
+- `core/ui/langostin/LangostinMascot.kt`: mascota de Langostín (pixel-art 32x32 del sprite de la web rasterizado a
+  `composeResources/drawable/langostin_idle_0..3.png`, 384px, fondo transparente) en un círculo blanco con sombra, anillo
+  y emoji de la temporada del año (`LangostinSeason` + `langostinSeasonNow()` con las mismas fechas que la web;
+  hoy Halloween 🎃). `animated` cicla los 4 cuadros cada 300 ms.
 - `core/ui/BentoDrawer.kt`: drawer lateral de 312dp con esquinas derechas 28dp (`AppShape.sheetEnd`): hero `OceanBackdrop`
   (logo, usuario, chip de rol, @usuario, X), buscador del menú, cinco secciones (Principal, Operación, Inventario, Organización,
   Configuración), filas de 52dp con ícono en contenedor de 36dp, chevron animado, insignia rose de notificaciones, subnodos con
@@ -116,3 +120,20 @@ Botón central "Nuevo" → Nuevo ticket, solo con `tickets.create`; sin él los 
 sobresaliente, así el `Scaffold` deja espacio y el contenido no queda tapado (el Inicio y la lista de Tickets suman holgura inferior).
 El destino activo se marca con la píldora tinta (el mismo acento de navegación del resto de la app) y el botón central es el
 único acento sol: no compite con los mosaicos de marca del Inicio.
+
+## Langostín (asistente)
+
+El botón central de la barra inferior ya no es "Nuevo": es **Langostín** (mascota con anillo/emoji de temporada, sin
+permiso: solo sesión). Abre una hoja inferior de 93 % con scrim:
+
+- Encabezado: mascota, "Langostín", punto verde "En línea · 🎃 Halloween", **reiniciar** y **cerrar**.
+- Chip de contexto "Estás en: *Pantalla*" (se reinicia al cambiar de pantalla).
+- Hilo de ayuda: saludo con el contexto de la pantalla y opciones en píldoras — **Ir a…** (solo rutas con permiso),
+  **En esta pantalla** (preguntas que contesta en el hilo) y **Langostín** (formularios).
+- **Nuevo ticket** (solo con `tickets.create`): chat de 4 pasos (asunto → detalle → categoría → urgencia) +
+  confirmación, loader mínimo de 700 ms y `POST /tickets`; al terminar ofrece **Ver ticket**. Mismos datos que el alta
+  de página; la API valida otra vez.
+- Registro de ayuda: `feature/langostin/model/LangostinHelp.kt` (portado de `helpRegistry.ts`; una entrada por pantalla
+  de la app + `default`, mínimo 3 opciones, toda ruta y permiso verificados contra `Screen`/`PermissionKeys`).
+- Pendiente (siguiente iteración): globo proactivo en Tickets, formularios de tarea/persona/acta/horario y guía animada
+  del tablero; y los resultados de la web que la app no tiene se explican como respuesta, no como navegación.

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
@@ -26,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
 import com.axzydev.puertonuevoapp.core.nav.MainSection
@@ -42,6 +42,7 @@ import com.axzydev.puertonuevoapp.core.ui.BentoNavItem
 import com.axzydev.puertonuevoapp.core.ui.BentoTopBar
 import com.axzydev.puertonuevoapp.core.ui.LocalTopBarActions
 import com.axzydev.puertonuevoapp.core.ui.TopBarActionsState
+import com.axzydev.puertonuevoapp.core.ui.langostin.LangostinMascot
 import com.axzydev.puertonuevoapp.feature.access.AccessLogScreen
 import com.axzydev.puertonuevoapp.feature.access.AccessScanScreen
 import com.axzydev.puertonuevoapp.feature.audit.AuditLogsScreen
@@ -67,6 +68,7 @@ import com.axzydev.puertonuevoapp.feature.inventory.LocationsListScreen
 import com.axzydev.puertonuevoapp.feature.inventory.NewInventoryMovementScreen
 import com.axzydev.puertonuevoapp.feature.materialoutputs.MaterialOutputFormScreen
 import com.axzydev.puertonuevoapp.feature.materialoutputs.MaterialOutputsListScreen
+import com.axzydev.puertonuevoapp.feature.langostin.LangostinOverlay
 import com.axzydev.puertonuevoapp.feature.notifications.NotificationsScreen
 import com.axzydev.puertonuevoapp.feature.reports.ReportsScreen
 import com.axzydev.puertonuevoapp.feature.roles.RolesPermissionsScreen
@@ -105,12 +107,18 @@ fun AppShell() {
     val canvas = if (isHome) AppBento.canvas else MaterialTheme.colorScheme.background
 
     var unreadCount by remember { mutableStateOf(0) }
+    // Panel de Langostín (botón central de la barra): se cierra al cambiar de pantalla.
+    var langostinOpen by remember { mutableStateOf(false) }
     LaunchedEffect(current) {
+        langostinOpen = false
         runCatching { AppContainer.notificationsApi.unreadCount() }.onSuccess { unreadCount = it }
     }
 
     PlatformBackHandler(enabled = drawerState.isOpen) {
         scope.launch { drawerState.close() }
+    }
+    PlatformBackHandler(enabled = langostinOpen) {
+        langostinOpen = false
     }
     PlatformBackHandler(enabled = !drawerState.isOpen && navigator.backStack.size > 1) {
         navigator.pop()
@@ -135,44 +143,65 @@ fun AppShell() {
         },
     ) {
         CompositionLocalProvider(LocalTopBarActions provides topBarActions) {
-            Scaffold(
-                containerColor = canvas,
-                topBar = {
-                    BentoTopBar(
-                        title = chrome.title,
-                        subtitle = if (showBack) sectionLabel(chrome.section) else null,
-                        showBack = showBack,
-                        onBack = { navigator.pop() },
-                        onMenu = { scope.launch { drawerState.open() } },
-                        unreadCount = unreadCount,
-                        onNotifications = { navigator.push(Screen.Notifications) },
-                        user = user,
-                        onProfile = { navigator.push(Screen.MyCredential) },
-                        action = topBarActions.action,
-                        containerColor = canvas,
-                    )
-                },
-                bottomBar = {
-                    if (chrome.showBottomNavigation && user != null) {
-                        val items = bottomBarItems(user, current) { navigator.switchTab(it) }
-                        // Acción primaria: crear un ticket (solo con `tickets.create`).
-                        val action = if (user.canCreateTickets) {
-                            BentoNavItem(Icons.Filled.Add, "Nuevo", false, { navigator.push(Screen.NewTicket) })
-                        } else null
-                        if (items.size > 1 || action != null) {
-                            BentoBottomBar(items = items, action = action)
+            Box(modifier = Modifier.fillMaxSize()) {
+                Scaffold(
+                    containerColor = canvas,
+                    topBar = {
+                        BentoTopBar(
+                            title = chrome.title,
+                            subtitle = if (showBack) sectionLabel(chrome.section) else null,
+                            showBack = showBack,
+                            onBack = { navigator.pop() },
+                            onMenu = { scope.launch { drawerState.open() } },
+                            unreadCount = unreadCount,
+                            onNotifications = { navigator.push(Screen.Notifications) },
+                            user = user,
+                            onProfile = { navigator.push(Screen.MyCredential) },
+                            action = topBarActions.action,
+                            containerColor = canvas,
+                        )
+                    },
+                    bottomBar = {
+                        if (chrome.showBottomNavigation && user != null) {
+                            val items = bottomBarItems(user, current) { navigator.switchTab(it) }
+                            // Acción central: Langostín (asistente). El alta de ticket vive dentro
+                            // del panel con `tickets.create`; abrir la ayuda no pide permiso.
+                            val action = BentoNavItem(
+                                icon = null,
+                                label = "Langostín",
+                                selected = false,
+                                onClick = { langostinOpen = true },
+                            )
+                            if (items.size > 1) {
+                                BentoBottomBar(
+                                    items = items,
+                                    action = action,
+                                    actionContent = {
+                                        LangostinMascot(size = 58.dp, animated = true, showBadge = true)
+                                    },
+                                )
+                            }
                         }
+                    },
+                    snackbarHost = { AppSnackbarHost() },
+                ) { padding ->
+                    Box(
+                        modifier = Modifier
+                            .padding(padding)
+                            .fillMaxSize()
+                            .background(canvas),
+                    ) {
+                        AppNavHost(current)
                     }
-                },
-                snackbarHost = { AppSnackbarHost() },
-            ) { padding ->
-                Box(
-                    modifier = Modifier
-                        .padding(padding)
-                        .fillMaxSize()
-                        .background(canvas),
-                ) {
-                    AppNavHost(current)
+                }
+                // Panel de Langostín por encima del scaffold (y de la barra inferior).
+                if (langostinOpen) {
+                    LangostinOverlay(
+                        current = current,
+                        user = user,
+                        onNavigate = { navigator.push(it) },
+                        onClose = { langostinOpen = false },
+                    )
                 }
             }
         }
