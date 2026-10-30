@@ -16,10 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -55,7 +52,7 @@ import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.PillButton
 import com.axzydev.puertonuevoapp.core.ui.PillButtonVariant
 import com.axzydev.puertonuevoapp.core.ui.SimpleDropdownField
-import com.axzydev.puertonuevoapp.core.ui.StatCard
+import com.axzydev.puertonuevoapp.core.ui.BentoMiniStat
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.formatFileSize
 import androidx.compose.ui.text.style.TextOverflow
@@ -91,40 +88,40 @@ fun EmployeeRecordsScreen(
 
     Column(modifier = Modifier.fillMaxSize().background(AppBento.canvas)) {
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 14.dp)) {
+            // Rejilla 2×2 estable: cuatro mosaicos iguales (dos por fila). Con
+            // etiquetas cortas y `labelMaxLines = 2` caben sin romper palabras.
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                StatCard(
-                    value = state.total.toString(),
+                BentoMiniStat(
                     label = "Expedientes",
-                    color = AppColors.EmeraldPrimary,
-                    icon = { Icon(Icons.Filled.Person, null, tint = AppColors.EmeraldPrimary) },
+                    value = state.total.toString(),
+                    tone = BentoTone.Sea,
+                    labelMaxLines = 2,
                     modifier = Modifier.weight(1f),
                 )
-                StatCard(
-                    value = state.complete.toString(),
+                BentoMiniStat(
                     label = "Completos",
-                    color = AppColors.Success,
-                    icon = { Icon(Icons.Filled.CheckCircle, null, tint = AppColors.Success) },
-                    modifier = Modifier.weight(1f),
-                )
-                StatCard(
-                    value = state.required.toString(),
-                    label = "Faltan obligatorios",
-                    color = AppColors.Danger,
-                    icon = { Icon(Icons.Filled.Warning, null, tint = AppColors.Danger) },
+                    value = state.complete.toString(),
+                    tone = BentoTone.Mint,
+                    labelMaxLines = 2,
                     modifier = Modifier.weight(1f),
                 )
             }
             Spacer(Modifier.height(8.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                StatCard(
-                    value = state.incomplete.toString(),
-                    label = "Incompletos",
-                    color = AppColors.Warning,
-                    icon = { Icon(Icons.Filled.Warning, null, tint = AppColors.Warning) },
+                BentoMiniStat(
+                    label = "Obligatorios",
+                    value = state.required.toString(),
+                    tone = BentoTone.Rose,
+                    labelMaxLines = 2,
                     modifier = Modifier.weight(1f),
                 )
-                Spacer(Modifier.weight(1f))
-                Spacer(Modifier.weight(1f))
+                BentoMiniStat(
+                    label = "Incompletos",
+                    value = state.incomplete.toString(),
+                    tone = BentoTone.Sun,
+                    labelMaxLines = 2,
+                    modifier = Modifier.weight(1f),
+                )
             }
             Spacer(Modifier.height(10.dp))
 
@@ -315,18 +312,28 @@ private fun RecordRowCard(
         }
 
         Spacer(Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            if (row.missingRequiredCount > 0) {
-                StatusChip("Faltan ${row.missingRequiredCount} obligatorio(s)", BentoTone.Rose)
+        // Dos filas de chips: con etiquetas largas y números de 3 dígitos una
+        // sola fila comprimía el último chip hasta partir el texto en vertical.
+        if (row.missingRequiredCount > 0 || row.missingOtherCount > 0) {
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                if (row.missingRequiredCount > 0) {
+                    StatusChip("Faltan ${row.missingRequiredCount} obligatorios", BentoTone.Rose)
+                }
+                if (row.missingOtherCount > 0) {
+                    StatusChip("${row.missingOtherCount} documentos más", BentoTone.Sun)
+                }
             }
-            if (row.missingOtherCount > 0) {
-                StatusChip("${row.missingOtherCount} documento(s) más", BentoTone.Sun)
-            }
-            if (row.missingFieldsCount > 0) {
-                StatusChip("${row.missingFieldsCount} dato(s) personal(es)", BentoTone.Lavender)
-            }
-            if (!row.pending) {
-                StatusChip("Expediente completo", BentoTone.Mint)
+        }
+        if (row.missingFieldsCount > 0 || !row.pending) {
+            Spacer(Modifier.height(4.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                if (row.missingFieldsCount > 0) {
+                    // Texto corto: el chip mide una línea ancha y ya no se parte.
+                    StatusChip("${row.missingFieldsCount} datos", BentoTone.Lavender)
+                }
+                if (!row.pending) {
+                    StatusChip("Expediente completo", BentoTone.Mint)
+                }
             }
         }
 

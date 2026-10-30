@@ -14,12 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.Fingerprint
-import androidx.compose.material.icons.filled.Today
-import androidx.compose.material.icons.filled.WarningAmber
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,12 +33,13 @@ import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.session.PermissionKeys
 import com.axzydev.puertonuevoapp.core.theme.AppBento
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
 import com.axzydev.puertonuevoapp.core.ui.BentoAvatar
+import com.axzydev.puertonuevoapp.core.ui.BentoMiniStat
 import com.axzydev.puertonuevoapp.core.ui.BentoErrorState
-import com.axzydev.puertonuevoapp.core.ui.StatCard
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.ui.table.AppTableScreen
 import com.axzydev.puertonuevoapp.core.ui.table.FilterControl
@@ -169,7 +164,12 @@ fun TimeClockScreen() {
     }
 }
 
-/** Franja de indicadores: checadas del rango, relojes y relojes con problemas. */
+/**
+ * Franja de indicadores: checadas del rango, relojes registrados, relojes con
+ * problemas y checadas de hoy. Cuatro mosaicos compactos en una fila, con el
+ * mismo patrón que Tiempo extra (`BentoMiniStat` con tono y `weight(1f)`): así
+ * entran los cuatro sin scroll horizontal ni recortes en el borde.
+ */
 @Composable
 private fun PunchKpis(
     punches: Int,
@@ -180,44 +180,37 @@ private fun PunchKpis(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        StatCard(
+        BentoMiniStat(
+            label = "Checadas",
             value = punches.toString(),
-            label = "Checadas del rango",
-            color = AppColors.Info,
-            icon = { Icon(Icons.Filled.Fingerprint, contentDescription = null, tint = AppColors.Info) },
-            modifier = Modifier.width(170.dp),
+            tone = BentoTone.Sea,
+            labelMaxLines = 1,
+            modifier = Modifier.weight(1f),
         )
-        StatCard(
+        BentoMiniStat(
+            label = "Relojes",
             value = devices.toString(),
-            label = "Relojes registrados",
-            color = AppColors.EmeraldPrimary,
-            icon = { Icon(Icons.Filled.Dns, contentDescription = null, tint = AppColors.EmeraldPrimary) },
-            modifier = Modifier.width(170.dp),
+            tone = BentoTone.Lavender,
+            labelMaxLines = 1,
+            modifier = Modifier.weight(1f),
         )
-        StatCard(
+        BentoMiniStat(
+            label = "Problemas",
             value = failing.toString(),
-            label = if (failing == 0) "Sin problemas" else "Relojes con problemas",
-            color = if (failing == 0) AppColors.Success else AppColors.Danger,
-            icon = {
-                Icon(
-                    Icons.Filled.WarningAmber,
-                    contentDescription = null,
-                    tint = if (failing == 0) AppColors.Success else AppColors.Danger,
-                )
-            },
-            modifier = Modifier.width(170.dp),
+            tone = if (failing == 0) BentoTone.Mint else BentoTone.Rose,
+            labelMaxLines = 1,
+            modifier = Modifier.weight(1f),
         )
         if (punchesToday != null) {
-            StatCard(
+            BentoMiniStat(
+                label = "Hoy",
                 value = punchesToday.toString(),
-                label = "Checadas de hoy",
-                color = AppColors.Purple,
-                icon = { Icon(Icons.Filled.Today, contentDescription = null, tint = AppColors.Purple) },
-                modifier = Modifier.width(170.dp),
+                tone = BentoTone.Sun,
+                labelMaxLines = 1,
+                modifier = Modifier.weight(1f),
             )
         }
     }

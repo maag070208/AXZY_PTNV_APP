@@ -9,12 +9,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -36,9 +39,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -89,7 +95,15 @@ private fun LoginContent(
             .imePadding(),
         color = MaterialTheme.colorScheme.surface,
     ) {
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        val scrollState = rememberScrollState()
+        // Con el teclado abierto el formulario se desplaza hasta abajo: así el campo
+        // enfocado y el botón «Entrar» quedan por encima del teclado, nunca cortados.
+        val density = LocalDensity.current
+        val imeBottom = WindowInsets.ime.getBottom(density)
+        LaunchedEffect(imeBottom) {
+            if (imeBottom > 0) scrollState.animateScrollTo(scrollState.maxValue)
+        }
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
             LoginBrandHeader()
             LoginFormSheet(
                 state = state,
@@ -174,6 +188,11 @@ private fun LoginFormSheet(
     onLogin: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Cada campo se trae a la vista al enfocarse (scroll del padre + teclado).
+    val usernameIntoView = remember { BringIntoViewRequester() }
+    val passwordIntoView = remember { BringIntoViewRequester() }
+    val serverIntoView = remember { BringIntoViewRequester() }
+
     BentoSheet(modifier = modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
@@ -213,6 +232,7 @@ private fun LoginFormSheet(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
                 modifier = Modifier.fillMaxWidth(),
                 testTag = "login.username",
+                bringIntoView = usernameIntoView,
             )
 
             Spacer(Modifier.height(16.dp))
@@ -236,6 +256,7 @@ private fun LoginFormSheet(
                 keyboardActions = KeyboardActions(onDone = { onLogin() }),
                 modifier = Modifier.fillMaxWidth(),
                 testTag = "login.password",
+                bringIntoView = passwordIntoView,
             )
 
             AnimatedVisibility(visible = state.errorMessage != null) {
@@ -282,6 +303,7 @@ private fun LoginFormSheet(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         testTag = "login.serverUrl",
+                        bringIntoView = serverIntoView,
                     )
                     Text(
                         "Ej. http://192.168.1.50:4001/api/v1 (IP local de la Mac). " +

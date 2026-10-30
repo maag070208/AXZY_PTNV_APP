@@ -36,6 +36,9 @@ import com.axzydev.puertonuevoapp.core.network.schedules.OvertimeDayRowDto
 import com.axzydev.puertonuevoapp.core.session.AuthState
 import com.axzydev.puertonuevoapp.core.session.PermissionKeys
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.util.formatIsoUtc
+import com.axzydev.puertonuevoapp.core.util.formatShortDate
+import com.axzydev.puertonuevoapp.core.util.parseIsoToEpochMillis
 import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
@@ -132,7 +135,7 @@ fun OvertimeApprovalScreen() {
                     )
                 }
                 Text(
-                    state.rangeLabel,
+                    overtimePeriodLabel(state),
                     style = MaterialTheme.typography.titleSmall,
                     color = AppColors.TextPrimary,
                     modifier = Modifier.weight(1f),
@@ -326,6 +329,65 @@ fun OvertimeApprovalScreen() {
             )
         }
     }
+}
+
+
+/**
+ * Rango del periodo en texto humano. El API manda `summary.range.start/end`
+ * como instantes ISO (medianoche de la zona del reporte, p. ej.
+ * `2026-10-28T06:00:00.000Z`), así que solo se usa la fecha (sin horas): de ahí
+ * salía el ISO crudo que se veía en pantalla.
+ *
+ * Un solo día → "Hoy"/"Ayer"/"28 oct" (día ancla); un rango → "28 oct – 4 nov"
+ * (con el año solo si cruza de año).
+ */
+private fun overtimePeriodLabel(state: OvertimeApprovalUiState): String {
+    val range = state.summary?.range
+    val startKey = range?.start?.take(10)?.takeIf { it.length == 10 }
+    // El API manda `end` como instante EXCLUSIVO (medianoche del día siguiente,
+    // igual que `prevCivilDay` de los PDF de la web): el último día incluido es
+    // el anterior.
+    val endKey = range?.end?.let { previousDayKey(it) ?: it.take(10) }?.takeIf { it.length == 10 }
+    if (startKey == null || endKey == null) return anchorDayLabel(state.dateKey)
+    if (startKey == endKey) return anchorDayLabel(startKey)
+
+    val start = shortMonthDayLabel(startKey) ?: formatShortDate(startKey)
+    val end = shortMonthDayLabel(endKey) ?: formatShortDate(endKey)
+    return if (startKey.take(4) == endKey.take(4)) {
+        "$start – $end"
+    } else {
+        "$start ${startKey.take(4)} – $end ${endKey.take(4)}"
+    }
+}
+
+/**
+ * Clave `YYYY-MM-DD` del día anterior a un instante ISO de medianoche local
+ * (el `range.end` exclusivo del API). Restar 24 h deja la fecha correcta en la
+ * zona del reporte; si no se puede interpretar, `null`.
+ */
+private fun previousDayKey(iso: String): String? {
+    val millis = parseIsoToEpochMillis(iso) ?: return null
+    return formatIsoUtc(millis - 86_400_000L).take(10)
+}
+
+/** "Hoy"/"Ayer" si es el día ancla local; si no, "28 oct". */
+private fun anchorDayLabel(dateKey: String): String {
+    val today = todayDateKey()
+    return when (dateKey) {
+        today -> "Hoy"
+        shiftDateKey(today, -1) -> "Ayer"
+        else -> shortMonthDayLabel(dateKey) ?: formatShortDate(dateKey)
+    }
+}
+
+/** "28 oct" de una clave `YYYY-MM-DD`; `null` si no se puede leer. */
+private fun shortMonthDayLabel(dateKey: String): String? {
+    val parts = dateKey.split("-")
+    if (parts.size != 3) return null
+    val day = parts[2].toIntOrNull() ?: return null
+    val month = parts[1].toIntOrNull() ?: return null
+    val monthName = MONTH_SHORT.getOrNull(month - 1) ?: return null
+    return "$day $monthName"
 }
 
 @Composable

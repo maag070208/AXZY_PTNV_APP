@@ -154,19 +154,32 @@ internal fun shiftDateKey(dateKey: String, days: Int): String {
 }
 
 /** "lun 27 oct" de una fecha `YYYY-MM-DD`. */
-internal fun formatDateKey(dateKey: String): String {
-    val day = dateKey.substringAfterLast('-').toIntOrNull() ?: return dateKey
-    val month = dateKey.substringAfter('-').take(2).toIntOrNull()?.minus(1) ?: return dateKey
+/**
+ * Clave de día `YYYY-MM-DD` a partir de lo que manda el API, que a veces es un
+ * instante ISO (`2026-10-28T06:00:00.000Z`): se toman los primeros 10 caracteres.
+ */
+internal fun dateKeyOf(raw: String): String = raw.take(10)
+
+internal fun formatDateKey(rawKey: String): String {
+    val dateKey = dateKeyOf(rawKey)
+    val day = dateKey.substringAfterLast('-').toIntOrNull() ?: return rawKey
+    val month = dateKey.substringAfter('-').take(2).toIntOrNull()?.minus(1) ?: return rawKey
     val weekday = weekdayOf(dateKey)
     val prefix = WEEKDAY_NAMES[weekday - 1].lowercase().take(3)
     val monthName = MONTH_SHORT.getOrElse(month) { "" }
     return "$prefix $day $monthName"
 }
 
-/** Rango legible "27 oct – 2 nov" de dos fechas. */
+/**
+ * Rango legible "27 oct – 2 nov" de dos fechas del API. El `end` puede venir como
+ * instante exclusivo (medianoche del día siguiente): se muestra el último día
+ * incluido, igual que los reportes de la web.
+ */
 internal fun formatRange(start: String, end: String): String {
     if (start.isBlank() || end.isBlank()) return "—"
-    return "${formatDateKey(start)} – ${formatDateKey(end)}"
+    val startKey = dateKeyOf(start)
+    val endKey = shiftDateKey(dateKeyOf(end), -1)
+    return if (startKey == endKey) formatDateKey(startKey) else "${formatDateKey(startKey)} – ${formatDateKey(endKey)}"
 }
 
 private fun dateKeyOfEpochDay(epochDay: Long): String {

@@ -1,0 +1,16 @@
+# Verifica que con el teclado abierto el campo y el botón queden visibles.
+appId: com.axzydev.puertonuevoapp
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Configuración del servidor"
+    timeout: 20000
+- tapOn:
+    id: "login.password"
+- inputText: "123456"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/2026-10-30/90-login-keyboard
+- tapOn:
+    id: "login.username"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/2026-10-30/91-login-username-keyboard

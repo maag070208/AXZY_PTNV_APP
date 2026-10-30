@@ -2,6 +2,8 @@ package com.axzydev.puertonuevoapp.core.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
@@ -26,6 +28,7 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -77,9 +80,20 @@ fun AppTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     /** Etiqueta estable para E2E (Maestro): se expone como `resource-id` de accesibilidad. */
     testTag: String? = null,
+    /**
+     * Si el campo vive dentro de un contenedor con scroll, pásale un
+     * `remember { BringIntoViewRequester() }`: al enfocarlo se hace scroll para que
+     * no quede tapado por el teclado (login, formularios largos).
+     */
+    bringIntoView: BringIntoViewRequester? = null,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
+
+    // Para el teclado: al enfocar, el campo se trae a la vista dentro del scroll padre.
+    LaunchedEffect(focused) {
+        if (focused) runCatching { bringIntoView?.bringIntoView() }
+    }
 
     // Estilo bento: relleno neutro sin borde en reposo; aro solo en foco/error.
     val fieldShape = if (singleLine) InputTokens.Shape else InputTokens.MultilineShape
@@ -103,6 +117,7 @@ fun AppTextField(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .then(if (bringIntoView != null) Modifier.bringIntoViewRequester(bringIntoView) else Modifier)
                 .then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
                 .background(containerColor, fieldShape)
                 .then(

@@ -22,6 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
@@ -106,8 +107,22 @@ fun DevicesListScreen(viewModel: DevicesListViewModel = viewModel { DevicesListV
     }
 }
 
+/**
+ * Fila de un dispositivo: **nombre** como título (2 líneas máx.), **marca/modelo**
+ * como subtítulo solo cuando aportan algo distinto al nombre (el API repite el
+ * nombre en `description` y en `assetTag`, y la marca+modelo suele ser el mismo
+ * texto) y **tipo** como meta. La ubicación, si la tiene, va al final.
+ */
 @Composable
 private fun DeviceRow(device: DeviceDto, onClick: () -> Unit) {
+    val name = device.description.ifBlank { device.assetTag }.trim()
+    val brandModel = listOf(device.brand, device.model)
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .joinToString(" ")
+    val showBrandModel = brandModel.isNotEmpty() && !brandModel.equals(name, ignoreCase = true)
+    val category = device.type?.name?.trim()?.takeIf { it.isNotEmpty() }
+
     AppCard(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
@@ -120,19 +135,43 @@ private fun DeviceRow(device: DeviceDto, onClick: () -> Unit) {
             verticalAlignment = Alignment.Top,
         ) {
             Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-                Text(device.assetTag, style = MaterialTheme.typography.titleMedium, color = AppColors.EmeraldPrimaryDark)
-                Text(device.description, style = MaterialTheme.typography.bodyMedium, color = AppColors.TextPrimary)
+                Text(
+                    name,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = AppColors.EmeraldPrimaryDark,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (showBrandModel) {
+                    Text(
+                        brandModel,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = AppColors.TextPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
             StatusChip(deviceStatusLabel(device.status), AppColors.deviceStatusColor(device.status))
         }
-        Spacer(Modifier.height(6.dp))
-        Text(
-            "${device.brand} ${device.model} · ${device.type?.name ?: ""}",
-            style = MaterialTheme.typography.bodySmall,
-            color = AppColors.TextMuted,
-        )
-        device.location?.name?.let { name ->
-            Text(name, style = MaterialTheme.typography.bodySmall, color = AppColors.TextFaint)
+        if (category != null) {
+            Spacer(Modifier.height(6.dp))
+            Text(
+                category,
+                style = MaterialTheme.typography.bodySmall,
+                color = AppColors.TextMuted,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        device.location?.name?.let { location ->
+            Text(
+                location,
+                style = MaterialTheme.typography.bodySmall,
+                color = AppColors.TextFaint,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
