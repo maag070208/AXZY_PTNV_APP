@@ -1,0 +1,23 @@
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: ../login.yaml
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-node-recursos-humanos"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-node-recursos-humanos"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-child-actas-administrativas"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-child-actas-administrativas"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/2026-10-30/25-actas

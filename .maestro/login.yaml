@@ -32,5 +32,5 @@ appId: com.axzydev.puertonuevoapp
     commands:
       - tapOn: "Continuar.*"
 - extendedWaitUntil:
-    visible: "Buenas.*"
+    visible: "Buen[oa]s.*"
     timeout: 25000

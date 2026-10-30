@@ -2,7 +2,7 @@
 appId: com.axzydev.puertonuevoapp
 ---
 - runFlow: login.yaml
-- assertVisible: "Buenas.*"
+- assertVisible: "Buen[oa]s.*"
 # Drawer: hereda el header de marca con usuario y rol
 - tapOn: "Menú"
 - hideKeyboard
@@ -34,5 +34,5 @@ appId: com.axzydev.puertonuevoapp
 - back
 - back
 - extendedWaitUntil:
-    visible: "Buenas.*"
+    visible: "Buen[oa]s.*"
     timeout: 5000

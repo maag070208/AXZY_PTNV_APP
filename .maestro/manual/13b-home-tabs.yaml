@@ -1,0 +1,17 @@
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: ../login.yaml
+- swipe:
+    start: "90%, 30%"
+    end: "10%, 30%"
+    duration: 400
+- tapOn: "Sistema"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/2026-10-30/04-home-sistema
+- swipe:
+    start: "90%, 30%"
+    end: "10%, 30%"
+    duration: 400
+- tapOn: "Mi espacio"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/2026-10-30/05-home-miespacio

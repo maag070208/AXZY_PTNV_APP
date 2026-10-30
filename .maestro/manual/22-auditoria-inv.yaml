@@ -1,0 +1,23 @@
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: ../login.yaml
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-node-inventario"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-node-inventario"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-child-auditoria-de-inventario"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-child-auditoria-de-inventario"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/2026-10-30/15-auditoria-inventario

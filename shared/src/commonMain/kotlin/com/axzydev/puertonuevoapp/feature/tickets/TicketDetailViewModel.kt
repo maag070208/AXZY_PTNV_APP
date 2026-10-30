@@ -9,9 +9,11 @@ import com.axzydev.puertonuevoapp.core.network.tickets.TicketsApi
 import com.axzydev.puertonuevoapp.core.platform.PickedFile
 import com.axzydev.puertonuevoapp.core.platform.shareFile
 import com.axzydev.puertonuevoapp.core.ui.AppSnackbar
+import com.axzydev.puertonuevoapp.core.util.AppEvents
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -25,6 +27,12 @@ class TicketDetailViewModel(
 
     init {
         load()
+        // Si se crea una tarea desde el panel de Langostín, el detalle relee el
+        // ticket (incluye sus tareas). `drop(1)` evita recargar por el valor que
+        // ya estaba antes de abrir la pantalla: la carga inicial la hace `load()`.
+        viewModelScope.launch {
+            AppEvents.version("tickets:changed").drop(1).collect { load() }
+        }
     }
 
     fun load() {

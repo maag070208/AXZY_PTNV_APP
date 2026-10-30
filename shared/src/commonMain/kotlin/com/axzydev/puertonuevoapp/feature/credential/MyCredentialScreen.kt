@@ -87,7 +87,7 @@ fun MyCredentialScreen() {
                     .fillMaxWidth()
                     .aspectRatio(1f)
                     .clip(AppShape.card)
-                    .background(AppColors.Surface)
+                    .background(AppColors.QrSurface)
                     .padding(20.dp),
                 contentAlignment = Alignment.Center,
             ) {

@@ -52,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -101,6 +102,9 @@ fun BentoDrawer(
 ) {
     var query by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(emptySet<String>()) }
+    // Al abrir el menú no debe quedar el buscador "enfocado" (aro azul) sin que nadie escriba.
+    val focusManager = LocalFocusManager.current
+    LaunchedEffect(Unit) { focusManager.clearFocus(force = true) }
 
     // El grupo de la pantalla actual arranca abierto (y se abre al navegar).
     LaunchedEffect(current, user) {

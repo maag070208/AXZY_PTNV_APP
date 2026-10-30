@@ -1,0 +1,7 @@
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: ../login.yaml
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/2026-10-30/06-drawer

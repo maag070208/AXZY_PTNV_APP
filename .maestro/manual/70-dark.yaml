@@ -1,0 +1,28 @@
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: ../login.yaml
+- takeScreenshot: screenshots/2026-10-30/dark-01-home
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/2026-10-30/dark-02-drawer
+- scrollUntilVisible:
+    element:
+      id: "drawer-node-configuracion"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-node-configuracion"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-child-usuarios"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-child-usuarios"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/2026-10-30/dark-03-usuarios
+- tapOn: "Abrir Langostín"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/2026-10-30/dark-04-langostin

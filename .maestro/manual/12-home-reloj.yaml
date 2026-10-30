@@ -1,0 +1,6 @@
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: ../login.yaml
+- tapOn: "Reloj y accesos"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/2026-10-30/03-home-reloj

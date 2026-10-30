@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -36,6 +37,7 @@ import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
 import com.axzydev.puertonuevoapp.core.ui.LoadingState
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
+import com.axzydev.puertonuevoapp.core.util.AppEvents
 
 @Composable
 fun MyTasksScreen(viewModel: TasksListViewModel = viewModel(key = "my-tasks") { TasksListViewModel(AppContainer.ticketsApi) }) {
@@ -71,6 +73,12 @@ private fun TasksListContent(
 ) {
     val navigator = LocalNavigator.current
     val state by viewModel.uiState.collectAsState()
+
+    // Tarea nueva (desde Langostín u otra pantalla) → el listado se recarga.
+    val ticketsVersion by AppEvents.version("tickets:changed").collectAsState()
+    LaunchedEffect(ticketsVersion) {
+        if (ticketsVersion != null) viewModel.load()
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(16.dp)) {

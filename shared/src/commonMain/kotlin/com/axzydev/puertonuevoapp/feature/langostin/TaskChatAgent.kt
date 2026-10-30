@@ -45,6 +45,7 @@ import com.axzydev.puertonuevoapp.core.ui.AppTextField
 import com.axzydev.puertonuevoapp.core.ui.BentoIconButton
 import com.axzydev.puertonuevoapp.core.ui.PillButton
 import com.axzydev.puertonuevoapp.core.ui.StatusChip
+import com.axzydev.puertonuevoapp.core.util.AppEvents
 import com.axzydev.puertonuevoapp.core.util.currentTimeMillis
 import com.axzydev.puertonuevoapp.core.util.localOffsetMillis
 import com.axzydev.puertonuevoapp.core.util.ticketStatusLabel
@@ -247,6 +248,10 @@ fun TaskChatAgent(
             if (elapsed < MIN_TASK_LOADER_MS) delay(MIN_TASK_LOADER_MS - elapsed)
             result
                 .onSuccess {
+                    // Aviso local: el tablero y la administración de tareas recargan
+                    // al escuchar `tickets:changed` (la API sigue siendo la verdad).
+                    AppEvents.emit("task:created")
+                    AppEvents.emit("tickets:changed")
                     say("¡Listo! La tarea «$title» ya quedó con $personName.")
                     step = TaskStep.Done
                 }

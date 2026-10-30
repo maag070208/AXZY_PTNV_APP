@@ -1,0 +1,6 @@
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: ../login.yaml
+- tapOn: "Personal"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/2026-10-30/02-home-personal

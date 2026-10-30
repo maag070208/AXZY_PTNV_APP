@@ -1,0 +1,23 @@
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: ../login.yaml
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-node-inventario"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-node-inventario"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-child-devoluciones"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-child-devoluciones"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/2026-10-30/14-devoluciones

@@ -1,0 +1,23 @@
+appId: com.axzydev.puertonuevoapp
+---
+- runFlow: ../login.yaml
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-node-reloj-y-horarios"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-node-reloj-y-horarios"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-child-asignar-horarios"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "drawer-child-asignar-horarios"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/2026-10-30/32-asignar-horarios

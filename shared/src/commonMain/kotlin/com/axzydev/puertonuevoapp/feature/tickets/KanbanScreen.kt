@@ -28,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -50,6 +51,7 @@ import com.axzydev.puertonuevoapp.core.ui.StatusChip
 import com.axzydev.puertonuevoapp.core.util.assignmentStatusLabel
 import com.axzydev.puertonuevoapp.core.util.formatShortDate
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
+import com.axzydev.puertonuevoapp.core.util.AppEvents
 
 @Composable
 fun TicketsKanbanScreen(ticketId: String? = null) {
@@ -61,6 +63,13 @@ fun TicketsKanbanScreen(ticketId: String? = null) {
     val user = (authState as? AuthState.LoggedIn)?.user
     val canCreate = user?.canCreateAssignments == true
     val navigator = LocalNavigator.current
+
+    // Una tarea creada desde el panel de Langostín avisa con `tickets:changed`:
+    // se recarga solo entonces (no en cada recomposición; la API es la verdad).
+    val ticketsVersion by AppEvents.version("tickets:changed").collectAsState()
+    LaunchedEffect(ticketsVersion) {
+        if (ticketsVersion != null) viewModel.load()
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(16.dp)) {

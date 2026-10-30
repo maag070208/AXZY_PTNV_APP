@@ -1,32 +1,56 @@
 package com.axzydev.puertonuevoapp.core.theme
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 
 /**
  * Capa de compatibilidad + semánticos.
  *
- * Los miembros *Emerald* son alias hacia la paleta del logo (Brand) para no
- * tocar el resto de pantallas: el valor vive en UN punto (Brand) y cambia
- * toda la app junto. Regla hacia adelante: las pantallas usan
+ * Los miembros *Emerald* son alias hacia el primario del tema (marca) para no
+ * tocar el resto de pantallas: el valor vive en UN punto (el `ColorScheme`) y
+ * cambia toda la app junto. Regla hacia adelante: las pantallas usan
  * `MaterialTheme.colorScheme.*` y aquí solo estados/helpers de dominio.
+ *
+ * **Modo oscuro**: los colores de superficie/texto/brand son *getters
+ * theme-aware* (leen [ThemeBridge], el esquema activo) en lugar de constantes.
+ * Así el mismo nombre (`AppColors.TextPrimary`, `AppColors.Surface`, …) cambia
+ * solo con el tema, dentro o fuera de un `@Composable` — no hay call sites que
+ * migrar. Los semánticos (éxito/alerta/error/info) se quedan fijos: el error
+ * es el mismo rojo en ambos temas y el resto de estados conserva su
+ * significado.
  */
 object AppColors {
-    // Compat → paleta del logo (Brand)
-    val EmeraldPrimary = Brand.Primary
-    val EmeraldPrimaryDark = Brand.PrimaryDark
-    val EmeraldContainer = Brand.PrimaryContainer
-    val EmeraldOnContainer = Brand.OnPrimaryContainer
+    private val scheme get() = ThemeBridge.current
+    private val dark get() = ThemeBridge.isDark
 
-    val Background = Brand.Background
-    val Surface = Brand.Surface
-    val SurfaceVariant = Brand.SurfaceVariant
-    val Outline = Brand.Outline
+    // Compat → primario del esquema (marca)
+    val EmeraldPrimary: Color get() = scheme.primary
 
-    val TextPrimary = Brand.TextPrimary
-    val TextMuted = Brand.TextMuted
-    val TextFaint = Brand.TextFaint
+    val EmeraldPrimaryDark: Color
+        get() = if (dark) lerp(scheme.primary, Color.Black, 0.10f) else BrandPalette.PrimaryDark
 
-    // Semánticos — estado, no marca
+    val EmeraldContainer: Color get() = scheme.primaryContainer
+    val EmeraldOnContainer: Color get() = scheme.onPrimaryContainer
+
+    val Background: Color get() = scheme.background
+    val Surface: Color get() = scheme.surface
+    val SurfaceVariant: Color get() = scheme.surfaceVariant
+    val Outline: Color get() = scheme.outline
+
+    val TextPrimary: Color get() = scheme.onSurface
+    val TextMuted: Color get() = scheme.onSurfaceVariant
+    /** Gris tenue: en oscuro se aclara para conservar contraste AA sobre los fondos. */
+    val TextFaint: Color get() = if (dark) Color(0xFF9BA9B6) else BrandPalette.TextFaint
+
+    /**
+     * Fondo del QR de la credencial: SIEMPRE blanco (el lector necesita contraste
+     * y la zona libre alrededor); no sigue el tema oscuro.
+     */
+    val QrSurface = Color(0xFFFFFFFF)
+
+    // Semánticos — estado, no marca. Fijos en ambos temas: el error es el mismo
+    // rojo (contraste suficiente sobre claro y oscuro) y el resto de estados
+    // mantiene su significado (verde = bien, ámbar = atención).
     val Success = Color(0xFF06C167)
     val Warning = Color(0xFFF59E0B)
     val Danger = Color(0xFFEF4444)
