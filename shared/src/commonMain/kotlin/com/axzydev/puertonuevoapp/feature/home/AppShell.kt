@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bed
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
@@ -30,6 +31,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import com.axzydev.puertonuevoapp.core.di.AppContainer
 import com.axzydev.puertonuevoapp.core.nav.LocalNavigator
+import com.axzydev.puertonuevoapp.core.nav.LocalOpenMenu
 import com.axzydev.puertonuevoapp.core.nav.MainSection
 import com.axzydev.puertonuevoapp.core.nav.PlatformBackHandler
 import com.axzydev.puertonuevoapp.core.nav.Screen
@@ -42,11 +44,16 @@ import com.axzydev.puertonuevoapp.core.ui.BentoBottomBar
 import com.axzydev.puertonuevoapp.core.ui.BentoDrawer
 import com.axzydev.puertonuevoapp.core.ui.BentoNavItem
 import com.axzydev.puertonuevoapp.core.ui.BentoTopBar
+import com.axzydev.puertonuevoapp.core.util.shortDateEs
 import com.axzydev.puertonuevoapp.core.ui.LocalTopBarActions
 import com.axzydev.puertonuevoapp.core.ui.TopBarActionsState
 import com.axzydev.puertonuevoapp.core.ui.langostin.LangostinMascot
 import com.axzydev.puertonuevoapp.feature.access.AccessLogScreen
 import com.axzydev.puertonuevoapp.feature.access.AccessScanScreen
+import com.axzydev.puertonuevoapp.feature.housekeeping.HousekeepingScreen
+import com.axzydev.puertonuevoapp.feature.linen.LinenHistoryScreen
+import com.axzydev.puertonuevoapp.feature.linen.LinenRoomsScreen
+import com.axzydev.puertonuevoapp.feature.linen.LinenScreen
 import com.axzydev.puertonuevoapp.feature.audit.AuditLogsScreen
 import com.axzydev.puertonuevoapp.feature.credential.MyCredentialScreen
 import com.axzydev.puertonuevoapp.feature.catalogs.CatalogsScreen
@@ -138,7 +145,8 @@ fun AppShell() {
     val keyboardController = LocalSoftwareKeyboardController.current
     val topBarActions = remember { TopBarActionsState() }
     // El Inicio usa el lienzo bento; el resto de pantallas aún conserva el fondo anterior.
-    val canvas = if (isHome) AppBento.canvas else MaterialTheme.colorScheme.background
+    val linenOnly = user != null && isLinenOnlyUser(user)
+    val canvas = if (isHome || linenOnly) AppBento.canvas else MaterialTheme.colorScheme.background
 
     var unreadCount by remember { mutableStateOf(0) }
     // Panel de Langostín (botón central de la barra): se cierra al cambiar de pantalla.
@@ -209,14 +217,25 @@ fun AppShell() {
             )
         },
     ) {
-        CompositionLocalProvider(LocalTopBarActions provides topBarActions) {
+        CompositionLocalProvider(
+            LocalTopBarActions provides topBarActions,
+            LocalOpenMenu provides { scope.launch { drawerState.open() } },
+        ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Scaffold(
                     containerColor = canvas,
                     topBar = {
+                        // Inicio de blancos: variante raíz con avatar + saludo; el resto, header estándar.
+                        val linenHome = isHome && linenOnly && user != null
                         BentoTopBar(
-                            title = chrome.title,
-                            subtitle = if (showBack) sectionLabel(chrome.section) else null,
+                            title = if (linenHome && user != null) "Hola, ${user.name.trim().substringBefore(' ')}" else chrome.title,
+                            subtitle = when {
+                                linenHome -> "Puerto Nuevo · ${shortDateEs()}"
+                                showBack -> sectionLabel(chrome.section)
+                                else -> null
+                            },
+                            rootAvatar = if (linenHome) user else null,
+                            endText = if (current is Screen.LinenOrders) "Hoy" else null,
                             showBack = showBack,
                             onBack = goBack,
                             onMenu = { scope.launch { drawerState.open() } },
@@ -229,7 +248,12 @@ fun AppShell() {
                         )
                     },
                     bottomBar = {
-                        if (chrome.showBottomNavigation && user != null) {
+                        val showBottom = if (linenOnly) chrome.showBottomNavigation
+                        else chrome.showBottomNavigation && current !is Screen.LinenOrders && current !is Screen.LinenEquipment
+                        if (showBottom && user != null && linenOnly) {
+                            // Puesto solo de blancos: Inicio / Blancos / Equipo, sin botón central.
+                            BentoBottomBar(items = linenBottomBarItems(current) { navigator.switchTab(it) })
+                        } else if (showBottom && user != null) {
                             val items = bottomBarItems(user, current) { navigator.switchTab(it) }
                             // Acción central: Langostín (asistente). El alta de ticket vive dentro
                             // del panel con `tickets.create`; abrir la ayuda no pide permiso.
@@ -249,7 +273,7 @@ fun AppShell() {
                                     items = items,
                                     action = action,
                                     actionContent = {
-                                        LangostinMascot(size = 58.dp, animated = true, showBadge = true)
+                                        LangostinMascot(size = 34.dp, animated = true, showBadge = true)
                                     },
                                 )
                             }
@@ -313,6 +337,13 @@ private fun bottomBarItems(user: SessionUser, current: Screen, go: (Screen) -> U
         add(BentoNavItem(null, "Perfil", current is Screen.MyCredential, { go(Screen.MyCredential) }, avatarName = user.name))
     }
 }
+
+/** Barra inferior del puesto solo de blancos: Inicio / Blancos / Equipo. */
+private fun linenBottomBarItems(current: Screen, go: (Screen) -> Unit): List<BentoNavItem> = listOf(
+    BentoNavItem(Icons.Filled.Home, "Inicio", current is Screen.Home, { go(Screen.Home) }),
+    BentoNavItem(Icons.Filled.Bed, "Blancos", current is Screen.LinenOrders, { go(Screen.LinenOrders) }),
+    BentoNavItem(Icons.Filled.Groups, "Equipo", current is Screen.LinenEquipment, { go(Screen.LinenEquipment) }),
+)
 
 /** Contexto del header en las pantallas que tienen atrás: a qué módulo pertenece la pantalla. */
 private fun sectionLabel(section: MainSection): String? = when (section) {
@@ -380,6 +411,13 @@ private fun AppNavHost(screen: Screen) {
         // Control de acceso — módulo 6
         Screen.AccessScan -> AccessScanScreen()
         Screen.AccessLog -> AccessLogScreen()
+
+        // Blancos — pedido por habitación
+        Screen.LinenOrders -> LinenScreen()
+        Screen.LinenEquipment -> LinenEquipmentScreen()
+        Screen.LinenRooms -> LinenRoomsScreen()
+        Screen.LinenHistory -> LinenHistoryScreen()
+        Screen.Housekeeping -> HousekeepingScreen()
 
         Screen.EmployeeRecords -> EmployeeRecordsScreen()
         Screen.DisciplinaryReports -> DisciplinaryReportsScreen()

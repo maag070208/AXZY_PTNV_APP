@@ -29,7 +29,7 @@ object AppBento {
 
     /** Lienzo de las pantallas (gris neutro muy claro / casi negro). */
     val canvas: Color
-        @Composable get() = if (isLight) Color(0xFFF4F4F6) else Color(0xFF0E1116)
+        @Composable get() = if (isLight) Color(0xFFF4F6F8) else Color(0xFF0E1116)
 
     /** Relleno neutro de campos de texto (sin borde en reposo). */
     val field: Color
@@ -57,19 +57,19 @@ object AppBento {
             BentoTone.Plain -> BentoToneColors(scheme.surface, scheme.onSurface)
             BentoTone.Brand -> BentoToneColors(scheme.primary, scheme.onPrimary)
             BentoTone.Sea ->
-                if (light) BentoToneColors(Color(0xFFE0F0F7), Color(0xFF0B4A66))
+                if (light) BentoToneColors(Color(0xFFDDEEF4), Color(0xFF245B73))
                 else BentoToneColors(Color(0xFF12303D), Color(0xFFA9DCF0))
             BentoTone.Lavender ->
                 if (light) BentoToneColors(Color(0xFFECE7FA), Color(0xFF4A3A8C))
                 else BentoToneColors(Color(0xFF2A2447), Color(0xFFCFC4F5))
             BentoTone.Mint ->
-                if (light) BentoToneColors(Color(0xFFDDF3E8), Color(0xFF12643F))
+                if (light) BentoToneColors(Color(0xFFE3F0E5), Color(0xFF2C5E36))
                 else BentoToneColors(Color(0xFF143A2A), Color(0xFF9BE0BE))
             BentoTone.Sun ->
-                if (light) BentoToneColors(Color(0xFFFDF1D2), Color(0xFF7A5200))
+                if (light) BentoToneColors(Color(0xFFFBF1D6), Color(0xFF7A5A0E))
                 else BentoToneColors(Color(0xFF3F3114), Color(0xFFF3D187))
             BentoTone.Rose ->
-                if (light) BentoToneColors(Color(0xFFFCE4E6), Color(0xFF9B2335))
+                if (light) BentoToneColors(Color(0xFFF8E6E0), Color(0xFF9A4330))
                 else BentoToneColors(Color(0xFF41191F), Color(0xFFF5B5BD))
         }
     }

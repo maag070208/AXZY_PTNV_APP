@@ -233,6 +233,7 @@ private fun LoginFormSheet(
                 value = state.username,
                 onValueChange = onUsernameChange,
                 label = { Text("Usuario") },
+                placeholder = { Text("ej. juan.perez") },
                 singleLine = true,
                 leadingIcon = {
                     Icon(
@@ -253,6 +254,7 @@ private fun LoginFormSheet(
                 value = state.password,
                 onValueChange = onPasswordChange,
                 label = { Text("Contraseña") },
+                placeholder = { Text("Tu contraseña") },
                 singleLine = true,
                 trailingIcon = {
                     IconButton(onClick = onTogglePasswordVisibility, modifier = Modifier.size(32.dp)) {

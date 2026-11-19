@@ -95,6 +95,9 @@ object PermissionKeys {
     const val HOTEL_STORE_ADJUST_APPROVE = "hotel_store.adjust_approve"
     const val HOTEL_STORE_STOCKTAKE = "hotel_store.stocktake"
     const val HOUSEKEEPING_OPERATE = "housekeeping.operate"
+    const val HOTEL_LINEN_REQUEST = "hotel_linen.request"
+    const val HOTEL_LINEN_FULFILL = "hotel_linen.fulfill"
+    const val HOTEL_LINEN_CARRY = "hotel_linen.carry"
 }
 
 /** Alcance efectivo de un permiso (enum `PermissionScope` del API). */

@@ -24,6 +24,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.CleaningServices
+import androidx.compose.material.icons.filled.MeetingRoom
+import androidx.compose.material.icons.filled.Bed
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ConfirmationNumber
@@ -531,6 +534,15 @@ private fun drawerSections(user: SessionUser?): List<DrawerSection> = buildList 
                         },
                     ),
                 )
+                if (user?.canUseLinen == true) {
+                    add(DrawerNode(label = "Blancos", icon = Icons.Filled.Bed, screen = Screen.LinenOrders))
+                }
+                if (user?.canChangeRoomStatus == true) {
+                    add(DrawerNode(label = "Check-out", icon = Icons.Filled.MeetingRoom, screen = Screen.LinenRooms))
+                }
+                if (user?.canUseHousekeeping == true) {
+                    add(DrawerNode(label = "Limpieza", icon = Icons.Filled.CleaningServices, screen = Screen.Housekeeping))
+                }
                 if (user?.canScanCredential == true || user?.canViewAccessLog == true) {
                     add(
                         DrawerNode(

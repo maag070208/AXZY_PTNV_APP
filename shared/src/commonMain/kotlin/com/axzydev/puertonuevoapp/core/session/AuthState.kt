@@ -118,6 +118,30 @@ data class SessionUser(
 
     /** Registros de acceso: la bitácora, o los escaneos propios del día para quien escanea. */
     val canViewAccessLog: Boolean get() = canQueryAccessLog || canScanCredential
+
+    // Blancos (pedido por habitación)
+    /** Supervisora: marcar "Se desocupó", pedir y confirmar. */
+    val canRequestLinen: Boolean get() = can(P.HOTEL_LINEN_REQUEST)
+
+    /** Lavandería: surtir pedidos. */
+    val canFulfillLinen: Boolean get() = can(P.HOTEL_LINEN_FULFILL)
+
+    /** Auxiliar de piso: recoger y entregar. */
+    val canCarryLinen: Boolean get() = can(P.HOTEL_LINEN_CARRY)
+
+    /** Recepción: cambiar el estado de la habitación (check-out). */
+    val canChangeRoomStatus: Boolean get() = can(P.HOTEL_ROOMS_STATUS)
+
+    /** Camarista: limpiar sus habitaciones asignadas. */
+    val canOperateHousekeeping: Boolean get() = can(P.HOUSEKEEPING_OPERATE)
+
+    /** Supervisora: inspeccionar habitaciones limpias. */
+    val canInspectHousekeeping: Boolean get() = can(P.HOUSEKEEPING_INSPECT)
+
+    val canUseHousekeeping: Boolean get() = canOperateHousekeeping || canInspectHousekeeping
+
+    /** Alguna de las tres vistas de blancos. */
+    val canUseLinen: Boolean get() = canRequestLinen || canFulfillLinen || canCarryLinen
 }
 
 sealed interface AuthState {

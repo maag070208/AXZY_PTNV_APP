@@ -1,14 +1,13 @@
 package com.axzydev.puertonuevoapp.core.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -28,25 +27,26 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.axzydev.puertonuevoapp.core.session.SessionUser
 import com.axzydev.puertonuevoapp.core.theme.AppBento
+import com.axzydev.puertonuevoapp.core.theme.AppChrome
 import com.axzydev.puertonuevoapp.core.theme.AppColors
+import com.axzydev.puertonuevoapp.core.theme.AppShape
 
 /**
- * Barra superior del shell. Sustituye al `TopAppBar` de Material por una fila
- * "flush" con el mismo color del lienzo de la pantalla (sin banda distinta):
+ * Header compartido del diseño "C": fila sin banda propia (mismo lienzo de la pantalla), 20dp de
+ * margen lateral, 12dp entre elementos y controles cuadrados redondeados de 44dp (radio 16).
  *
- * - Izquierda: botón circular blanco (hamburguesa o flecha atrás).
- * - Centro: título de la pantalla (+ subtítulo con el módulo cuando hay atrás). La
- *   identidad de marca vive en el hero del drawer, no en el header.
- * - Derecha: acción opcional de la pantalla ([action]), campana con insignia de
- *   no leídas y avatar del usuario (abre Mi credencial).
- *
- * Los controles son círculos blancos flotantes de 44dp, el mismo lenguaje que
- * los mosaicos bento: así el header se lee sobre cualquier lienzo y la campana
- * y el avatar dejan de ser exclusivos del Inicio.
+ * Variantes:
+ * - Raíz con saludo ([rootAvatar] != null, sin atrás): avatar circular 44dp a la izquierda (abre el
+ *   menú), [subtitle] como línea superior pequeña y [title] como saludo, campana con punto a la derecha.
+ * - Raíz estándar: botón de menú + título.
+ * - Interna ([showBack]): botón atrás + título (+ [subtitle]) y a la derecha [endText], la acción
+ *   de la pantalla ([action]) y la campana.
  */
 @Composable
 fun BentoTopBar(
@@ -62,120 +62,144 @@ fun BentoTopBar(
     onProfile: () -> Unit = {},
     action: TopBarAction? = null,
     containerColor: Color = AppBento.canvas,
+    /** Si no es null (y no hay atrás): variante raíz con avatar a la izquierda que abre el menú. */
+    rootAvatar: SessionUser? = null,
+    /** Texto discreto a la derecha (p. ej. "Hoy"). */
+    endText: String? = null,
+    /** Muestra la campana (por defecto sí). */
+    showNotifications: Boolean = true,
 ) {
+    val greetingRoot = rootAvatar != null && !showBack
     Row(
         modifier = modifier
             .fillMaxWidth()
             .background(containerColor)
             .statusBarsPadding()
-            .height(64.dp)
-            .padding(horizontal = 16.dp),
+            .padding(start = AppChrome.HeaderHorizontal, end = AppChrome.HeaderHorizontal, top = 12.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        HeaderCircleButton(
-            icon = if (showBack) Icons.AutoMirrored.Filled.ArrowBack else Icons.Filled.Menu,
-            contentDescription = if (showBack) "Atrás" else "Menú",
-            onClick = if (showBack) onBack else onMenu,
-        )
-        Spacer(Modifier.width(12.dp))
+        if (greetingRoot && rootAvatar != null) {
+            Box(
+                modifier = Modifier
+                    .size(AppChrome.ButtonSize)
+                    .shadow(2.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.10f), spotColor = Color.Black.copy(alpha = 0.12f))
+                    .clip(CircleShape)
+                    .border(2.dp, Color.White, CircleShape)
+                    .clickable(onClick = onMenu),
+                contentAlignment = Alignment.Center,
+            ) {
+                BentoAvatar(name = rootAvatar.name, color = MaterialTheme.colorScheme.primary, size = AppChrome.ButtonSize - 4.dp)
+            }
+        } else {
+            HeaderSquareButton(
+                icon = if (showBack) Icons.AutoMirrored.Filled.ArrowBack else Icons.Filled.Menu,
+                contentDescription = if (showBack) "Atrás" else "Menú",
+                onClick = if (showBack) onBack else onMenu,
+            )
+        }
+        Spacer(Modifier.width(AppChrome.HeaderGap))
         Column(modifier = Modifier.weight(1f)) {
+            if (greetingRoot && subtitle != null) {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
+                    color = AppColors.TextMuted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp, fontWeight = FontWeight.Bold),
+                color = AppColors.TextPrimary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            if (subtitle != null) {
+            if (!greetingRoot && subtitle != null) {
                 Text(
                     text = subtitle,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
+                    color = AppColors.TextMuted,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
         }
+        if (endText != null) {
+            Text(endText, style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp), color = AppColors.TextMuted)
+            Spacer(Modifier.width(AppChrome.HeaderGap))
+        }
         if (action != null) {
-            HeaderCircleButton(
+            HeaderSquareButton(
                 icon = action.icon,
                 contentDescription = action.contentDescription,
                 onClick = action.onClick,
             )
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(AppChrome.HeaderGap))
         }
-        HeaderCircleButton(
-            icon = Icons.Filled.Notifications,
-            contentDescription = "Notificaciones",
-            onClick = onNotifications,
-            badge = unreadCount,
-        )
-        if (user != null) {
-            Spacer(Modifier.width(10.dp))
+        if (showNotifications) {
+            HeaderSquareButton(
+                icon = Icons.Filled.Notifications,
+                contentDescription = "Notificaciones",
+                onClick = onNotifications,
+                dot = unreadCount > 0,
+            )
+        }
+        if (user != null && !greetingRoot) {
+            Spacer(Modifier.width(AppChrome.HeaderGap))
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .shadow(6.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.10f), spotColor = Color.Black.copy(alpha = 0.14f))
+                    .size(AppChrome.ButtonSize)
+                    .shadow(2.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.10f), spotColor = Color.Black.copy(alpha = 0.12f))
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface, CircleShape)
-                    .clickable(onClick = onProfile)
-                    .padding(2.dp),
+                    .border(2.dp, Color.White, CircleShape)
+                    .clickable(onClick = onProfile),
                 contentAlignment = Alignment.Center,
             ) {
-                BentoAvatar(
-                    name = user.name,
-                    color = MaterialTheme.colorScheme.primary,
-                    size = 40.dp,
-                )
+                BentoAvatar(name = user.name, color = MaterialTheme.colorScheme.primary, size = AppChrome.ButtonSize - 4.dp)
             }
         }
     }
 }
 
 /**
- * Control circular blanco del header (hamburguesa, atrás, campana, acción de la
- * pantalla). El ícono va en tinta; [badge] > 0 pinta el contador rose arriba a
- * la derecha, igual que [BentoIconButton].
+ * Botón cuadrado redondeado del header (44dp, radio [AppShape.chromeButton], superficie blanca con
+ * sombra suave, ícono 20dp en tinta). [dot] pinta el punto de "hay novedades" arriba a la derecha.
  */
 @Composable
-private fun HeaderCircleButton(
+private fun HeaderSquareButton(
     icon: ImageVector,
     contentDescription: String,
     onClick: () -> Unit,
-    badge: Int = 0,
+    dot: Boolean = false,
 ) {
-    Box(modifier = Modifier.size(44.dp)) {
+    Box(modifier = Modifier.size(AppChrome.ButtonSize)) {
         Box(
             modifier = Modifier
-                .size(44.dp)
-                .shadow(6.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.10f), spotColor = Color.Black.copy(alpha = 0.14f))
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface, CircleShape)
+                .size(AppChrome.ButtonSize)
+                .shadow(2.dp, AppShape.chromeButton, ambientColor = Color.Black.copy(alpha = 0.10f), spotColor = Color.Black.copy(alpha = 0.12f))
+                .clip(AppShape.chromeButton)
+                .background(MaterialTheme.colorScheme.surface, AppShape.chromeButton)
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 icon,
                 contentDescription = contentDescription,
-                tint = AppBento.ink,
-                modifier = Modifier.size(22.dp),
+                tint = AppColors.TextPrimary,
+                modifier = Modifier.size(20.dp),
             )
         }
-        if (badge > 0) {
+        if (dot) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .defaultMinSize(minWidth = 18.dp, minHeight = 18.dp)
-                    .background(AppColors.Danger, CircleShape)
-                    .padding(horizontal = 4.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = if (badge > 99) "99+" else badge.toString(),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.labelSmall,
-                )
-            }
+                    .padding(top = 10.dp, end = 11.dp)
+                    .size(AppChrome.DotSize + AppChrome.DotBorder * 2)
+                    .background(MaterialTheme.colorScheme.surface, CircleShape)
+                    .padding(AppChrome.DotBorder)
+                    .background(AppChrome.Dot, CircleShape),
+            )
         }
     }
 }

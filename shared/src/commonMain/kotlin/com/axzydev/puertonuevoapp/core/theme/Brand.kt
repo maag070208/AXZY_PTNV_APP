@@ -20,13 +20,13 @@ import androidx.compose.ui.graphics.lerp
  */
 internal object BrandPalette {
     // Azul océano — dominante del logo (3,88,125)
-    val Primary = Color(0xFF03587D)
-    val PrimaryDark = Color(0xFF024A69)
+    val Primary = Color(0xFF245B73)
+    val PrimaryDark = Color(0xFF1B4A5E)
     val OnPrimary = Color(0xFFFFFFFF)
 
     // Hielo claro — contenedores (216,235,245)
-    val PrimaryContainer = Color(0xFFD8EBF5)
-    val OnPrimaryContainer = Color(0xFF013449)
+    val PrimaryContainer = Color(0xFFDDEEF4)
+    val OnPrimaryContainer = Color(0xFF245B73)
     val IceMid = Color(0xFF79A6B7)
     val IceSoft = Color(0xFFB0CBD2)
 
@@ -37,13 +37,13 @@ internal object BrandPalette {
     val OnSecondaryContainer = Color(0xFF5A322F)
 
     // Neutros
-    val Background = Color(0xFFF4F9FB)
+    val Background = Color(0xFFF4F6F8)
     val Surface = Color(0xFFFFFFFF)
     val SurfaceVariant = Color(0xFFE8F0F4)
     val Outline = Color(0xFFC9D8E0)
 
-    val TextPrimary = Color(0xFF0E2231)
-    val TextMuted = Color(0xFF5A6B78)
+    val TextPrimary = Color(0xFF1B2B33)
+    val TextMuted = Color(0xFF5E6E78)
     val TextFaint = Color(0xFF8A9AA7)
 }
 

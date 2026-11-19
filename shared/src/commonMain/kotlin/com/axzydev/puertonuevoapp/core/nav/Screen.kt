@@ -67,6 +67,15 @@ sealed interface Screen {
     data object AccessScan : Screen
     data object AccessLog : Screen
 
+    // Blancos: pedido por habitación (supervisora / lavandería / auxiliar de piso)
+    data object LinenOrders : Screen
+    data object LinenEquipment : Screen
+    data object LinenRooms : Screen
+    data object LinenHistory : Screen
+
+    // Limpieza de habitaciones (camarista / supervisora)
+    data object Housekeeping : Screen
+
     // RH: expedientes y actas administrativas
     data object EmployeeRecords : Screen
     data object DisciplinaryReports : Screen

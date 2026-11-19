@@ -4,6 +4,10 @@ import com.axzydev.puertonuevoapp.core.network.auth.AuthApi
 import com.axzydev.puertonuevoapp.core.network.access.AccessApi
 import com.axzydev.puertonuevoapp.core.network.access.AccessApiClient
 import com.axzydev.puertonuevoapp.core.network.devices.DevicesApi
+import com.axzydev.puertonuevoapp.core.network.housekeeping.HousekeepingApi
+import com.axzydev.puertonuevoapp.core.network.housekeeping.HousekeepingApiClient
+import com.axzydev.puertonuevoapp.core.network.linen.LinenApi
+import com.axzydev.puertonuevoapp.core.network.linen.LinenApiClient
 import com.axzydev.puertonuevoapp.core.network.departments.DepartmentsApi
 import com.axzydev.puertonuevoapp.core.network.audit.AuditApi
 import com.axzydev.puertonuevoapp.core.network.catalogs.CatalogsApi
@@ -69,5 +73,7 @@ object AppContainer {
     val schedulesApi: SchedulesApi by lazy { SchedulesApi(apiClient) }
     val catalogsApi: CatalogsApi by lazy { CatalogsApi(apiClient) }
     val accessApi: AccessApi by lazy { AccessApiClient(apiClient) }
+    val linenApi: LinenApi by lazy { LinenApiClient(apiClient) }
+    val housekeepingApi: HousekeepingApi by lazy { HousekeepingApiClient(apiClient) }
     val locationProvider: LocationProvider by lazy { platformLocationProvider() }
 }

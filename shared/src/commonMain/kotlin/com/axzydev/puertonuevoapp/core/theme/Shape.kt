@@ -21,6 +21,9 @@ object AppShape {
     /** Píldoras / chips. */
     val pill = RoundedCornerShape(50)
 
+    /** Segmento de barra segmentada bento (4dp). */
+    val segment = RoundedCornerShape(4.dp)
+
     /** Tarjetas y mosaicos del diseño bento (24dp). */
     val bento = RoundedCornerShape(24.dp)
 
@@ -29,4 +32,24 @@ object AppShape {
 
     /** Panel lateral (drawer) que se desliza desde la izquierda: esquinas derechas 28dp. */
     val sheetEnd = RoundedCornerShape(topEnd = 28.dp, bottomEnd = 28.dp)
+
+    // --- Tokens del chrome "C" (header, barra inferior, filas bento) ---
+
+    /** Botón cuadrado redondeado del header (44dp, radio 16). */
+    val chromeButton = RoundedCornerShape(16.dp)
+
+    /** Barra inferior flotante (radio 24). */
+    val chromeBar = RoundedCornerShape(24.dp)
+
+    /** Tarjetas / listas del diseño C (radio 20). */
+    val listCard = RoundedCornerShape(20.dp)
+
+    /** Cuadro de ícono de acceso rápido (52dp, radio 16). */
+    val iconTile = RoundedCornerShape(16.dp)
+
+    /** Cuadro de ícono de fila de lista grande (46dp, radio 15). */
+    val iconRowLarge = RoundedCornerShape(15.dp)
+
+    /** Cuadro de ícono de fila compacta (42dp, radio 14) y botones de acción de fila. */
+    val iconRowSmall = RoundedCornerShape(14.dp)
 }

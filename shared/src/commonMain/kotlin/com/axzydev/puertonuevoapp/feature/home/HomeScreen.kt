@@ -21,8 +21,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import com.axzydev.puertonuevoapp.core.ui.AppActionCard
+import com.axzydev.puertonuevoapp.feature.linen.LinenHomeScreen
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Bed
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Dashboard
@@ -170,6 +173,12 @@ fun HomeScreen(
     val authState by AppContainer.authRepository.state.collectAsState()
     val user = (authState as? AuthState.LoggedIn)?.user
 
+    // Puesto solo de blancos: Inicio propio (resumen del día, accesos y "Mi equipo").
+    if (user != null && isLinenOnlyUser(user)) {
+        LinenHomeScreen(equipment = { MineTab(state) })
+        return
+    }
+
     LaunchedEffect(Unit) {
         while (true) {
             delay(REFRESH_MS)
@@ -185,6 +194,45 @@ fun HomeScreen(
     )
 }
 
+/** Puesto solo de blancos: usa blancos y no tiene más pestañas que "Mi espacio". */
+internal fun isLinenOnlyUser(user: SessionUser): Boolean = user.canUseLinen && homeTabs(user) == listOf(HomeTab.Mine)
+
+/** Pestaña "Equipo" del puesto solo de blancos: el equipo asignado (mismo contenido que "Mi espacio"). */
+@Composable
+fun LinenEquipmentScreen(
+    viewModel: HomeViewModel = viewModel {
+        HomeViewModel(
+            AppContainer.authRepository,
+            AppContainer.inventoryApi,
+            AppContainer.dashboardApi,
+            AppContainer.notificationsApi,
+        )
+    },
+) {
+    val state by viewModel.uiState.collectAsState()
+    LaunchedEffect(Unit) { viewModel.load() }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(AppBento.canvas)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(SECTION_GAP),
+    ) {
+        MineTab(state)
+        Spacer(Modifier.height(24.dp))
+    }
+}
+
+/** Pestañas del Inicio según permisos; "Mi equipo" (Mine) siempre existe. */
+private fun homeTabs(user: SessionUser): List<HomeTab> = buildList {
+    if (user.canViewDashboard || user.canViewTickets || user.canViewTasks) add(HomeTab.Operations)
+    if (user.canViewAttendance || user.canViewOvertime || user.canViewHR) add(HomeTab.People)
+    if (user.canLinkTimeClock || user.canScanCredential) add(HomeTab.Clock)
+    if (user.canConfigureSystem) add(HomeTab.System)
+    add(HomeTab.Mine)
+}
+
 @Composable
 private fun HomeContent(
     state: HomeUiState,
@@ -193,13 +241,7 @@ private fun HomeContent(
     onNavigate: (Screen) -> Unit,
 ) {
     if (user == null) return
-    val tabs = buildList {
-        if (user.canViewDashboard || user.canViewTickets || user.canViewTasks) add(HomeTab.Operations)
-        if (user.canViewAttendance || user.canViewOvertime || user.canViewHR) add(HomeTab.People)
-        if (user.canLinkTimeClock || user.canScanCredential) add(HomeTab.Clock)
-        if (user.canConfigureSystem) add(HomeTab.System)
-        add(HomeTab.Mine)
-    }
+    val tabs = homeTabs(user)
     var selected by rememberSaveable { mutableIntStateOf(0) }
     val tab = tabs[selected.coerceIn(0, tabs.lastIndex)]
 

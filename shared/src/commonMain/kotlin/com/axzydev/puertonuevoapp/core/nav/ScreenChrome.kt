@@ -1,5 +1,10 @@
 package com.axzydev.puertonuevoapp.core.nav
 
+import androidx.compose.runtime.staticCompositionLocalOf
+
+/** Abre el menú lateral del shell (para pantallas con encabezado propio, p. ej. el Inicio de blancos). */
+val LocalOpenMenu = staticCompositionLocalOf<() -> Unit> { {} }
+
 data class ScreenChrome(
     val title: String,
     val showBack: Boolean = false,
@@ -86,6 +91,13 @@ fun Screen.chrome(): ScreenChrome = when (this) {
     // Control de acceso (portería)
     Screen.AccessScan -> ScreenChrome("Portería", section = MainSection.ACCESS)
     Screen.AccessLog -> ScreenChrome("Registros de acceso", section = MainSection.ACCESS)
+
+    // Blancos
+    Screen.LinenOrders -> ScreenChrome("Blancos", showBack = true, showBottomNavigation = true, section = MainSection.HOME)
+    Screen.LinenEquipment -> ScreenChrome("Mi equipo", showBack = true, showBottomNavigation = true, section = MainSection.HOME)
+    Screen.LinenRooms -> ScreenChrome("Habitaciones", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
+    Screen.Housekeeping -> ScreenChrome("Limpieza", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
+    Screen.LinenHistory -> ScreenChrome("Historial", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
 
     Screen.Reports -> ScreenChrome("Reportes", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
     Screen.Notifications -> ScreenChrome("Notificaciones", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
