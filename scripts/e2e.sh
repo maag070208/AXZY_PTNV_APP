@@ -15,6 +15,11 @@ API_URL="${E2E_API_URL:-http://localhost:4001/api/v1}"
 USERNAME="${E2E_USER:-martin.amaro}"
 PASSWORD="${E2E_PASSWORD:-123456}"
 MAESTRO_ENV=(--env "E2E_API_URL=$API_URL" --env "E2E_USER=$USERNAME" --env "E2E_PASSWORD=$PASSWORD")
+# Roles del flujo completo de Blancos (multi-usuario). Solo se pasan si están definidos.
+for var in E2E_LINEN_SUPER E2E_LINEN_LAUNDRY E2E_LINEN_FLOOR E2E_LINEN_PASSWORD E2E_LINEN_ROOM; do
+  value="${!var:-}"
+  [ -n "$value" ] && MAESTRO_ENV+=(--env "$var=$value")
+done
 
 # Deja el teléfono listo para un flujo: sesión limpia, URL del API ya escrita en las
 # preferencias (así el login no pelea con el teclado/autofill), permisos concedidos y

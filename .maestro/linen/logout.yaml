@@ -1,0 +1,15 @@
+# Cierra sesión desde el drawer y deja la pantalla de acceso lista para el siguiente rol.
+appId: com.axzydev.puertonuevoapp
+---
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Cerrar sesión"
+    direction: DOWN
+    timeout: 8000
+- tapOn: "Cerrar sesión"
+- extendedWaitUntil:
+    visible: "Configuración del servidor"
+    timeout: 15000

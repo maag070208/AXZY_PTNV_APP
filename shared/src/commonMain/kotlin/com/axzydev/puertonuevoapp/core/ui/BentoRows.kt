@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -71,10 +72,12 @@ fun BentoStatusRow(
     muted: Boolean = false,
     onClick: (() -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
+    /** Etiqueta estable para Maestro (`id:`): filas de lista. */
+    testTag: String? = null,
 ) {
     val colors = AppBento.tone(tone)
     AppCard(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().then(if (testTag != null) Modifier.testTag(testTag) else Modifier),
         onClick = onClick,
         shape = AppShape.listCard,
         containerColor = AppColors.Surface,
@@ -122,11 +125,14 @@ fun BentoActionButton(
     /** Por defecto color de marca; sobre una tarjeta oscura (hero) se invierte. */
     containerColor: Color = MaterialTheme.colorScheme.primary,
     contentColor: Color = MaterialTheme.colorScheme.onPrimary,
+    /** Etiqueta estable para Maestro (`id:`): acción de fila. */
+    testTag: String? = null,
 ) {
     val container = if (enabled) containerColor else containerColor.copy(alpha = 0.4f)
     Box(
         modifier = modifier
             .defaultMinSize(minWidth = 72.dp, minHeight = 44.dp)
+            .then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
             .clip(AppShape.iconRowSmall)
             .background(container, AppShape.iconRowSmall)
             .clickable(enabled = enabled, onClick = onClick)
@@ -209,6 +215,8 @@ fun BentoQtyStepper(
     onMinus: () -> Unit,
     onPlus: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Etiqueta estable para Maestro (`id:`): botón "+". */
+    plusTestTag: String? = null,
 ) {
     Row(
         modifier = modifier
@@ -227,15 +235,21 @@ fun BentoQtyStepper(
                 maxLines = 1,
             )
         }
-        QtyStepButton(Icons.Filled.Add, "Agregar", onPlus)
+        QtyStepButton(Icons.Filled.Add, "Agregar", onPlus, plusTestTag)
     }
 }
 
 @Composable
-private fun QtyStepButton(icon: ImageVector, contentDescription: String, onClick: () -> Unit) {
+private fun QtyStepButton(
+    icon: ImageVector,
+    contentDescription: String,
+    onClick: () -> Unit,
+    testTag: String? = null,
+) {
     Box(
         modifier = Modifier
             .size(44.dp)
+            .then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
             .clip(AppShape.pill)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,

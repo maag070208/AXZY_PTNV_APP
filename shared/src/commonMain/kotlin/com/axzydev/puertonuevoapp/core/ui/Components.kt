@@ -46,6 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -345,6 +346,8 @@ fun AppModal(
     onConfirm: (() -> Unit)? = null,
     confirmEnabled: Boolean = true,
     saving: Boolean = false,
+    /** Etiqueta estable para Maestro (`id:`) del botón de confirmar. */
+    confirmTestTag: String? = null,
     content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit,
 ) {
     val accent = when (tone) {
@@ -382,6 +385,7 @@ fun AppModal(
                         Spacer(Modifier.width(8.dp))
                         Button(
                             onClick = onConfirm,
+                            modifier = if (confirmTestTag != null) Modifier.testTag(confirmTestTag) else Modifier,
                             enabled = confirmEnabled && !saving,
                             colors = ButtonDefaults.buttonColors(containerColor = accent, contentColor = Color.White),
                             shape = MaterialTheme.shapes.medium,
@@ -436,6 +440,8 @@ fun SimpleDropdownField(
     options: List<Pair<String, String>>,
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
+    /** Prefijo de etiqueta para Maestro: cada opción queda como `<prefijo>-<índice>`. */
+    optionTestTagPrefix: String? = null,
 ) {
     var expanded by remember { mutableStateOf(false) }
     val displayLabel = options.firstOrNull { it.first == value }?.second ?: value
@@ -453,9 +459,18 @@ fun SimpleDropdownField(
             }
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            options.forEach { (optValue, optLabel) ->
+            options.forEachIndexed { index, (optValue, optLabel) ->
+                val optionTag = optionTestTagPrefix?.let { "$it-$index" }
                 DropdownMenuItem(
-                    text = { Text(optLabel) },
+                    // El tag va también en el texto: en los menús desplegables (ventana
+                    // emergente) Maestro no siempre ve el `resource-id` del contenedor.
+                    text = {
+                        Text(
+                            optLabel,
+                            modifier = if (optionTag != null) Modifier.testTag(optionTag) else Modifier,
+                        )
+                    },
+                    modifier = if (optionTag != null) Modifier.testTag(optionTag) else Modifier,
                     onClick = {
                         onSelect(optValue)
                         expanded = false

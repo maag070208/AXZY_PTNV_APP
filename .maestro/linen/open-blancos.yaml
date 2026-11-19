@@ -1,0 +1,11 @@
+# Abre la pestaña Blancos desde el Inicio (hero "Ver habitaciones"). La barra superior del
+# Inicio de blancos no tiene botón de menú; en Blancos sí, y de ahí se abre el drawer.
+appId: com.axzydev.puertonuevoapp
+---
+- extendedWaitUntil:
+    visible: "Ver habitaciones"
+    timeout: 15000
+- tapOn: "Ver habitaciones"
+- extendedWaitUntil:
+    visible: "Buscar habitación"
+    timeout: 10000

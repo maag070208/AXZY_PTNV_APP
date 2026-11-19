@@ -1,0 +1,33 @@
+# Acceso como auxiliar de piso para el flujo completo de Blancos.
+# Credenciales por variable de entorno (las pasa scripts/linen-e2e.sh).
+appId: com.axzydev.puertonuevoapp
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Configuración del servidor"
+    timeout: 25000
+- tapOn:
+    id: "login.username"
+- eraseText: 60
+- inputText: "${E2E_LINEN_FLOOR}"
+- hideKeyboard
+- tapOn:
+    id: "login.password"
+- eraseText: 60
+- inputText: "${E2E_LINEN_PASSWORD}"
+- hideKeyboard
+- tapOn: "Entrar"
+# Samsung Pass / permisos del sistema (ya concedidos por scripts/e2e.sh).
+- runFlow:
+    when:
+      visible: "¿Desea guardar la información.*"
+    commands:
+      - tapOn: "Nunca en esta aplicación o sitio web"
+- runFlow:
+    when:
+      visible: "Continuar.*"
+    commands:
+      - tapOn: "Continuar.*"
+- extendedWaitUntil:
+    visible: "Hola, .*"
+    timeout: 25000

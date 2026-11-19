@@ -1,0 +1,153 @@
+# Flujo completo de Blancos por habitación, con los tres roles reales:
+#   supervisora (check-out + extras + diferencia) → lavandería (Listo) → piso (Recogí/Entregado).
+# Corre con `./scripts/linen-e2e.sh` (prepara la habitación en la base local y pasa las
+# credenciales/URL por variables de entorno). Si se corre directo con maestro test, hay que
+# exportar E2E_LINEN_SUPER / E2E_LINEN_LAUNDRY / E2E_LINEN_FLOOR / E2E_LINEN_PASSWORD / E2E_LINEN_ROOM.
+appId: com.axzydev.puertonuevoapp
+---
+# ── Supervisora: check-out de la habitación (crea el pedido con la dotación) ─────────
+- runFlow: login-super.yaml
+- runFlow: open-blancos.yaml
+- tapOn: "Menú"
+- hideKeyboard
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "drawer-node-check-out"
+    direction: DOWN
+    timeout: 8000
+- tapOn:
+    id: "drawer-node-check-out"
+- extendedWaitUntil:
+    visible: "Habitaciones"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: "linen.checkout.${E2E_LINEN_ROOM}"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "linen.checkout.${E2E_LINEN_ROOM}"
+- extendedWaitUntil:
+    visible: "Check-out · Hab. .*"
+    timeout: 8000
+- tapOn: "Confirmar check-out"
+- extendedWaitUntil:
+    visible: "Check-out registrado.*"
+    timeout: 10000
+- back
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Hola, .*"
+    timeout: 10000
+# ── Supervisora: el pedido aparece en Blancos; agrega extras ─────────────────────────
+- runFlow: open-blancos.yaml
+- tapOn:
+    id: "linen-search"
+- inputText: "${E2E_LINEN_ROOM}"
+- hideKeyboard
+- extendedWaitUntil:
+    visible: "Se desocupó"
+    timeout: 10000
+- tapOn:
+    id: "linen.action.${E2E_LINEN_ROOM}"
+- extendedWaitUntil:
+    visible: "Extras · Hab. .*"
+    timeout: 8000
+- tapOn: "Agregar artículo"
+# En los menús desplegables Maestro no ve los testTag (ventana emergente): se elige la
+# primera opción por su texto "nombre · talla" y se confirma con el botón del diálogo.
+- extendedWaitUntil:
+    visible: ".* · .*"
+    timeout: 5000
+- tapOn:
+    text: ".* · .*"
+    index: 0
+- tapOn:
+    text: "Agregar"
+    index: 1
+- extendedWaitUntil:
+    visible: "Extras agregados.*"
+    timeout: 10000
+- runFlow: logout.yaml
+# ── Lavandería: surte el pedido y queda listo para recoger ──────────────────────────
+- runFlow: login-laundry.yaml
+- runFlow: open-blancos.yaml
+- tapOn:
+    id: "linen-search"
+- inputText: "${E2E_LINEN_ROOM}"
+- hideKeyboard
+- extendedWaitUntil:
+    visible: "Se desocupó"
+    timeout: 10000
+- tapOn:
+    id: "linen.action.${E2E_LINEN_ROOM}"
+- extendedWaitUntil:
+    visible: "Pedido listo para recoger.*"
+    timeout: 12000
+- runFlow: logout.yaml
+# ── Auxiliar de piso: recoge y entrega (con el sucio recogido) ───────────────────────
+- runFlow: login-floor.yaml
+- runFlow: open-blancos.yaml
+- tapOn:
+    id: "linen-search"
+- inputText: "${E2E_LINEN_ROOM}"
+- hideKeyboard
+- extendedWaitUntil:
+    visible: "En proceso.*"
+    timeout: 15000
+- tapOn:
+    id: "linen.action.${E2E_LINEN_ROOM}"
+- extendedWaitUntil:
+    visible: "Pedido recogido.*"
+    timeout: 12000
+- extendedWaitUntil:
+    visible: "Entregado"
+    timeout: 12000
+- tapOn:
+    id: "linen.action.${E2E_LINEN_ROOM}"
+- extendedWaitUntil:
+    visible: "Sucio recogido · Hab. .*"
+    timeout: 8000
+- tapOn: "Entregado"
+- extendedWaitUntil:
+    visible: "Pedido entregado"
+    timeout: 12000
+- runFlow: logout.yaml
+# ── Supervisora: verifica la línea de tiempo y reporta la diferencia ─────────────────
+- runFlow: login-super.yaml
+- runFlow: open-blancos.yaml
+- tapOn:
+    id: "linen-search"
+- inputText: "${E2E_LINEN_ROOM}"
+- hideKeyboard
+- extendedWaitUntil:
+    visible: "Entregado"
+    timeout: 15000
+- tapOn:
+    id: "linen.row.${E2E_LINEN_ROOM}"
+- extendedWaitUntil:
+    visible: "Pidió: .*"
+    timeout: 8000
+- scrollUntilVisible:
+    element:
+      text: "Reportar diferencia"
+    direction: DOWN
+    timeout: 8000
+- tapOn: "Reportar diferencia"
+- extendedWaitUntil:
+    visible: "Diferencia · Hab. .*"
+    timeout: 8000
+- tapOn:
+    text: "Agregar"
+    index: 0
+# Dentro de un diálogo Maestro no expone los testTag, y la etiqueta del campo no lo enfoca:
+# se toca el área del campo de notas (queda a ~69% de la altura de la pantalla del teléfono).
+- tapOn:
+    point: "50%,69%"
+- inputText: "Faltante E2E"
+- hideKeyboard
+- tapOn: "Reportar"
+- extendedWaitUntil:
+    visible: "Diferencia reportada.*"
+    timeout: 12000

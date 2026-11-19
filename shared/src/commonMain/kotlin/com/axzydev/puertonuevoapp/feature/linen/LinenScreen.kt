@@ -219,6 +219,7 @@ private fun LinenRoomRow(item: QueueItemDto, state: LinenUiState, user: SessionU
         icon = Icons.Filled.Bed,
         tone = bucket.tone(),
         muted = bucket == LinenBucket.Done,
+        testTag = "linen.row.${item.room?.number ?: item.folio}",
         onClick = if (selectable) ({ vm.toggleSelected(item.id) }) else ({ vm.openDetail(item) }),
         trailing = {
             val action = if (state.selectMode) null else linenRowAction(item, user)
@@ -227,6 +228,7 @@ private fun LinenRoomRow(item: QueueItemDto, state: LinenUiState, user: SessionU
                 action != null -> BentoActionButton(
                     label = action.label,
                     enabled = !busy,
+                    testTag = "linen.action.${item.room?.number ?: item.folio}",
                     onClick = { action.run(vm, item) },
                 )
                 bucket == LinenBucket.Done -> Icon(
@@ -289,6 +291,7 @@ private fun QtyLine(
     value: Double,
     onMinus: () -> Unit,
     onPlus: () -> Unit,
+    plusTestTag: String? = null,
 ) {
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(name, style = MaterialTheme.typography.titleSmall, color = AppColors.TextPrimary)
@@ -299,7 +302,7 @@ private fun QtyLine(
                 color = AppColors.TextMuted,
                 modifier = Modifier.weight(1f),
             )
-            BentoQtyStepper(value = value, onMinus = onMinus, onPlus = onPlus)
+            BentoQtyStepper(value = value, onMinus = onMinus, onPlus = onPlus, plusTestTag = plusTestTag)
         }
     }
 }
@@ -357,10 +360,20 @@ private fun LinenDetailDialog(item: QueueItemDto, state: LinenUiState, user: Ses
             }
             (who + extra).forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted) }
             if (user?.canRequestLinen == true && item.canAddExtras) {
-                BentoActionButton(label = "Agregar extras", onClick = { vm.openExtras(item) }, modifier = Modifier.fillMaxWidth())
+                BentoActionButton(
+                    label = "Agregar extras",
+                    onClick = { vm.openExtras(item) },
+                    modifier = Modifier.fillMaxWidth(),
+                    testTag = "linen.detail.extras",
+                )
             }
             if (user?.canRequestLinen == true && item.isTurnover && item.status == "RECEIVED" && item.id in state.deliveredIds) {
-                BentoActionButton(label = "Reportar diferencia", onClick = { vm.openDifference(item) }, modifier = Modifier.fillMaxWidth())
+                BentoActionButton(
+                    label = "Reportar diferencia",
+                    onClick = { vm.openDifference(item) },
+                    modifier = Modifier.fillMaxWidth(),
+                    testTag = "linen.detail.difference",
+                )
             }
         }
     }
@@ -380,6 +393,7 @@ private fun ExtrasDialog(dialog: ExtrasDialogState, state: LinenUiState, vm: Lin
         onConfirm = vm::submitExtras,
         confirmEnabled = dialog.canSubmit,
         saving = dialog.submitting,
+        confirmTestTag = "linen.extras.confirm",
     ) {
         Column(
             modifier = Modifier.heightIn(max = 380.dp).verticalScroll(rememberScrollState()),
@@ -396,7 +410,13 @@ private fun ExtrasDialog(dialog: ExtrasDialogState, state: LinenUiState, vm: Lin
                 )
             }
             if (options.isNotEmpty()) {
-                SimpleDropdownField(label = "Agregar artículo", value = "", options = options, onSelect = vm::addExtra)
+                SimpleDropdownField(
+                    label = "Agregar artículo",
+                    value = "",
+                    options = options,
+                    onSelect = vm::addExtra,
+                    optionTestTagPrefix = "linen.extras.option",
+                )
             }
         }
     }
@@ -412,6 +432,7 @@ private fun DeliverDialog(dialog: DeliverDialogState, vm: LinenViewModel) {
         confirmLabel = "Entregado",
         onConfirm = vm::confirmDeliver,
         saving = dialog.submitting,
+        confirmTestTag = "linen.deliver.confirm",
     ) {
         Column(
             modifier = Modifier.heightIn(max = 380.dp).verticalScroll(rememberScrollState()),
@@ -442,6 +463,7 @@ private fun DifferenceDialog(dialog: DifferenceDialogState, vm: LinenViewModel) 
         onConfirm = vm::submitDifference,
         confirmEnabled = dialog.canSubmit,
         saving = dialog.submitting,
+        confirmTestTag = "linen.difference.confirm",
     ) {
         // Los renglones se desplazan dentro de su altura máxima; las notas (obligatorias) quedan
         // siempre visibles junto a los botones, sin tener que bajar por la lista.
@@ -450,13 +472,14 @@ private fun DifferenceDialog(dialog: DifferenceDialogState, vm: LinenViewModel) 
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text("¿Cuánto faltó de lo entregado?", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
-            dialog.item.lines.filter { it.receivedQty > 0 }.forEach { line ->
+            dialog.item.lines.filter { it.receivedQty > 0 }.forEachIndexed { index, line ->
                 QtyLine(
                     name = line.product.name,
                     detail = "Recibido: ${qtyText(line.receivedQty)}",
                     value = dialog.missingQty[line.product.id] ?: 0.0,
                     onMinus = { vm.changeMissingQty(line, -1.0) },
                     onPlus = { vm.changeMissingQty(line, 1.0) },
+                    plusTestTag = "linen.difference.plus.$index",
                 )
             }
         }
@@ -465,6 +488,7 @@ private fun DifferenceDialog(dialog: DifferenceDialogState, vm: LinenViewModel) 
             onValueChange = vm::setDifferenceNotes,
             label = { Text("Notas (obligatorio)") },
             modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+            testTag = "linen.difference.notes",
         )
     }
 }

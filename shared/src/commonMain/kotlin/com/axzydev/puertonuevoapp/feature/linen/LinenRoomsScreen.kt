@@ -89,6 +89,7 @@ fun LinenRoomsScreen(viewModel: LinenViewModel = linenViewModel()) {
                                         BentoActionButton(
                                             label = "Check-out",
                                             enabled = !state.checkingOut,
+                                            testTag = "linen.checkout.${room.number}",
                                             onClick = { viewModel.askCheckOut(room) },
                                         )
                                     }) else null,
