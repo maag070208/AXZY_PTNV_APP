@@ -133,9 +133,11 @@ fun AppShell() {
     val current = navigator.current
     val chrome = current.chrome()
     val isHome = current is Screen.Home
-    // El drawer/hamburguesa es exclusivo del Inicio: el resto de pantallas lleva atrás.
+    // La flecha de atrás la decide el chrome de la pantalla: las raíces (Inicio y los destinos de
+    // la barra inferior: Blancos, Equipo, Tickets, Dispositivos, Portería, Perfil) muestran el menú
+    // en su lugar; las pantallas internas llevan atrás.
     // Si no hay historial (se abrió desde el drawer o la barra), atrás vuelve al Inicio.
-    val showBack = !isHome
+    val showBack = chrome.showBack
     val goBack: () -> Unit = {
         if (navigator.backStack.size > 1) navigator.pop() else navigator.switchTab(Screen.Home)
     }
@@ -231,11 +233,12 @@ fun AppShell() {
                             title = if (linenHome && user != null) "Hola, ${user.name.trim().substringBefore(' ')}" else chrome.title,
                             subtitle = when {
                                 linenHome -> "Puerto Nuevo · ${shortDateEs()}"
+                                // "Blancos" lista los pedidos del día: la fecha real en lugar del "Hoy" suelto.
+                                current is Screen.LinenOrders -> "Pedidos de hoy · ${shortDateEs()}"
                                 showBack -> sectionLabel(chrome.section)
                                 else -> null
                             },
                             rootAvatar = if (linenHome) user else null,
-                            endText = if (current is Screen.LinenOrders) "Hoy" else null,
                             showBack = showBack,
                             onBack = goBack,
                             onMenu = { scope.launch { drawerState.open() } },

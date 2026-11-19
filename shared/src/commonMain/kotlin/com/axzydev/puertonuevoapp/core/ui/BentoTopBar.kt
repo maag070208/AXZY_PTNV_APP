@@ -45,8 +45,8 @@ import com.axzydev.puertonuevoapp.core.theme.AppShape
  * - Raíz con saludo ([rootAvatar] != null, sin atrás): avatar circular 44dp a la izquierda (abre el
  *   menú), [subtitle] como línea superior pequeña y [title] como saludo, campana con punto a la derecha.
  * - Raíz estándar: botón de menú + título.
- * - Interna ([showBack]): botón atrás + título (+ [subtitle]) y a la derecha [endText], la acción
- *   de la pantalla ([action]) y la campana.
+ * - Interna ([showBack]): botón atrás + título (+ [subtitle]) y a la derecha la acción de la
+ *   pantalla ([action]) y la campana.
  */
 @Composable
 fun BentoTopBar(
@@ -64,8 +64,6 @@ fun BentoTopBar(
     containerColor: Color = AppBento.canvas,
     /** Si no es null (y no hay atrás): variante raíz con avatar a la izquierda que abre el menú. */
     rootAvatar: SessionUser? = null,
-    /** Texto discreto a la derecha (p. ej. "Hoy"). */
-    endText: String? = null,
     /** Muestra la campana (por defecto sí). */
     showNotifications: Boolean = true,
 ) {
@@ -124,10 +122,6 @@ fun BentoTopBar(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-        }
-        if (endText != null) {
-            Text(endText, style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp), color = AppColors.TextMuted)
-            Spacer(Modifier.width(AppChrome.HeaderGap))
         }
         if (action != null) {
             HeaderSquareButton(

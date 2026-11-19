@@ -24,9 +24,14 @@ object AppChrome {
     val DotSize = 8.dp
     val DotBorder = 2.dp
 
-    /** Márgenes laterales / inferior y alto de la barra inferior flotante. */
+    /** Márgenes laterales / superior e inferior y alto de la barra inferior flotante. */
     val BarSideMargin = 12.dp
     val BarBottomMargin = 14.dp
+    /**
+     * Aire entre el contenido y la barra flotante. Sin él la última tarjeta quedaba pegada al
+     * borde superior de la pastilla y parecía que la barra la tapaba.
+     */
+    val BarTopMargin = 8.dp
     val BarHeight = 72.dp
     val BarPaddingHorizontal = 8.dp
 

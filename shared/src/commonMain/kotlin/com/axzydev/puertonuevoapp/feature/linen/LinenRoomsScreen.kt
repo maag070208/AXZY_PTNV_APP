@@ -21,6 +21,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.axzydev.puertonuevoapp.core.theme.AppBento
 import com.axzydev.puertonuevoapp.core.theme.AppColors
@@ -53,6 +54,7 @@ fun LinenRoomsScreen(viewModel: LinenViewModel = linenViewModel()) {
                     Text(
                         if (state.showAllRooms) "Todas (${state.visibleRooms.size})" else "Ocupadas (${state.visibleRooms.size})",
                         style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
                         color = AppColors.TextPrimary,
                         modifier = Modifier.weight(1f),
                     )
@@ -73,7 +75,7 @@ fun LinenRoomsScreen(viewModel: LinenViewModel = linenViewModel()) {
                     } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 24.dp),
+                            contentPadding = PaddingValues(bottom = 32.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp),
                         ) {
                             items(rooms, key = { it.id }) { room ->
@@ -138,7 +140,7 @@ fun LinenHistoryScreen(viewModel: LinenViewModel = linenViewModel()) {
             state.history.isEmpty() -> EmptyState("Sin pedidos en los últimos 60 días.")
             else -> LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 24.dp),
+                contentPadding = PaddingValues(bottom = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(state.history, key = { it.id }) { item ->

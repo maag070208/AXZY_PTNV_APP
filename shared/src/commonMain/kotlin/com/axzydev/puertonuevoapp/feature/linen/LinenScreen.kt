@@ -1,34 +1,27 @@
 package com.axzydev.puertonuevoapp.feature.linen
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Bed
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -38,7 +31,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
@@ -51,10 +43,12 @@ import com.axzydev.puertonuevoapp.core.theme.AppBento
 import com.axzydev.puertonuevoapp.core.theme.AppColors
 import com.axzydev.puertonuevoapp.core.theme.BentoTone
 import com.axzydev.puertonuevoapp.core.ui.AppFilterChip
+import com.axzydev.puertonuevoapp.core.ui.AppFilterChipRow
 import com.axzydev.puertonuevoapp.core.ui.AppModal
 import com.axzydev.puertonuevoapp.core.ui.AppSearchField
 import com.axzydev.puertonuevoapp.core.ui.AppTextField
 import com.axzydev.puertonuevoapp.core.ui.BentoActionButton
+import com.axzydev.puertonuevoapp.core.ui.BentoQtyStepper
 import com.axzydev.puertonuevoapp.core.ui.BentoStatusRow
 import com.axzydev.puertonuevoapp.core.ui.EmptyState
 import com.axzydev.puertonuevoapp.core.ui.ErrorState
@@ -123,10 +117,7 @@ fun LinenScreen(viewModel: LinenViewModel = linenViewModel()) {
                     placeholder = "Buscar habitación",
                     testTag = "linen-search",
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
+                AppFilterChipRow {
                     listOf(
                         null to "Todas",
                         LinenBucket.Pending to "Pendientes",
@@ -167,7 +158,7 @@ fun LinenScreen(viewModel: LinenViewModel = linenViewModel()) {
                     } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 24.dp),
+                            contentPadding = PaddingValues(bottom = 32.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp),
                         ) {
                             items(visible, key = { it.id }) { item ->
@@ -287,6 +278,32 @@ internal val QueueItemDto.canAddExtras: Boolean get() = isTurnover && status == 
 
 // --- Detalle --------------------------------------------------------------------------
 
+/**
+ * Renglón de los diálogos con cantidad: el nombre del artículo va a lo ancho (el modal mide 280dp,
+ * así que en una sola fila el nombre se partía en dos) y debajo su dato y el stepper a la derecha.
+ */
+@Composable
+private fun QtyLine(
+    name: String,
+    detail: String?,
+    value: Double,
+    onMinus: () -> Unit,
+    onPlus: () -> Unit,
+) {
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(name, style = MaterialTheme.typography.titleSmall, color = AppColors.TextPrimary)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = detail.orEmpty(),
+                style = MaterialTheme.typography.bodySmall,
+                color = AppColors.TextMuted,
+                modifier = Modifier.weight(1f),
+            )
+            BentoQtyStepper(value = value, onMinus = onMinus, onPlus = onPlus)
+        }
+    }
+}
+
 /** Detalle del pedido: renglones (lavandería ajusta cantidades) y quién/cuándo. */
 @Composable
 private fun LinenDetailDialog(item: QueueItemDto, state: LinenUiState, user: SessionUser?, vm: LinenViewModel) {
@@ -305,22 +322,20 @@ private fun LinenDetailDialog(item: QueueItemDto, state: LinenUiState, user: Ses
         ) {
             Text(linenStatusLine(item), style = MaterialTheme.typography.labelLarge, color = AppBento.tone(item.bucket.tone()).content)
             item.lines.forEach { line ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
+                val qty = if (canAdjust) "Pedido: ${qtyText(line.pendingQty)}"
+                else "Pedido ${qtyText(line.requestedQty)} · surtido ${qtyText(line.deliveredQty)}"
+                if (canAdjust) {
+                    QtyLine(
+                        name = line.product.name,
+                        detail = qty,
+                        value = state.fulfillQtyOf(line),
+                        onMinus = { vm.changeFulfillQty(item, line.id, -1.0) },
+                        onPlus = { vm.changeFulfillQty(item, line.id, 1.0) },
+                    )
+                } else {
+                    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(line.product.name, style = MaterialTheme.typography.titleSmall, color = AppColors.TextPrimary)
-                        Text(
-                            if (canAdjust) "Pedido: ${qtyText(line.pendingQty)}"
-                            else "Pedido ${qtyText(line.requestedQty)} · surtido ${qtyText(line.deliveredQty)}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = AppColors.TextMuted,
-                        )
-                    }
-                    if (canAdjust) {
-                        QtyStepper(
-                            value = state.fulfillQtyOf(line),
-                            onMinus = { vm.changeFulfillQty(item, line.id, -1.0) },
-                            onPlus = { vm.changeFulfillQty(item, line.id, 1.0) },
-                        )
+                        Text(qty, style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
                     }
                 }
             }
@@ -351,21 +366,6 @@ private fun LinenDetailDialog(item: QueueItemDto, state: LinenUiState, user: Ses
     }
 }
 
-@Composable
-internal fun QtyStepper(value: Double, onMinus: () -> Unit, onPlus: () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = onMinus, modifier = Modifier.size(48.dp)) {
-            Icon(Icons.Filled.Remove, contentDescription = "Quitar", tint = AppColors.TextPrimary)
-        }
-        Box(Modifier.width(40.dp), contentAlignment = Alignment.Center) {
-            Text(qtyText(value), style = MaterialTheme.typography.titleLarge, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold)
-        }
-        IconButton(onClick = onPlus, modifier = Modifier.size(48.dp)) {
-            Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = AppColors.TextPrimary)
-        }
-    }
-}
-
 /** "Agregar extras": artículos adicionales para un pedido de habitación aún por surtir. */
 @Composable
 private fun ExtrasDialog(dialog: ExtrasDialogState, state: LinenUiState, vm: LinenViewModel) {
@@ -387,17 +387,13 @@ private fun ExtrasDialog(dialog: ExtrasDialogState, state: LinenUiState, vm: Lin
         ) {
             Text("Se suman al pedido que ya está en lavandería", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
             dialog.rows.forEach { row ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text(row.product.name, style = MaterialTheme.typography.titleSmall, color = AppColors.TextPrimary)
-                        row.product.size?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted) }
-                    }
-                    QtyStepper(
-                        value = row.quantity,
-                        onMinus = { vm.changeExtraQty(row.product.id, -1.0) },
-                        onPlus = { vm.changeExtraQty(row.product.id, 1.0) },
-                    )
-                }
+                QtyLine(
+                    name = row.product.name,
+                    detail = row.product.size,
+                    value = row.quantity,
+                    onMinus = { vm.changeExtraQty(row.product.id, -1.0) },
+                    onPlus = { vm.changeExtraQty(row.product.id, 1.0) },
+                )
             }
             if (options.isNotEmpty()) {
                 SimpleDropdownField(label = "Agregar artículo", value = "", options = options, onSelect = vm::addExtra)
@@ -423,17 +419,13 @@ private fun DeliverDialog(dialog: DeliverDialogState, vm: LinenViewModel) {
         ) {
             Text("Cantidad de sucio que recoges de la habitación", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
             dialog.item.lines.filter { it.deliveredQty > 0 }.forEach { line ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text(line.product.name, style = MaterialTheme.typography.titleSmall, color = AppColors.TextPrimary)
-                        Text("Entregado: ${qtyText(line.deliveredQty)}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
-                    }
-                    QtyStepper(
-                        value = dialog.dirtyQty[line.product.id] ?: 0.0,
-                        onMinus = { vm.changeDirtyQty(line.product.id, -1.0) },
-                        onPlus = { vm.changeDirtyQty(line.product.id, 1.0) },
-                    )
-                }
+                QtyLine(
+                    name = line.product.name,
+                    detail = "Entregado: ${qtyText(line.deliveredQty)}",
+                    value = dialog.dirtyQty[line.product.id] ?: 0.0,
+                    onMinus = { vm.changeDirtyQty(line.product.id, -1.0) },
+                    onPlus = { vm.changeDirtyQty(line.product.id, 1.0) },
+                )
             }
         }
     }
@@ -451,31 +443,29 @@ private fun DifferenceDialog(dialog: DifferenceDialogState, vm: LinenViewModel) 
         confirmEnabled = dialog.canSubmit,
         saving = dialog.submitting,
     ) {
+        // Los renglones se desplazan dentro de su altura máxima; las notas (obligatorias) quedan
+        // siempre visibles junto a los botones, sin tener que bajar por la lista.
         Column(
-            modifier = Modifier.heightIn(max = 380.dp).verticalScroll(rememberScrollState()),
+            modifier = Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text("¿Cuánto faltó de lo entregado?", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
             dialog.item.lines.filter { it.receivedQty > 0 }.forEach { line ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text(line.product.name, style = MaterialTheme.typography.titleSmall, color = AppColors.TextPrimary)
-                        Text("Recibido: ${qtyText(line.receivedQty)}", style = MaterialTheme.typography.bodySmall, color = AppColors.TextMuted)
-                    }
-                    QtyStepper(
-                        value = dialog.missingQty[line.product.id] ?: 0.0,
-                        onMinus = { vm.changeMissingQty(line, -1.0) },
-                        onPlus = { vm.changeMissingQty(line, 1.0) },
-                    )
-                }
+                QtyLine(
+                    name = line.product.name,
+                    detail = "Recibido: ${qtyText(line.receivedQty)}",
+                    value = dialog.missingQty[line.product.id] ?: 0.0,
+                    onMinus = { vm.changeMissingQty(line, -1.0) },
+                    onPlus = { vm.changeMissingQty(line, 1.0) },
+                )
             }
-            AppTextField(
-                value = dialog.notes,
-                onValueChange = vm::setDifferenceNotes,
-                label = { Text("Notas (obligatorio)") },
-                modifier = Modifier.fillMaxWidth(),
-            )
         }
+        AppTextField(
+            value = dialog.notes,
+            onValueChange = vm::setDifferenceNotes,
+            label = { Text("Notas (obligatorio)") },
+            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+        )
     }
 }
 

@@ -23,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.axzydev.puertonuevoapp.core.di.AppContainer
@@ -84,7 +85,7 @@ fun HousekeepingScreen() {
                     } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 24.dp),
+                            contentPadding = PaddingValues(bottom = 32.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp),
                         ) {
                             if (state.mine.isNotEmpty()) {
@@ -107,7 +108,13 @@ fun HousekeepingScreen() {
 
 @Composable
 private fun SectionTitle(text: String) {
-    Text(text, style = MaterialTheme.typography.titleMedium, color = AppColors.TextPrimary, modifier = Modifier.padding(top = 4.dp))
+    Text(
+        text,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+        color = AppColors.TextPrimary,
+        modifier = Modifier.padding(top = 4.dp),
+    )
 }
 
 private fun cleaningTypeLabel(type: String): String = when (type) {

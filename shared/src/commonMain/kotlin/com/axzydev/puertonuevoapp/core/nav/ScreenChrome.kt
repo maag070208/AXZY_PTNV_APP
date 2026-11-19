@@ -93,8 +93,10 @@ fun Screen.chrome(): ScreenChrome = when (this) {
     Screen.AccessLog -> ScreenChrome("Registros de acceso", section = MainSection.ACCESS)
 
     // Blancos
-    Screen.LinenOrders -> ScreenChrome("Blancos", showBack = true, showBottomNavigation = true, section = MainSection.HOME)
-    Screen.LinenEquipment -> ScreenChrome("Mi equipo", showBack = true, showBottomNavigation = true, section = MainSection.HOME)
+    // "Blancos" y "Mi equipo" son destinos de la barra inferior: pantalla raíz, sin flecha de
+    // regreso (la flecha sobraba y confundía con un tab; el header queda con el menú).
+    Screen.LinenOrders -> ScreenChrome("Blancos", showBack = false, showBottomNavigation = true, section = MainSection.HOME)
+    Screen.LinenEquipment -> ScreenChrome("Mi equipo", showBack = false, showBottomNavigation = true, section = MainSection.HOME)
     Screen.LinenRooms -> ScreenChrome("Habitaciones", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
     Screen.Housekeeping -> ScreenChrome("Limpieza", showBack = true, showBottomNavigation = false, section = MainSection.HOME)
     Screen.LinenHistory -> ScreenChrome("Historial", showBack = true, showBottomNavigation = false, section = MainSection.HOME)

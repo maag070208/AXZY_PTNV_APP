@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
@@ -52,7 +53,8 @@ import com.axzydev.puertonuevoapp.core.ui.AppCard
 import com.axzydev.puertonuevoapp.core.ui.BentoActionButton
 import com.axzydev.puertonuevoapp.core.ui.BentoSegment
 import com.axzydev.puertonuevoapp.core.ui.BentoSegmentedBar
-import com.axzydev.puertonuevoapp.core.ui.BentoShortcut
+import com.axzydev.puertonuevoapp.core.ui.BentoShortcutGrid
+import com.axzydev.puertonuevoapp.core.ui.BentoShortcutItem
 import com.axzydev.puertonuevoapp.core.ui.BentoIconSquare
 
 /**
@@ -109,7 +111,7 @@ fun LinenHomeScreen(equipment: @Composable () -> Unit, viewModel: LinenViewModel
                         modifier = Modifier.padding(bottom = 8.dp),
                     )
                 }
-                Spacer(Modifier.padding(top = 12.dp))
+                Spacer(Modifier.height(12.dp))
                 BentoSegmentedBar(
                     listOf(
                         BentoSegment("Pendientes", pending, AppChrome.SegmentPending),
@@ -134,17 +136,18 @@ fun LinenHomeScreen(equipment: @Composable () -> Unit, viewModel: LinenViewModel
             // Accesos (solo lo que el rol puede usar).
             Text("Accesos", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = AppColors.TextPrimary)
             AppCard(modifier = Modifier.fillMaxWidth(), shape = AppShape.listCard, borderColor = null, elevation = 1.dp, contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 16.dp)) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    BentoShortcut("Blancos", Icons.Filled.Bed, BentoTone.Sea, { navigator.switchTab(Screen.LinenOrders) }, Modifier.weight(1f))
+                val shortcuts = buildList {
+                    add(BentoShortcutItem("Blancos", Icons.Filled.Bed, BentoTone.Sea) { navigator.switchTab(Screen.LinenOrders) })
                     if (user.canChangeRoomStatus) {
-                        BentoShortcut("Habitaciones", Icons.Filled.MeetingRoom, BentoTone.Sea, { navigator.push(Screen.LinenRooms) }, Modifier.weight(1f))
+                        add(BentoShortcutItem("Habitaciones", Icons.Filled.MeetingRoom, BentoTone.Sea) { navigator.push(Screen.LinenRooms) })
                     }
                     if (user.canUseHousekeeping) {
-                        BentoShortcut("Limpieza", Icons.Filled.CleaningServices, BentoTone.Mint, { navigator.push(Screen.Housekeeping) }, Modifier.weight(1f))
+                        add(BentoShortcutItem("Limpieza", Icons.Filled.CleaningServices, BentoTone.Mint) { navigator.push(Screen.Housekeeping) })
                     }
-                    BentoShortcut("Equipo", Icons.Filled.Groups, BentoTone.Sun, { navigator.switchTab(Screen.LinenEquipment) }, Modifier.weight(1f))
-                    BentoShortcut("Historial", Icons.Filled.History, BentoTone.Mint, { navigator.push(Screen.LinenHistory) }, Modifier.weight(1f))
+                    add(BentoShortcutItem("Equipo", Icons.Filled.Groups, BentoTone.Sun) { navigator.switchTab(Screen.LinenEquipment) })
+                    add(BentoShortcutItem("Historial", Icons.Filled.History, BentoTone.Mint) { navigator.push(Screen.LinenHistory) })
                 }
+                BentoShortcutGrid(shortcuts)
             }
 
             // Recientes.
@@ -173,7 +176,7 @@ fun LinenHomeScreen(equipment: @Composable () -> Unit, viewModel: LinenViewModel
                     recent.forEachIndexed { index, item ->
                         if (index > 0) HorizontalDivider(color = AppColors.Outline.copy(alpha = 0.4f))
                         Row(
-                            modifier = Modifier.fillMaxWidth().clickable { navigator.switchTab(Screen.LinenOrders) }.padding(horizontal = 16.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().clip(AppShape.row).clickable { navigator.switchTab(Screen.LinenOrders) }.padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             BentoIconSquare(Icons.Filled.Bed, item.bucket.tone(), size = 42.dp, shape = AppShape.iconRowSmall)
@@ -203,7 +206,7 @@ fun LinenHomeScreen(equipment: @Composable () -> Unit, viewModel: LinenViewModel
             // Mi equipo (contenido existente del Inicio).
             Text("Mi equipo", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = AppColors.TextPrimary)
             equipment()
-            Spacer(Modifier.padding(bottom = 24.dp))
+            Spacer(Modifier.height(32.dp))
         }
     }
 }

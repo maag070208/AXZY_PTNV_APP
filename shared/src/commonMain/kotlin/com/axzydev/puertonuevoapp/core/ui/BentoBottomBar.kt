@@ -61,7 +61,7 @@ data class BentoNavItem(
 
 /**
  * Barra de navegación inferior flotante del diseño "C": pastilla blanca (72dp, radio 24dp) con
- * márgenes de 12dp a los lados y 14dp abajo (más el inset del sistema) y sombra suave.
+ * márgenes de 12dp a los lados, 8dp arriba y 14dp abajo (más el inset del sistema) y sombra suave.
  *
  * Cada destino es una columna ícono (20dp) + etiqueta (12sp). El activo lleva píldora de 48x30 y
  * se pinta en el color de marca (etiqueta bold); el inactivo va en gris. [action] (p. ej. el
@@ -80,7 +80,12 @@ fun BentoBottomBar(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(start = AppChrome.BarSideMargin, end = AppChrome.BarSideMargin, bottom = AppChrome.BarBottomMargin),
+            .padding(
+                start = AppChrome.BarSideMargin,
+                end = AppChrome.BarSideMargin,
+                top = AppChrome.BarTopMargin,
+                bottom = AppChrome.BarBottomMargin,
+            ),
     ) {
         Row(
             modifier = Modifier

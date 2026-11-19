@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -142,6 +144,25 @@ fun AppFilterChip(
             },
         )
     }
+}
+
+/**
+ * Fila de filtros ([AppFilterChip]) que **se acomoda en varias líneas** cuando los chips no
+ * caben a lo ancho: nunca se recorta el último chip ni su conteo (el scroll horizontal dejaba
+ * "Listas · 2" cortado en el borde). Mismos tokens de separación que la fila de chips.
+ */
+@Composable
+fun AppFilterChipRow(
+    modifier: Modifier = Modifier,
+    spacing: Dp = 8.dp,
+    content: @Composable FlowRowScope.() -> Unit,
+) {
+    FlowRow(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(spacing),
+        verticalArrangement = Arrangement.spacedBy(spacing),
+        content = content,
+    )
 }
 
 @Composable
